@@ -59,7 +59,7 @@ AUTOGROW_TYPE = "COMFY_AUTOGROW_V3"
 # Nodes that draw their own panel, measured in the page. The save nodes are sized for their empty state;
 # ComfyUI grows them as their viewers fill.
 DOM_SIZES: dict[str, tuple[int, int]] = {
-    HostNode.IMAGE: (340, 350),
+    HostNode.IMAGE: (340, 314),
     HostNode.PREVIEW: (340, 122),
     HostNode.SAVE_IMAGE: (340, 58),
     HostNode.PREVIEW_IMAGE: (340, 26),

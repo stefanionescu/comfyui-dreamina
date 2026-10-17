@@ -234,7 +234,7 @@ Two edits:
 
    ```python
    DOM_SIZES: dict[str, tuple[int, int]] = {
-       HostNode.IMAGE: (340, 350),
+       HostNode.IMAGE: (340, 314),
        HostNode.PREVIEW: (340, 122),
        HostNode.SAVE_IMAGE: (340, 58),
        HostNode.PREVIEW_IMAGE: (340, 26),
@@ -243,18 +243,17 @@ Two edits:
    }
    ```
 
-   | Member          | Starting value | Source                                                                                     |
-   | --------------- | -------------- | ------------------------------------------------------------------------------------------ |
-   | `IMAGE`         | 340 × 350      | O's value (`O/scripts/workflows/page/config.py:67`); F never placed Load Image            |
-   | `PREVIEW`       | 340 × 122      | F's, measured by B on frontend 1.52.7                                                      |
-   | `SAVE_IMAGE`    | 340 × 58       | F's, measured by B on frontend 1.52.7                                                      |
-   | `PREVIEW_IMAGE` | 340 × 26       | F's, measured by B on frontend 1.52.7                                                      |
-   | `SAVE_AUDIO`    | 340 × 136      | F's, taken from Load Audio's size because both draw the same audio player                  |
-   | `SAVE_VIDEO`    | 340 × 106      | F's, measured by B on frontend 1.52.7                                                      |
+   | Member          | Value     | Source                                                                                                        |
+   | --------------- | --------- | ------------------------------------------------------------------------------------------------------------- |
+   | `IMAGE`         | 340 × 314 | Measured on frontend 1.52.7, 2026-10-17: the height a new Load Image takes, which holds a photo and its size line; O's 350 left 36 px empty |
+   | `PREVIEW`       | 340 × 122 | F's, measured by B on frontend 1.52.7; confirmed 2026-10-17                                                   |
+   | `SAVE_IMAGE`    | 340 × 58  | F's, measured by B on frontend 1.52.7; confirmed 2026-10-17                                                   |
+   | `PREVIEW_IMAGE` | 340 × 26  | F's, measured by B on frontend 1.52.7; confirmed 2026-10-17                                                   |
+   | `SAVE_AUDIO`    | 340 × 136 | F's, taken from Load Audio's size; measured on Save Audio (Advanced) on frontend 1.52.7, 2026-10-17          |
+   | `SAVE_VIDEO`    | 340 × 106 | F's, measured by B on frontend 1.52.7; confirmed 2026-10-17                                                   |
 
    The save nodes are sized for their empty state; ComfyUI grows them as
-   their viewers fill. `IMAGE` and `SAVE_AUDIO` are measured as below, and
-   the measured pairs replace these.
+   their viewers fill. `IMAGE` and `SAVE_AUDIO` were measured as below.
 
 `AUDIO_PREVIEW` stays: audio-01's **Voice** and audio-02's **Speak** expose
 **Save Audio (Advanced)**'s player, which frontend 1.52.7 names `audioUI`.
@@ -332,6 +331,38 @@ Record the old and new values in
 measuring needs ComfyUI started with the finished nodes, so it is done after
 the milestone's commit, and the changed constants and rebuilt files go in a
 commit of their own.
+
+#### Results, 2026-10-17
+
+Measured headless on ComfyUI 0.37.2 with frontend 1.52.7, Nodes 2.0 off,
+canvas zoom 1, with nothing queued.
+
+| What | Saved | Computed on load |
+| ---- | ----- | ---------------- |
+| Image: Generate (image-01, image-03, audio-02, video-01, video-02, video-03) | 254 | 254 |
+| Video: Generate (video-01 to video-04) | 274 | 274 |
+| Audio: Generate (audio-01, audio-02) | 254 | 254 |
+| Image: Upscale (image-03) | 176 | 176 |
+| Element: Add (video-03) | 152 | 152 |
+| Generation: Download (video-04) | 138 | 138 |
+| Model: Info (audio-01) | 58 | 58 |
+| A placed subgraph: one output, two outputs, none | 88, 108, 26 | 88, 108, 26 |
+| Load Image, added new; with no photo; with a photo | 314; 102; 326 | panel |
+| Save Audio (Advanced), added new | 136 | 136 |
+
+- Every plain node keeps its saved height, inside subgraphs too, so
+  `scripts/nodes/schema.py` and the row constants stand.
+- `IMAGE` became 340 × 314, the size a new Load Image takes; at that
+  height a photo and its size line fit, and image-02 was rebuilt.
+- No note's text scrolls: the rendered `.ProseMirror` box is never taller
+  than its frame. The note's raw-text editor sits under it at opacity 0 and
+  does scroll, which shows only while editing. The tightest notes have
+  4 px to spare, so the note constants stand.
+- video-04's `graphToPrompt()` output holds `DreaminaGenerationDownload`
+  and `SaveVideo` only: the bypassed **Shot** bypasses its inner nodes, and
+  the group stays.
+- The subgraph audio player waits for audio-01's run in
+  [Step 5](#step-5-run-each-example-once).
 
 ## The page engine
 
