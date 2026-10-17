@@ -158,7 +158,7 @@ connected. S-4 was filled earlier by C-14, and S-9 by V-2, which failed with
   Seedance 2.x video has sound.
 - 20114 failed three `seedance_2.0_mini` runs (V-1, V-2, S-14), while other
   runs of that model passed, among them S-18, S-19, S-20, and S-22 with the
-  same prompt.
+  same prompt. It also failed video-02's `seedance_2.5` `m2v` run in Part 4.
 
 ## Audio models
 
