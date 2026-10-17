@@ -7,6 +7,7 @@ class HostNode(StrEnum):
     """One ComfyUI node, by the name ComfyUI registers it under."""
 
     IMAGE = "LoadImage"
+    LIST = "CreateList"
     PREVIEW = "PreviewAny"
     TEXT_BLOCK = "PrimitiveStringMultiline"
     SAVE_IMAGE = "SaveImage"

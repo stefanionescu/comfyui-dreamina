@@ -1,0 +1,680 @@
+{
+  "id": "75face17-2b1c-56b6-9bd7-d7091e6e1598",
+  "revision": 0,
+  "last_node_id": 8,
+  "last_link_id": 5,
+  "nodes": [
+    {
+      "id": 1,
+      "type": "MarkdownNote",
+      "pos": [
+        0,
+        60
+      ],
+      "size": [
+        780,
+        96
+      ],
+      "flags": {},
+      "order": 0,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "1. Sign in to Dreamina in **ComfyUI menu → Extensions → Dreamina → Dreamina Settings**.\n2. Upload three pictures from `example_workflows/assets/` in this pack's folder: `dreamina/host-full-body.webp` in **Host**, `live-shopping/kitchen-counter.webp` in **Place**, and `live-shopping/burger.webp` in **Product**.\n3. In **Change**, say what happens. `{{image1}}`, `{{image2}}`, and `{{image3}}` stand for the pictures in the order **Pictures** lists them.\n4. Press **Run**. The picture is saved under `image/dreamina`."
+      ],
+      "title": "Start Here"
+    },
+    {
+      "id": 2,
+      "type": "MarkdownNote",
+      "pos": [
+        810,
+        60
+      ],
+      "size": [
+        400,
+        96
+      ],
+      "flags": {},
+      "order": 1,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "text",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "text"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "Node name for S&R": "MarkdownNote"
+      },
+      "widgets_values": [
+        "**Pictures**, ComfyUI's **Create List**, joins the three pictures in order, and **Combine** uploads them. Seedream 5.0 Lite puts the host in the kitchen with the burger, at `9:16` and `2K`. It takes up to 6 pictures.\n\nThis workflow made `example_workflows/assets/dreamina/host-in-kitchen.webp`, which **video-05-animate-a-saved-image** starts from."
+      ],
+      "title": "Note"
+    },
+    {
+      "id": 3,
+      "type": "LoadImage",
+      "pos": [
+        30,
+        296
+      ],
+      "size": [
+        340,
+        314
+      ],
+      "flags": {},
+      "order": 2,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "image"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            1
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "",
+        "image"
+      ],
+      "title": "Host"
+    },
+    {
+      "id": 4,
+      "type": "LoadImage",
+      "pos": [
+        30,
+        674
+      ],
+      "size": [
+        340,
+        314
+      ],
+      "flags": {},
+      "order": 3,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "image"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            2
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "",
+        "image"
+      ],
+      "title": "Place"
+    },
+    {
+      "id": 5,
+      "type": "LoadImage",
+      "pos": [
+        30,
+        1052
+      ],
+      "size": [
+        340,
+        314
+      ],
+      "flags": {},
+      "order": 4,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "image",
+          "type": "COMBO",
+          "link": null,
+          "widget": {
+            "name": "image"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "IMAGE",
+          "type": "IMAGE",
+          "links": [
+            3
+          ]
+        },
+        {
+          "name": "MASK",
+          "type": "MASK",
+          "links": []
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "LoadImage"
+      },
+      "widgets_values": [
+        "",
+        "image"
+      ],
+      "title": "Product"
+    },
+    {
+      "id": 6,
+      "type": "CreateList",
+      "pos": [
+        410,
+        296
+      ],
+      "size": [
+        340,
+        106
+      ],
+      "flags": {},
+      "order": 5,
+      "mode": 0,
+      "inputs": [
+        {
+          "label": "input0",
+          "name": "inputs.input0",
+          "type": "*",
+          "link": 1,
+          "shape": 7
+        },
+        {
+          "label": "input1",
+          "name": "inputs.input1",
+          "type": "*",
+          "link": 2,
+          "shape": 7
+        },
+        {
+          "label": "input2",
+          "name": "inputs.input2",
+          "type": "*",
+          "link": 3,
+          "shape": 7
+        },
+        {
+          "label": "input3",
+          "name": "inputs.input3",
+          "type": "*",
+          "link": null,
+          "shape": 7
+        }
+      ],
+      "outputs": [
+        {
+          "name": "list",
+          "type": "*",
+          "shape": 6,
+          "links": [
+            4
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "CreateList"
+      },
+      "widgets_values": [],
+      "title": "Pictures"
+    },
+    {
+      "id": 7,
+      "type": "PrimitiveStringMultiline",
+      "pos": [
+        410,
+        466
+      ],
+      "size": [
+        340,
+        88
+      ],
+      "flags": {},
+      "order": 6,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "value",
+          "type": "STRING",
+          "link": null,
+          "widget": {
+            "name": "value"
+          }
+        }
+      ],
+      "outputs": [
+        {
+          "name": "STRING",
+          "type": "STRING",
+          "links": [
+            5
+          ]
+        }
+      ],
+      "properties": {
+        "Node name for S&R": "PrimitiveStringMultiline"
+      },
+      "widgets_values": [
+        "The woman from {{image1}} stands behind the counter of the kitchen from {{image2}} and holds the burger from {{image3}} on its plate in both hands, at its real size, smiling at the camera. Keep her face, hair, and clothes, the kitchen, and the burger as they are. Photorealistic, soft daylight."
+      ],
+      "title": "Change"
+    },
+    {
+      "id": 8,
+      "type": "7a47f5f4-553f-5fdb-8cb5-7a5678beb3b0",
+      "pos": [
+        840,
+        296
+      ],
+      "size": [
+        340,
+        88
+      ],
+      "flags": {},
+      "order": 7,
+      "mode": 0,
+      "inputs": [
+        {
+          "name": "pictures",
+          "type": "IMAGE",
+          "link": 4
+        },
+        {
+          "name": "change",
+          "type": "STRING",
+          "link": 5,
+          "widget": {
+            "name": "change"
+          }
+        }
+      ],
+      "outputs": [],
+      "properties": {
+        "previewExposures": [
+          {
+            "name": "$$canvas-image-preview",
+            "sourceNodeId": "102",
+            "sourcePreviewName": "$$canvas-image-preview"
+          }
+        ]
+      },
+      "widgets_values": [
+        ""
+      ],
+      "title": "Combine"
+    }
+  ],
+  "links": [
+    [
+      1,
+      3,
+      0,
+      6,
+      0,
+      "IMAGE"
+    ],
+    [
+      2,
+      4,
+      0,
+      6,
+      1,
+      "IMAGE"
+    ],
+    [
+      3,
+      5,
+      0,
+      6,
+      2,
+      "IMAGE"
+    ],
+    [
+      4,
+      6,
+      0,
+      8,
+      0,
+      "*"
+    ],
+    [
+      5,
+      7,
+      0,
+      8,
+      1,
+      "STRING"
+    ]
+  ],
+  "groups": [
+    {
+      "id": 1,
+      "title": "Input",
+      "bounding": [
+        0,
+        186,
+        780,
+        1210
+      ],
+      "color": "#55746b",
+      "font_size": 24,
+      "flags": {}
+    },
+    {
+      "id": 2,
+      "title": "Combine",
+      "bounding": [
+        810,
+        186,
+        400,
+        228
+      ],
+      "color": "#68688c",
+      "font_size": 24,
+      "flags": {}
+    }
+  ],
+  "config": {},
+  "extra": {
+    "ds": {
+      "scale": 0.5,
+      "offset": [
+        30,
+        30
+      ]
+    }
+  },
+  "version": 0.4,
+  "definitions": {
+    "subgraphs": [
+      {
+        "id": "7a47f5f4-553f-5fdb-8cb5-7a5678beb3b0",
+        "version": 1,
+        "state": {
+          "lastGroupId": 0,
+          "lastNodeId": 102,
+          "lastLinkId": 3,
+          "lastRerouteId": 0
+        },
+        "revision": 0,
+        "config": {},
+        "name": "Combine",
+        "inputNode": {
+          "id": -10,
+          "bounding": [
+            -10,
+            140,
+            120,
+            40
+          ]
+        },
+        "outputNode": {
+          "id": -20,
+          "bounding": [
+            1010,
+            140,
+            120,
+            20
+          ]
+        },
+        "inputs": [
+          {
+            "id": "764731f1-c06c-5f89-90dd-540250d2e59e",
+            "name": "pictures",
+            "type": "IMAGE",
+            "linkIds": [
+              2
+            ],
+            "pos": [
+              110,
+              140
+            ]
+          },
+          {
+            "id": "8e936c9e-f7bb-5b2f-8646-27d2e892499f",
+            "name": "change",
+            "type": "STRING",
+            "linkIds": [
+              3
+            ],
+            "pos": [
+              110,
+              160
+            ]
+          }
+        ],
+        "outputs": [],
+        "widgets": [],
+        "nodes": [
+          {
+            "id": 101,
+            "type": "DreaminaImageGenerate",
+            "pos": [
+              200,
+              140
+            ],
+            "size": [
+              340,
+              254
+            ],
+            "flags": {},
+            "order": 100,
+            "mode": 0,
+            "inputs": [
+              {
+                "name": "images",
+                "type": "IMAGE",
+                "link": 2,
+                "shape": 7
+              },
+              {
+                "name": "references",
+                "type": "DREAMINA_REFERENCES",
+                "link": null,
+                "shape": 7
+              },
+              {
+                "name": "model",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "model"
+                }
+              },
+              {
+                "name": "credit_ceiling",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "credit_ceiling"
+                }
+              },
+              {
+                "name": "run_number",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "run_number"
+                }
+              },
+              {
+                "name": "prompt",
+                "type": "STRING",
+                "link": 3,
+                "widget": {
+                  "name": "prompt"
+                }
+              },
+              {
+                "name": "arguments",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "arguments"
+                }
+              }
+            ],
+            "outputs": [
+              {
+                "name": "images",
+                "type": "IMAGE",
+                "shape": 6,
+                "links": [
+                  1
+                ]
+              },
+              {
+                "name": "references",
+                "type": "DREAMINA_REFERENCES",
+                "links": []
+              },
+              {
+                "name": "result",
+                "type": "STRING",
+                "links": []
+              }
+            ],
+            "properties": {
+              "Node name for S&R": "DreaminaImageGenerate"
+            },
+            "widgets_values": [
+              "seedream_5.0_lite",
+              10,
+              0,
+              "",
+              "{\n  \"ratio\": \"9:16\",\n  \"resolution\": \"2K\"\n}"
+            ],
+            "color": "#432",
+            "bgcolor": "#653"
+          },
+          {
+            "id": 102,
+            "type": "SaveImage",
+            "pos": [
+              580,
+              140
+            ],
+            "size": [
+              340,
+              58
+            ],
+            "flags": {},
+            "order": 101,
+            "mode": 0,
+            "inputs": [
+              {
+                "name": "images",
+                "type": "IMAGE",
+                "link": 1
+              },
+              {
+                "name": "filename_prefix",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "filename_prefix"
+                }
+              }
+            ],
+            "outputs": [
+              {
+                "name": "images",
+                "type": "IMAGE",
+                "links": []
+              }
+            ],
+            "properties": {
+              "Node name for S&R": "SaveImage"
+            },
+            "widgets_values": [
+              "image/dreamina/host-in-kitchen"
+            ]
+          }
+        ],
+        "groups": [],
+        "links": [
+          {
+            "id": 1,
+            "origin_id": 101,
+            "origin_slot": 0,
+            "target_id": 102,
+            "target_slot": 0,
+            "type": "IMAGE"
+          },
+          {
+            "id": 2,
+            "origin_id": -10,
+            "origin_slot": 0,
+            "target_id": 101,
+            "target_slot": 0,
+            "type": "IMAGE"
+          },
+          {
+            "id": 3,
+            "origin_id": -10,
+            "origin_slot": 1,
+            "target_id": 101,
+            "target_slot": 5,
+            "type": "STRING"
+          }
+        ],
+        "extra": {
+          "description": "Puts the host in the place with the product and saves the picture."
+        }
+      }
+    ]
+  }
+}

@@ -207,11 +207,11 @@
               "Node name for S&R": "DreaminaImageGenerate"
             },
             "widgets_values": [
-              "dreamina_gpt_image_2_5_sunburst",
+              "seedream_5.0_lite",
               10,
               0,
               "",
-              "{\n  \"ratio\": \"1:1\",\n  \"resolution\": \"1K\"\n}"
+              "{\n  \"ratio\": \"1:1\",\n  \"resolution\": \"2K\"\n}"
             ],
             "color": "#432",
             "bgcolor": "#653"

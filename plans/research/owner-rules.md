@@ -744,7 +744,9 @@ rules above apply to them as to any vendor rule.
       draft left at the ceiling stays; ADVANCED says so.
       (`skill/references/node-deletion.md:40-43`,
       `skill/references/node-deletion.md:82-84`;
-      [01-decisions.md](../01-decisions.md#credits))
+      [01-decisions.md](../01-decisions.md#credits)). The owner approved one
+      batch on 2026-10-18: the drafts and failed videos testing left on the
+      `ComfyUI` canvas ([README.md](../README.md#changes-made-while-building)).
 - [ ] Always pass `--project-id` with the pack's own `ComfyUI` canvas. Never
       read or change the CLI's current canvas, and never pass `canvas create
       --use`. ("An explicit `--project-id` avoids reading the current-canvas

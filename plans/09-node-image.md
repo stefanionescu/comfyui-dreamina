@@ -342,17 +342,16 @@ quotes for these settings, which
 | Slug | Milestone | Step | `model` | `arguments` | Connected | Saved as |
 | ---- | --------- | ---- | ------- | ----------- | --------- | -------- |
 | `image-01-design-a-host` | Image | Design | starting value | `{"ratio": "3:4", "resolution": "2K"}` | nothing: `t2i`; **Host** text block → `prompt` | `image/dreamina/host` |
-| `image-02-edit-a-product-photo` | Image | Edit | `dreamina_gpt_image_2_5_sunburst` | `{"ratio": "1:1", "resolution": "1K"}` | `images` ← **Load Image** with the person's product photo: `i2i`; **Change** text block → `prompt`, naming `{{image1}}` | `image/dreamina/product-edit` |
+| `image-02-edit-a-product-photo` | Image | Edit | starting value | `{"ratio": "1:1", "resolution": "2K"}` | `images` ← **Load Image** with the person's product photo: `i2i`; **Change** text block → `prompt`, naming `{{image1}}` | `image/dreamina/product-edit` |
 | `image-03-upscale-a-poster` | Upscale | Poster | starting value | `{"ratio": "3:4", "resolution": "2K"}` | nothing: `t2i`; its `references` feed **Enlarge**, an Image: Upscale ([12-node-upscale.md](12-node-upscale.md#step-7-readme-row-and-examples)) | `image/dreamina/poster` |
 
 - **image-01** is the least expensive example that needs nothing from the
   person. `3:4` is the only change from the starting `arguments`, a portrait
   frame, and `2K` is the starting model's smallest size, with no membership.
-- **image-02** is the one example that needs a file from the person, and it
-  shows an upload and the `{{image1}}` placeholder. GPT Image 2.5 Sunburst
-  takes 1 to 16 pictures in `i2i`, `1K` is its smallest size, and its
-  `count` is 1 to 1. Part 0 shows whether its quote passes
-  `DEFAULT_CEILINGS["image"]`; if not, 17 raises **Edit**'s `credit_ceiling`.
+- **image-02** needs a file from the person, and it shows an upload and the
+  `{{image1}}` placeholder. Seedream 5.0 Lite takes 1 to 6 pictures in
+  `i2i`, and `2K` is its smallest size. Its quote of 6 passes
+  `DEFAULT_CEILINGS["image"]`.
 - **image-03** ships with the Upscale milestone, after Image, as
   `image-03-upscale-a-poster`.
 - **audio-02**, **video-01**, **video-02**, and **video-03** start with an

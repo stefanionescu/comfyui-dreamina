@@ -32,6 +32,15 @@ SHARED_TEXTS = {
     "keep": "Keep",
     "shot_1": "Shot 1",
     "shot_2": "Shot 2",
+    "pose": "Pose",
+    "redraw": "Redraw",
+    "place": "Place",
+    "pictures": "Pictures",
+    "combine": "Combine",
+    "frame": "Frame",
+    "move": "Move",
+    "full_body": "Full Body",
+    "take": "Take",
 }
 
 __all__ = ["SHARED_TEXTS"]

@@ -25,9 +25,9 @@ WORKFLOW_TEXTS = {
         "3. In **Change**, say where to put it. `{{image1}}` stands for your photo.\n"
         "4. Press **Run**. The edited photo is saved under `image/dreamina`.",
         "edit": "The pack uploads your photo to your Dreamina canvas, the project named ComfyUI that holds every run, "
-        "so the model can read it. GPT Image 2.5 Sunburst then redraws it as **Change** asks, at `1:1` and `1K`, its "
+        "so the model can read it. Seedream 5.0 Lite then redraws it as **Change** asks, at `1:1` and `2K`, its "
         "smallest size. `{{image1}}` in the prompt marks where your photo goes.\n\nTo combine several products, give "
-        "**Edit** a list of up to 16 photos, and name them `{{image1}}`, `{{image2}}`, and so on.",
+        "**Edit** a list of up to 6 photos, and name them `{{image1}}`, `{{image2}}`, and so on.",
         "edit_description": "Edits the product photo and saves it.",
     },
     "image-03-upscale-a-poster": {
@@ -41,6 +41,30 @@ WORKFLOW_TEXTS = {
         "it adds. For a plain enlargement to twice the size, set `mode` to `normal` and leave out `resolution`.\n\n"
         + UPSCALE_RECOVER_NOTE,
         "enlarge_description": "Upscales the poster and saves it.",
+    },
+    "image-04-redraw-a-saved-host": {
+        "input": SIGN_IN_STEP + "2. In **Host**, upload `example_workflows/assets/dreamina/host.webp` from this "
+        "pack's folder: the host **image-01-design-a-host** made. Or upload a picture of your own host.\n"
+        "3. In **Pose**, say how to redraw them. `{{image1}}` stands for the picture.\n"
+        "4. Press **Run**. The new picture is saved under `image/dreamina`.",
+        "redraw": "Seedream 5.0 Lite redraws the host from **Host** full body, at `9:16` and `2K`, its smallest "
+        "size. A model given a picture keeps the person in it, and **Pose** says what to keep and what to change.\n\n"
+        "This workflow made `example_workflows/assets/dreamina/host-full-body.webp`, which "
+        "**image-05-place-a-host-in-a-scene** and **video-06-cast-a-saved-host** start from.",
+        "redraw_description": "Redraws the host full body and saves the picture.",
+    },
+    "image-05-place-a-host-in-a-scene": {
+        "input": SIGN_IN_STEP + "2. Upload three pictures from `example_workflows/assets/` in this pack's folder: "
+        "`dreamina/host-full-body.webp` in **Host**, `live-shopping/kitchen-counter.webp` in **Place**, and "
+        "`live-shopping/burger.webp` in **Product**.\n"
+        "3. In **Change**, say what happens. `{{image1}}`, `{{image2}}`, and `{{image3}}` stand for the pictures in "
+        "the order **Pictures** lists them.\n"
+        "4. Press **Run**. The picture is saved under `image/dreamina`.",
+        "combine": "**Pictures**, ComfyUI's **Create List**, joins the three pictures in order, and **Combine** "
+        "uploads them. Seedream 5.0 Lite puts the host in the kitchen with the burger, at `9:16` and `2K`. It "
+        "takes up to 6 pictures.\n\nThis workflow made `example_workflows/assets/dreamina/host-in-kitchen.webp`, "
+        "which **video-05-animate-a-saved-image** starts from.",
+        "combine_description": "Puts the host in the place with the product and saves the picture.",
     },
     "audio-01-voice-a-script": {
         "input": SIGN_IN_STEP
@@ -107,6 +131,28 @@ WORKFLOW_TEXTS = {
         "press Ctrl+B to turn it on, press **Run**, and cancel once **Shot** has started. Then turn it off again, "
         "choose the video in **Collect**, and run.\n\n" + CANCEL_NOTE + " **Collect** downloads it.",
         "shot_description": "Makes a four-second clip and saves it.",
+    },
+    "video-05-animate-a-saved-image": {
+        "input": SIGN_IN_STEP + "2. In **Frame**, upload `example_workflows/assets/dreamina/host-in-kitchen.webp` "
+        "from this pack's folder, or any picture.\n3. In **Scene**, say what happens.\n"
+        "4. Press **Run**. The video is saved under `video/dreamina`.",
+        "move": "Seedance 2.0 Mini starts on **Frame** and makes a four-second `720p` video in a `9:16` frame. With "
+        "one picture connected, the node uses `first_last_frame`, the mode that starts the video on that picture.\n\n"
+        + RECOVER_NOTE,
+        "move_description": "Turns the picture into a video and saves it.",
+    },
+    "video-06-cast-a-saved-host": {
+        "input": SIGN_IN_STEP + "2. Upload three pictures from `example_workflows/assets/` in this pack's folder: "
+        "`dreamina/host.webp` in **Host**, `dreamina/host-full-body.webp` in **Full Body**, and "
+        "`live-shopping/kitchen-counter.webp` in **Place**.\n"
+        "3. In **Scene**, say what happens. `{{reference1}}` stands for the host and `{{image1}}` for the place.\n"
+        "4. Press **Run**. The video is saved under `video/dreamina`.",
+        "keep": "**Element: Add** uploads both host pictures and saves them as an Element named **Host**, with "
+        "**Host** as its main picture and **Full Body** as another angle. Making an Element is free.",
+        "take": "Seedance 2.0 Mini films **Scene** with the host from **Keep** in the place from **Place**, four "
+        "seconds at `720p` in a `9:16` frame. With an Element connected, the node uses `m2v`, the mode that takes "
+        "references.\n\n" + RECOVER_NOTE,
+        "take_description": "Films the kept host in the place and saves the video.",
     },
     "video-03-keep-a-host-across-shots": {
         "input": SIGN_IN_STEP + "2. Describe the host in **Host**.\n3. Say what happens in the first shot in "

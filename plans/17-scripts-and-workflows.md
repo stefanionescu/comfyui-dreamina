@@ -20,10 +20,11 @@ each subgraph shipped as a blueprint named after its step. They use only this
 pack's nodes and ComfyUI's own nodes, ship no media, and make their own
 inputs with Dreamina models wherever they can. One example, image-02, edits a
 photo the person uploads. Together they cover the live-shopping jobs the
-owner runs today: a host portrait, a product photo edited with GPT Image 2.5
-Sunburst, a poster enlarged for print, a host animated and filmed with a
+owner runs today: a host portrait, a product photo edited with Seedream 5.0
+Lite, a poster enlarged for print, a host animated and filmed with a
 product with Seedance, one host kept the same across shots with an Element,
-and a host given a voice with Seed Audio.
+a host given a voice with Seed Audio, and a saved host redrawn, placed in a
+scene, and filmed from files.
 
 The node plans (09 to 15) own every node's input and output IDs. Where an
 example below names an input or an output that a node plan names
@@ -589,7 +590,7 @@ need to.
    Node titles, group titles, menu paths, and buttons are bold: **Video:
    Generate**, **Film**, **Run**.
 1. **Name a model plainly, once.** Use its everyday name ("Seedream 5.0
-   Lite", "Seedance 2.5", "GPT Image 2.5 Sunburst", "Seed Audio") and give
+   Lite", "Seedance 2.5", "Seed Audio") and give
    the model name only where the person has to type or choose it.
 1. **Say what to change, not everything that could change.** One or two
    inputs a person is likely to want, with the useful range.
@@ -782,9 +783,9 @@ __all__ = ["AUDIO_GENERATE", "IMAGE_GENERATE", "IMAGE_UPSCALE", "VIDEO_GENERATE"
 Free nodes placed once are written inline:
 `f"{NODE_PREFIX}ModelInfo"`, `f"{NODE_PREFIX}GenerationDownload"`, and
 `f"{NODE_PREFIX}ElementAdd"`. The model names that differ from a node's
-starting model are constants of the one module that uses them: `SUNBURST`
-(`dreamina_gpt_image_2_5_sunburst`) in `image.py`, `SEED_AUDIO`
-(`seed_audio_v1`, Model: Info's `model`) in `audio.py`, and `SEEDANCE_2_5`
+starting model are constants of the one module that uses them:
+`SEED_AUDIO` (`seed_audio_v1`, Model: Info's `model`) in `audio.py`, and
+`SEEDANCE_2_5`
 (`seedance_2.5`) in `video.py`. Each example's `<NAME>_ARGUMENTS` is a
 constant of its module.
 
@@ -831,7 +832,7 @@ Rules for every example, from F's descriptions:
   made with `json.dumps(..., indent=2)`, only when it differs from the
   node's starting `arguments`. It holds every setting the example sets, the
   required ones included, at the cheapest values that prove the point: `2K`
-  for Seedream (its smallest), `1K` for GPT Image 2.5 Sunburst, `720p` for
+  for Seedream (its smallest), `720p` for
   Seedance 2.0 Mini (its only size), `480p` for Seedance 2.5, and four
   seconds, the shortest any video model on the list takes.
 - `prompt` is linked from an input, or written `{"prompt": <text>}`.
@@ -855,7 +856,7 @@ Rules for every example, from F's descriptions:
 
 ## Example workflows
 
-Nine examples cover every node. A workflow is built in the first milestone in
+Thirteen examples cover every node. A workflow is built in the first milestone in
 which all its nodes exist; the coverage check in `comfy:workflows:check` then
 finds every registered node in at least one example.
 
@@ -864,15 +865,13 @@ The models the examples use, from the owner's live lists of 2026-10-16
 
 | Name                              | Model                              | Node                         | Used by                                                          | Settings used                    |
 | --------------------------------- | ---------------------------------- | ---------------------------- | ---------------------------------------------------------------- | -------------------------------- |
-| Seedream 5.0 Lite (starting)      | `seedream_5.0_lite`                | Image: Generate              | image-01, image-03, audio-02, video-01, video-02, video-03       | `ratio` `3:4`, `9:16`, or `1:1`; `resolution` `2K` |
-| GPT Image 2.5 Sunburst (`SUNBURST`) | `dreamina_gpt_image_2_5_sunburst` | Image: Generate              | image-02                                                         | `ratio` `1:1`; `resolution` `1K` |
+| Seedream 5.0 Lite (starting)      | `seedream_5.0_lite`                | Image: Generate              | image-01 to image-05, audio-02, video-01, video-02, video-03     | `ratio` `3:4`, `9:16`, or `1:1`; `resolution` `2K` |
 | Dreamina's upscale (no model)     | none                               | Image: Upscale               | image-03                                                         | `resolution` `2K`, mode `pro`    |
-| Seedance 2.0 Mini (starting)      | `seedance_2.0_mini`                | Video: Generate              | video-01, video-03, video-04                                     | `720p`, 4 seconds; `9:16`, or the starting `16:9` in video-04 |
+| Seedance 2.0 Mini (starting)      | `seedance_2.0_mini`                | Video: Generate              | video-01, video-03 to video-06                                   | `720p`, 4 seconds; `9:16`, or the starting `16:9` in video-04 |
 | Seedance 2.5 (`SEEDANCE_2_5`)     | `seedance_2.5`                     | Video: Generate              | video-02                                                         | `9:16`, `480p`, 4 seconds, `m2v` |
 | Seed Audio (starting)             | `seed_audio_v1`                    | Audio: Generate, Model: Info | audio-01, audio-02                                               | Text reading with `voice-name`; omni dubbing |
 
-GPT Image 2.5 Sunburst is the model live-shopping uses through fal today and
-takes up to 16 pictures in `i2i`. Seedance 2.5 is the one video model on the
+Seedance 2.5 is the one video model on the
 list that makes `480p`. Every value above is in the model's `values` or
 range in the captures. Credits come from Part 0's price sweep, the
 `minimumCreditCeiling` of a run with `--credit-ceiling 0`, which bills
@@ -886,7 +885,7 @@ JSON object shown under the graph, written with `json.dumps(..., indent=2)`.
 | Slug | Title | Milestone | Nodes it covers | The person provides | Credits of one run |
 | ---- | ----- | --------- | --------------- | ------------------- | ------------------ |
 | `image-01-design-a-host` | Image: Design a Host | Image | Image: Generate | Nothing; a host description is included | One Seedream 5.0 Lite image at `2K`, from Part 0 |
-| `image-02-edit-a-product-photo` | Image: Edit a Product Photo | Image | Image: Generate | A product photo | One GPT Image 2.5 Sunburst edit at `1K`, from Part 0 |
+| `image-02-edit-a-product-photo` | Image: Edit a Product Photo | Image | Image: Generate | A product photo | One Seedream 5.0 Lite edit at `2K`, 6 credits |
 | `image-03-upscale-a-poster` | Image: Upscale a Poster | Upscale | Image: Generate, Image: Upscale | Nothing | One `2K` image and one `2K` `pro` upscale, from Part 0 |
 | `audio-01-voice-a-script` | Audio: Voice a Script | Audio | Audio: Generate, Model: Info | Nothing | One Seed Audio text reading of 103 characters, from Part 0; Model: Info is free |
 | `audio-02-give-a-host-a-voice` | Audio: Give a Host a Voice | Audio | Image: Generate, Audio: Generate | Nothing | One `2K` image and one omni dubbing line of 83 characters, from Part 0 |
@@ -894,6 +893,10 @@ JSON object shown under the graph, written with `json.dumps(..., indent=2)`.
 | `video-02-film-a-product-ad` | Video: Film a Product Ad | Video and downloads | Image: Generate, Video: Generate | Nothing | Two `2K` images and one four-second `480p` Seedance 2.5 video, from Part 0 |
 | `video-03-keep-a-host-across-shots` | Video: Keep a Host across Shots | Elements | Image: Generate, Element: Add, Video: Generate | Nothing | One `2K` image and two four-second `720p` Seedance 2.0 Mini videos, from Part 0; the Element is free |
 | `video-04-recover-a-video` | Video: Recover a Video | Video and downloads | Generation: Download; Video: Generate ships turned off | A video left running | Free as shipped |
+| `image-04-redraw-a-saved-host` | Image: Redraw a Saved Host | Saved host | Image: Generate | `assets/dreamina/host.webp` | One Seedream 5.0 Lite image at `2K`, 6 credits |
+| `image-05-place-a-host-in-a-scene` | Image: Place a Host in a Scene | Saved host | Image: Generate | `assets/dreamina/host-full-body.webp`, `assets/live-shopping/kitchen-counter.webp`, `assets/live-shopping/burger.webp` | One Seedream 5.0 Lite image at `2K` from three pictures, 6 credits |
+| `video-05-animate-a-saved-image` | Video: Animate a Saved Image | Saved host | Video: Generate | `assets/dreamina/host-in-kitchen.webp` | One four-second `720p` Seedance 2.0 Mini video, 16 credits |
+| `video-06-cast-a-saved-host` | Video: Cast a Saved Host | Saved host | Element: Add, Video: Generate | `assets/dreamina/host.webp`, `assets/dreamina/host-full-body.webp`, `assets/live-shopping/kitchen-counter.webp` | One four-second `720p` Seedance 2.0 Mini video, 16 credits; the Element is free |
 
 The nine runs, with video-01 canceled and collected by video-04, must fit
 the 250 credits that [README.md](README.md#before-the-first-paid-run) gives
@@ -960,8 +963,8 @@ Part 0.
 ### `image-02-edit-a-product-photo`
 
 Scenario: a seller puts their own product photo in a new setting for a
-listing. GPT Image 2.5 Sunburst edits it. It is the one example that needs a
-file from the person, and it shows an upload and the `{{image1}}`
+listing. Seedream 5.0 Lite edits it. It needs a file from the person, and
+it shows an upload and the `{{image1}}`
 placeholder. What 07 and 09 ask for is in [07-media.md](07-media.md) and
 [09-node-image.md](09-node-image.md).
 
@@ -975,7 +978,7 @@ Group Edit (edit, STAGE): columns [edit]
   edit      subgraph Edit
 
 Subgraph Edit: inputs photo → draw.images, change → draw.prompt; previews save IMAGE_PREVIEW
-  draw      DreaminaImageGenerate (paid)  {model: SUNBURST, arguments: EDIT_ARGUMENTS}
+  draw      DreaminaImageGenerate (paid)  {arguments: EDIT_ARGUMENTS}
   save      SAVE_IMAGE  {filename_prefix: "image/dreamina/product-edit"}
   links     draw.images → save.images
   columns   [draw] [save]
@@ -987,12 +990,11 @@ Links: photo.IMAGE → edit.photo; change.STRING → edit.change
 beside a sunny window, with a soft shadow under it. Keep its shape, colors,
 and label exactly as they are."
 
-`EDIT_ARGUMENTS`: `{"ratio": "1:1", "resolution": "1K"}`.
+`EDIT_ARGUMENTS`: `{"ratio": "1:1", "resolution": "2K"}`.
 
-With an image connected the node chooses `i2i`, which GPT Image 2.5 Sunburst
-takes with 1 to 16 pictures. Its `ratio` and `resolution` are required, and
-`1K` is its smallest size. Its `count` is 1 to 1, so `--count 1` changes
-nothing. The pack uploads the photo as PNG, free, and `{{image1}}` becomes
+With an image connected the node chooses `i2i`, which Seedream 5.0 Lite
+takes with 1 to 6 pictures. Its `ratio` and `resolution` are required, and
+`2K` is its smallest size. The pack uploads the photo as PNG, free, and `{{image1}}` becomes
 the upload's `{{res:…}}` form, which run C-6 confirms
 ([01-decisions.md](01-decisions.md#placeholders)); if C-6 shows an upload
 cannot be a placeholder, the prompt says "the product in the photo" instead.
@@ -1003,7 +1005,7 @@ whether the quote passes the image node's starting `credit_ceiling`; if not,
 | Key | Text |
 | --- | ---- |
 | `input` | `SIGN_IN_STEP` + "2. In **Photo**, upload a photo of one product, such as a bottle or a shoe.\n3. In **Change**, say where to put it. `{{image1}}` stands for your photo.\n4. Press **Run**. The edited photo is saved under `image/dreamina`." |
-| `edit` | "The pack uploads your photo to your Dreamina canvas, the project named ComfyUI that holds every run, so the model can read it. GPT Image 2.5 Sunburst then redraws it as **Change** asks, at `1:1` and `1K`, its smallest size. `{{image1}}` in the prompt marks where your photo goes.\n\nTo combine several products, give **Edit** a list of up to 16 photos, and name them `{{image1}}`, `{{image2}}`, and so on." |
+| `edit` | "The pack uploads your photo to your Dreamina canvas, the project named ComfyUI that holds every run, so the model can read it. Seedream 5.0 Lite then redraws it as **Change** asks, at `1:1` and `2K`, its smallest size. `{{image1}}` in the prompt marks where your photo goes.\n\nTo combine several products, give **Edit** a list of up to 6 photos, and name them `{{image1}}`, `{{image2}}`, and so on." |
 | `edit_description` | "Edits the product photo and saves it." |
 
 ### `image-03-upscale-a-poster`
@@ -1478,6 +1480,30 @@ price 21 calls `VID-D`.
 | `collect` | "Use this after you cancel a video Dreamina has already accepted, after a run times out, or after ComfyUI restarts while a video is being made. Dreamina keeps making it and bills it, and the pack keeps a record of it.\n\n" + `SIGN_IN_STEP` + "2. In **Collect**, choose the video in `generation`. Each entry shows the start of its ID, its model, and when it started, in UTC. Press R to list videos started after the page loaded.\n3. Press **Run**. The video is saved under `video/dreamina`.\n\nA video leaves the list once it is saved. If Dreamina no longer has its record, the node says so, and you can look for the video on your Dreamina canvas." |
 | `shot` | "Seedance 2.0 Mini makes a four-second `720p` clip from the prompt inside **Shot**. **Shot** ships turned off, so a run here makes nothing new and bills nothing. To make a video to recover, select **Shot**, press Ctrl+B to turn it on, press **Run**, and cancel once **Shot** has started. Then turn it off again, choose the video in **Collect**, and run.\n\n" + `CANCEL_NOTE` + " **Collect** downloads it." |
 | `shot_description` | "Makes a four-second clip and saves it." |
+
+### The saved-host examples
+
+Added on 2026-10-18 at the owner's request: four examples that start from
+pictures in `example_workflows/assets/` instead of making their inputs, to
+show how a saved picture works as a reference. The folder ships with the
+pack; the build reads only `example_workflows/*.json`, so it holds no
+workflow.
+
+- `assets/dreamina/` holds pictures these workflows made with Dreamina:
+  `host.webp` (image-01's host), `host-full-body.webp` (image-04's), and
+  `host-in-kitchen.webp` (image-05's).
+- `assets/live-shopping/` holds `kitchen-counter.webp` and `burger.webp`,
+  made by the live-shopping workflows with GPT Image 2.5 Sunburst: the
+  kitchen from a written place, the burger redrawn from its product photos.
+  The host pictures are Dreamina's, so no person's photo is shipped.
+- Each is WebP at quality 90, at most 1,280 px on its longer side.
+
+Each **Load Image** ships empty, and the **Start Here** note names the file
+to upload. image-05 joins its three pictures with ComfyUI's **Create List**
+(`HostNode.LIST`), the list `images` takes, in the order `{{image1}}` to
+`{{image3}}` name them. video-06 makes its Element from two files, `main`
+and `auxiliary`, and passes the place in `images`, so the node chooses
+`m2v`. The subgraphs are **Redraw**, **Combine**, **Move**, and **Take**.
 
 ## Step 4: Build the examples
 

@@ -1,4 +1,4 @@
-"""The Element workflow: keep one host the same across two shots."""
+"""The Element workflows: keep one host the same across two shots, and cast a saved host from files."""
 
 from __future__ import annotations
 
@@ -25,7 +25,12 @@ CLOSING_SCENE = (
     "The host from {{reference1}} holds the white sneaker next to his face and points at it, smiling. Close-up, warm "
     "light."
 )
+TAKE_SCENE = (
+    "The host from {{reference1}} walks into the kitchen from {{image1}}, stops behind the counter, smiles, and waves "
+    "at the camera. Medium shot, soft daylight."
+)
 KEEP_TEXTS = WORKFLOW_TEXTS["video-03-keep-a-host-across-shots"]
+TAKE_TEXTS = WORKFLOW_TEXTS["video-06-cast-a-saved-host"]
 
 SHOT_1 = Subgraph(
     name=SHARED_TEXTS["shot_1"],
@@ -80,6 +85,43 @@ KEEP_HOST_ACROSS_SHOTS = Workflow(
     subgraphs=(CAST, SHOT_1, SHOT_2),
 )
 
-ELEMENT_WORKFLOWS = (KEEP_HOST_ACROSS_SHOTS,)
+TAKE = Subgraph(
+    name=SHARED_TEXTS["take"],
+    nodes=(
+        Node("video", VIDEO_GENERATE, {"arguments": SHOT_ARGUMENTS}, is_paid=True),
+        Node("save", HostNode.SAVE_VIDEO, {"filename_prefix": "video/dreamina/host-walks-in"}),
+    ),
+    links=(("video.video", "save.video"),),
+    columns=(("video",), ("save",)),
+    inputs=(("element", "video.references"), ("place", "video.images"), ("scene", "video.prompt")),
+    description=TAKE_TEXTS["take_description"],
+)
+
+CAST_SAVED_HOST = Workflow(
+    slug="video-06-cast-a-saved-host",
+    nodes=(
+        Node("host", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["host"]),
+        Node("full_body", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["full_body"]),
+        Node("place", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["place"]),
+        Node("scene", HostNode.TEXT_BLOCK, {"value": TAKE_SCENE}, title=SHARED_TEXTS["scene"]),
+        Node("keep", f"{NODE_PREFIX}ElementAdd", {"title": "Host"}),
+        Node("take", TAKE.name),
+    ),
+    links=(
+        ("host.IMAGE", "keep.main"),
+        ("full_body.IMAGE", "keep.auxiliary"),
+        ("keep.references", "take.element"),
+        ("place.IMAGE", "take.place"),
+        ("scene.STRING", "take.scene"),
+    ),
+    stacks=(
+        (Group(SHARED_TEXTS["input"], (("host", "full_body"), ("place", "scene")), note=TAKE_TEXTS["input"]),),
+        (Group(SHARED_TEXTS["keep"], (("keep",),), STAGE_COLOUR, TAKE_TEXTS["keep"]),),
+        (Group(SHARED_TEXTS["take"], (("take",),), STAGE_COLOUR, TAKE_TEXTS["take"]),),
+    ),
+    subgraphs=(TAKE,),
+)
+
+ELEMENT_WORKFLOWS = (KEEP_HOST_ACROSS_SHOTS, CAST_SAVED_HOST)
 
 __all__ = ["ELEMENT_WORKFLOWS"]

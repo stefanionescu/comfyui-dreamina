@@ -1,4 +1,4 @@
-"""The image workflows: design a host, edit a product photo, and upscale a poster."""
+"""The image workflows: design a host, edit a product photo, upscale a poster, and reuse a saved host."""
 
 from __future__ import annotations
 
@@ -10,9 +10,8 @@ from scripts.workflows.page.config import STAGE_COLOUR, IMAGE_PREVIEW
 from scripts.workflows.page.graph import Node, Group, Subgraph, Workflow
 from scripts.workflows.descriptions.nodes import IMAGE_UPSCALE, IMAGE_GENERATE
 
-SUNBURST = "dreamina_gpt_image_2_5_sunburst"
 DESIGN_ARGUMENTS = json.dumps({"ratio": "3:4", "resolution": "2K"}, indent=2)
-EDIT_ARGUMENTS = json.dumps({"ratio": "1:1", "resolution": "1K"}, indent=2)
+EDIT_ARGUMENTS = json.dumps({"ratio": "1:1", "resolution": "2K"}, indent=2)
 HOST_PROMPT = (
     "Studio portrait of a live-shopping host: a cheerful woman in her late twenties with shoulder-length auburn hair, "
     "a mustard knit sweater, and small gold hoop earrings. Waist up, facing the camera, plain light gray background, "
@@ -21,6 +20,17 @@ HOST_PROMPT = (
 CHANGE_PROMPT = (
     "Place the product from {{image1}} on a light oak table beside a sunny window, with a soft shadow under it. Keep "
     "its shape, colors, and label exactly as they are."
+)
+SAVED_ARGUMENTS = json.dumps({"ratio": "9:16", "resolution": "2K"}, indent=2)
+POSE_PROMPT = (
+    "The woman from {{image1}}, full body, standing and facing the camera on a plain light gray background. Keep her "
+    "face, auburn hair, mustard knit sweater, and gold hoop earrings exactly as they are, with dark jeans and white "
+    "sneakers."
+)
+PLACE_PROMPT = (
+    "The woman from {{image1}} stands behind the counter of the kitchen from {{image2}} and holds the burger from "
+    "{{image3}} on its plate in both hands, at its real size, smiling at the camera. Keep her face, hair, and clothes, "
+    "the kitchen, and the burger as they are. Photorealistic, soft daylight."
 )
 POSTER_ARGUMENTS = json.dumps({"ratio": "3:4", "resolution": "2K"}, indent=2)
 POSTER_PROMPT = (
@@ -31,6 +41,8 @@ POSTER_PROMPT = (
 HOST_TEXTS = WORKFLOW_TEXTS["image-01-design-a-host"]
 EDIT_TEXTS = WORKFLOW_TEXTS["image-02-edit-a-product-photo"]
 POSTER_TEXTS = WORKFLOW_TEXTS["image-03-upscale-a-poster"]
+REDRAW_TEXTS = WORKFLOW_TEXTS["image-04-redraw-a-saved-host"]
+COMBINE_TEXTS = WORKFLOW_TEXTS["image-05-place-a-host-in-a-scene"]
 
 DESIGN = Subgraph(
     name=SHARED_TEXTS["design"],
@@ -62,7 +74,7 @@ DESIGN_HOST = Workflow(
 EDIT = Subgraph(
     name=SHARED_TEXTS["edit"],
     nodes=(
-        Node("draw", IMAGE_GENERATE, {"model": SUNBURST, "arguments": EDIT_ARGUMENTS}, is_paid=True),
+        Node("draw", IMAGE_GENERATE, {"arguments": EDIT_ARGUMENTS}, is_paid=True),
         Node("save", HostNode.SAVE_IMAGE, {"filename_prefix": "image/dreamina/product-edit"}),
     ),
     links=(("draw.images", "save.images"),),
@@ -130,6 +142,77 @@ UPSCALE_POSTER = Workflow(
     subgraphs=(POSTER, ENLARGE),
 )
 
-IMAGE_WORKFLOWS = (DESIGN_HOST, EDIT_PHOTO, UPSCALE_POSTER)
+REDRAW = Subgraph(
+    name=SHARED_TEXTS["redraw"],
+    nodes=(
+        Node("draw", IMAGE_GENERATE, {"arguments": SAVED_ARGUMENTS}, is_paid=True),
+        Node("save", HostNode.SAVE_IMAGE, {"filename_prefix": "image/dreamina/host-full-body"}),
+    ),
+    links=(("draw.images", "save.images"),),
+    columns=(("draw",), ("save",)),
+    inputs=(("host", "draw.images"), ("pose", "draw.prompt")),
+    description=REDRAW_TEXTS["redraw_description"],
+    previews=(("save", IMAGE_PREVIEW),),
+)
+
+REDRAW_HOST = Workflow(
+    slug="image-04-redraw-a-saved-host",
+    nodes=(
+        Node("host", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["host"]),
+        Node("pose", HostNode.TEXT_BLOCK, {"value": POSE_PROMPT}, title=SHARED_TEXTS["pose"]),
+        Node("redraw", REDRAW.name),
+    ),
+    links=(("host.IMAGE", "redraw.host"), ("pose.STRING", "redraw.pose")),
+    stacks=(
+        (Group(SHARED_TEXTS["input"], (("host", "pose"),), note=REDRAW_TEXTS["input"]),),
+        (Group(SHARED_TEXTS["redraw"], (("redraw",),), STAGE_COLOUR, REDRAW_TEXTS["redraw"]),),
+    ),
+    subgraphs=(REDRAW,),
+)
+
+COMBINE = Subgraph(
+    name=SHARED_TEXTS["combine"],
+    nodes=(
+        Node("draw", IMAGE_GENERATE, {"arguments": SAVED_ARGUMENTS}, is_paid=True),
+        Node("save", HostNode.SAVE_IMAGE, {"filename_prefix": "image/dreamina/host-in-kitchen"}),
+    ),
+    links=(("draw.images", "save.images"),),
+    columns=(("draw",), ("save",)),
+    inputs=(("pictures", "draw.images"), ("change", "draw.prompt")),
+    description=COMBINE_TEXTS["combine_description"],
+    previews=(("save", IMAGE_PREVIEW),),
+)
+
+PLACE_HOST = Workflow(
+    slug="image-05-place-a-host-in-a-scene",
+    nodes=(
+        Node("host", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["host"]),
+        Node("place", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["place"]),
+        Node("product", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["product"]),
+        Node("pictures", HostNode.LIST, title=SHARED_TEXTS["pictures"]),
+        Node("change", HostNode.TEXT_BLOCK, {"value": PLACE_PROMPT}, title=SHARED_TEXTS["change"]),
+        Node("combine", COMBINE.name),
+    ),
+    links=(
+        ("host.IMAGE", "pictures.inputs.input0"),
+        ("place.IMAGE", "pictures.inputs.input1"),
+        ("product.IMAGE", "pictures.inputs.input2"),
+        ("pictures.list", "combine.pictures"),
+        ("change.STRING", "combine.change"),
+    ),
+    stacks=(
+        (
+            Group(
+                SHARED_TEXTS["input"],
+                (("host", "place", "product"), ("pictures", "change")),
+                note=COMBINE_TEXTS["input"],
+            ),
+        ),
+        (Group(SHARED_TEXTS["combine"], (("combine",),), STAGE_COLOUR, COMBINE_TEXTS["combine"]),),
+    ),
+    subgraphs=(COMBINE,),
+)
+
+IMAGE_WORKFLOWS = (DESIGN_HOST, EDIT_PHOTO, UPSCALE_POSTER, REDRAW_HOST, PLACE_HOST)
 
 __all__ = ["IMAGE_WORKFLOWS"]

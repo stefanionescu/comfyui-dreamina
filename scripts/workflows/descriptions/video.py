@@ -1,4 +1,4 @@
-"""The video workflows: animate a host, film a product ad, and recover a video left running."""
+"""The video workflows: animate a host, film a product ad, recover a video left running, and animate a saved image."""
 
 from __future__ import annotations
 
@@ -36,12 +36,16 @@ FILM_SCENE = (
     "The host in {{reference1}} holds up the sneakers from {{image1}}, smiles, and turns them toward the camera to "
     "show the red laces. Bright studio, slow push-in."
 )
+MOVE_SCENE = (
+    "She takes a bite of the burger, laughs, and gives the camera a thumbs-up. The camera holds still, soft daylight."
+)
 SHOT_PROMPT = (
     "A white canvas sneaker with red laces turns slowly on a plain white turntable. Soft studio light, slow push-in."
 )
 ANIMATE_TEXTS = WORKFLOW_TEXTS["video-01-animate-a-host"]
 FILM_TEXTS = WORKFLOW_TEXTS["video-02-film-a-product-ad"]
 RECOVER_TEXTS = WORKFLOW_TEXTS["video-04-recover-a-video"]
+MOVE_TEXTS = WORKFLOW_TEXTS["video-05-animate-a-saved-image"]
 
 PORTRAIT = Subgraph(
     name=SHARED_TEXTS["portrait"],
@@ -173,6 +177,33 @@ RECOVER_VIDEO = Workflow(
     subgraphs=(SHOT,),
 )
 
-VIDEO_WORKFLOWS = (ANIMATE_HOST, FILM_AD, RECOVER_VIDEO)
+MOVE = Subgraph(
+    name=SHARED_TEXTS["move"],
+    nodes=(
+        Node("video", VIDEO_GENERATE, {"arguments": ANIMATE_ARGUMENTS}, is_paid=True),
+        Node("save", HostNode.SAVE_VIDEO, {"filename_prefix": "video/dreamina/host-in-kitchen"}),
+    ),
+    links=(("video.video", "save.video"),),
+    columns=(("video",), ("save",)),
+    inputs=(("frame", "video.images"), ("scene", "video.prompt")),
+    description=MOVE_TEXTS["move_description"],
+)
+
+ANIMATE_IMAGE = Workflow(
+    slug="video-05-animate-a-saved-image",
+    nodes=(
+        Node("frame", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["frame"]),
+        Node("scene", HostNode.TEXT_BLOCK, {"value": MOVE_SCENE}, title=SHARED_TEXTS["scene"]),
+        Node("move", MOVE.name),
+    ),
+    links=(("frame.IMAGE", "move.frame"), ("scene.STRING", "move.scene")),
+    stacks=(
+        (Group(SHARED_TEXTS["input"], (("frame", "scene"),), note=MOVE_TEXTS["input"]),),
+        (Group(SHARED_TEXTS["move"], (("move",),), STAGE_COLOUR, MOVE_TEXTS["move"]),),
+    ),
+    subgraphs=(MOVE,),
+)
+
+VIDEO_WORKFLOWS = (ANIMATE_HOST, FILM_AD, RECOVER_VIDEO, ANIMATE_IMAGE)
 
 __all__ = ["VIDEO_WORKFLOWS"]

@@ -66,7 +66,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "The pack uploads your photo to your Dreamina canvas, the project named ComfyUI that holds every run, so the model can read it. GPT Image 2.5 Sunburst then redraws it as **Change** asks, at `1:1` and `1K`, its smallest size. `{{image1}}` in the prompt marks where your photo goes.\n\nTo combine several products, give **Edit** a list of up to 16 photos, and name them `{{image1}}`, `{{image2}}`, and so on."
+        "The pack uploads your photo to your Dreamina canvas, the project named ComfyUI that holds every run, so the model can read it. Seedream 5.0 Lite then redraws it as **Change** asks, at `1:1` and `2K`, its smallest size. `{{image1}}` in the prompt marks where your photo goes.\n\nTo combine several products, give **Edit** a list of up to 6 photos, and name them `{{image1}}`, `{{image2}}`, and so on."
       ],
       "title": "Note"
     },
@@ -413,11 +413,11 @@
               "Node name for S&R": "DreaminaImageGenerate"
             },
             "widgets_values": [
-              "dreamina_gpt_image_2_5_sunburst",
+              "seedream_5.0_lite",
               10,
               0,
               "",
-              "{\n  \"ratio\": \"1:1\",\n  \"resolution\": \"1K\"\n}"
+              "{\n  \"ratio\": \"1:1\",\n  \"resolution\": \"2K\"\n}"
             ],
             "color": "#432",
             "bgcolor": "#653"

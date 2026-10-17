@@ -96,21 +96,30 @@ To send the same run again, change `run_number`.
 
 ## Example workflows
 
-| Workflow                                                                                    | Input                          |
-| ------------------------------------------------------------------------------------------- | ------------------------------ |
-| [Image: Design a Host](example_workflows/image-01-design-a-host.json)                       | A host description             |
-| [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json)         | A product photo and a change   |
-| [Image: Upscale a Poster](example_workflows/image-03-upscale-a-poster.json)                 | A brief                        |
-| [Audio: Voice a Script](example_workflows/audio-01-voice-a-script.json)                     | A script                       |
-| [Audio: Give a Host a Voice](example_workflows/audio-02-give-a-host-a-voice.json)           | A host and a line              |
-| [Video: Animate a Host](example_workflows/video-01-animate-a-host.json)                     | A host and a scene             |
-| [Video: Film a Product Ad](example_workflows/video-02-film-a-product-ad.json)               | A host, a product, and a scene |
-| [Video: Keep a Host across Shots](example_workflows/video-03-keep-a-host-across-shots.json) | A host and two scenes          |
-| [Video: Recover a Video](example_workflows/video-04-recover-a-video.json)                   | A video left running           |
+| Workflow                                                                                    | Input                                   |
+| ------------------------------------------------------------------------------------------- | --------------------------------------- |
+| [Image: Design a Host](example_workflows/image-01-design-a-host.json)                       | A host description                      |
+| [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json)         | A product photo and a change            |
+| [Image: Upscale a Poster](example_workflows/image-03-upscale-a-poster.json)                 | A brief                                 |
+| [Image: Redraw a Saved Host](example_workflows/image-04-redraw-a-saved-host.json)           | The saved host                          |
+| [Image: Place a Host in a Scene](example_workflows/image-05-place-a-host-in-a-scene.json)   | The saved host, a kitchen, and a burger |
+| [Audio: Voice a Script](example_workflows/audio-01-voice-a-script.json)                     | A script                                |
+| [Audio: Give a Host a Voice](example_workflows/audio-02-give-a-host-a-voice.json)           | A host and a line                       |
+| [Video: Animate a Host](example_workflows/video-01-animate-a-host.json)                     | A host and a scene                      |
+| [Video: Film a Product Ad](example_workflows/video-02-film-a-product-ad.json)               | A host, a product, and a scene          |
+| [Video: Keep a Host across Shots](example_workflows/video-03-keep-a-host-across-shots.json) | A host and two scenes                   |
+| [Video: Recover a Video](example_workflows/video-04-recover-a-video.json)                   | A video left running                    |
+| [Video: Animate a Saved Image](example_workflows/video-05-animate-a-saved-image.json)       | A saved picture and a scene             |
+| [Video: Cast a Saved Host](example_workflows/video-06-cast-a-saved-host.json)               | The saved host and a kitchen            |
 
 They are in **Browse Templates → dreamina**. Start with each workflow's
 **Start Here** note. Most steps are subgraphs. Media inputs start empty, and
 most workflows make their own inputs with Dreamina models.
+
+The workflows that start from a saved picture name a sample in
+`example_workflows/assets/` to upload. `dreamina/` holds pictures these
+workflows made with Dreamina, and `live-shopping/` holds a kitchen and a
+burger made with GPT Image for the live-shopping workflows.
 
 ![Screenshot of video-02: the Start Here note and a note for each step sit above four groups. Input holds the Host, Product, and Scene prompts; Cast draws the host; Packshot draws the product; and Film sends both to Seedance 2.5.](docs/images/screenshots/video-02-workflow.png)
 
