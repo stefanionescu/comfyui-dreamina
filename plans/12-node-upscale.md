@@ -150,9 +150,10 @@ schema for both uses:
    `default: str | None = None`, and `constraints: str = ""`.
 1. `src/dreamina/contract.py` keeps, for each binary whose contract passed,
    each `REQUIRED_COMMANDS` path's flags by name, beside `_VALIDATED`:
-   `_FLAGS: dict[str, dict[str, dict[str, SchemaFlag]]]`, keyed by binary
-   path, then command path. `_read_contract` fills it from the tree it already
-   walks, and `reset_cli_validation()` clears it with `_VALIDATED`.
+   `_FLAGS: dict[str, dict[str, dict[str, SchemaFlag]]]`, keyed like
+   `_VALIDATED` (the binary's path and modification time), then command path.
+   `_read_contract` fills it from the tree it already walks, so an install,
+   which changes the modification time, gets a fresh entry.
 1. A new public `read_command_flags(path: str) -> Mapping[str, SchemaFlag]`
    returns the flags of one command for the binary `find_binary()` gives.
    It is called after `validate_cli()`, so the entry exists. Its docstring
@@ -676,7 +677,7 @@ with the credits Dreamina's canvas shows for each run.
 | `NODE_PREFIX`, `MENUS["IMAGE"]`, `SOCKET_TYPES["REFERENCES"]`, `NODE_TYPES`, `DreaminaError`, `ErrorCode.INVALID_INPUT`, `get_runtime` (`generations`, `canvas`), `PROGRESS_STEPS`, `src/config/patterns.py` | [05-foundation.md](05-foundation.md) | Names, errors, the runtime, progress |
 | `INPUT_NAMES`, `TOOLTIPS["RUN_NUMBER"]`, `RUN_NUMBER`, `CREDIT_CEILING_RANGE`, `src/config/inputs.py`, `src/config/messages/inputs.py`, `parse_arguments`, `ARGUMENTS_INVALID`, `ARGUMENTS_SHAPE` | [06-model-check.md](06-model-check.md) | The shared inputs and the JSON read |
 | `LocalMedia`, `Reference` (`value`), `list_local_media`, `send_media`, `encode_local_file`, `download_resources`, `decode_images`, `OutputFile` | [07-media.md](07-media.md) | Splitting, uploads, references, downloads, decoding |
-| `validate_cli`, `read_command_flags` and `SchemaFlag` (extended here), `reset_cli_validation`, `REQUIRED_COMMANDS`, `CALL_SECONDS`, `send_command`, `build_failure`, `CEILING_TOO_LOW`, `RUN_UNCERTAIN`, `RUN_UNRECORDED`, `GENERATION_KEEPS_RUNNING`, `WAIT_LIMIT`, `find_canvas`, `create_canvas`, `CanvasStore`, `wait_for_operation`, `GenerationStore`, `GenerationRecord` (`mode`, `source_node_id`), `GenerationResult`, `CollectOperation`, `Operation`, `wait_until_settled`, `send_run`, `PaidNode` (`list_inputs`, the account cache token), `UpscaleItem`, `UpscaleReply`, `ElementReply`, `NodeView`, `build_node_outputs`, `build_result_document` (its allowlist entry removed here), `src/config/generations.py`, `src/config/messages/run.py`, `sanitize_reason` | [08-runs.md](08-runs.md) | The run, records, collecting, and outputs |
+| `validate_cli`, `read_command_flags` and `SchemaFlag` (extended here), `REQUIRED_COMMANDS`, `CALL_SECONDS`, `send_command`, `build_failure`, `CEILING_TOO_LOW`, `RUN_UNCERTAIN`, `RUN_UNRECORDED`, `GENERATION_KEEPS_RUNNING`, `WAIT_LIMIT`, `find_canvas`, `create_canvas`, `CanvasStore`, `wait_for_operation`, `GenerationStore`, `GenerationRecord` (`mode`, `source_node_id`), `GenerationResult`, `CollectOperation`, `Operation`, `wait_until_settled`, `send_run`, `PaidNode` (`list_inputs`, the account cache token), `UpscaleItem`, `UpscaleReply`, `ElementReply`, `NodeView`, `build_node_outputs`, `build_result_document` (its allowlist entry removed here), `src/config/generations.py`, `src/config/messages/run.py`, `sanitize_reason` | [08-runs.md](08-runs.md) | The run, records, collecting, and outputs |
 | `ImageGenerate` and its `references` output; run I-1 | [09-node-image.md](09-node-image.md) | The sources of image-03 and U-1 |
 | `GenerationDownload` | [14-node-download.md](14-node-download.md) | The help page's last sentence, from the Video and downloads milestone |
 | `image-03-upscale-a-poster`, `UPSCALE_RECOVER_NOTE` | [17-scripts-and-workflows.md](17-scripts-and-workflows.md) | The example and its note |

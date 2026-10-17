@@ -6,9 +6,18 @@ NODE_PREFIX = "Dreamina"
 # The menu headings the nodes are grouped under.
 MENUS = {
     "SHARED": "Dreamina",
+    "IMAGE": "Dreamina/Image",
+    "VIDEO": "Dreamina/Video",
+    "AUDIO": "Dreamina/Audio",
+}
+
+# The socket types more than one node shares, prefixed so no other pack's socket of the same name connects.
+SOCKET_TYPES = {
+    "REFERENCES": "DREAMINA_REFERENCES",
 }
 
 __all__ = [
     "MENUS",
     "NODE_PREFIX",
+    "SOCKET_TYPES",
 ]

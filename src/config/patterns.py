@@ -1,0 +1,22 @@
+"""Regular expression text that its owners compile once."""
+
+# A settings revision, a SHA-256 digest.
+REVISION_PATTERN = r"^[a-f0-9]{64}$"
+
+# A CLI release such as 1.0.3; groups 1 to 3 are compared as numbers with MINIMUM_VERSION.
+VERSION_PATTERN = r"^(\d+)\.(\d+)\.(\d+)(?:[-+][0-9A-Za-z.-]+)?$"
+
+# A CLI reason or the installer's output is cleaned before a person sees it. Links, file paths, and identifier-shaped
+# text are removed. Identifier-shaped text is a UUID, a canvas node ID, or a run of 32 or more letters, digits, and
+# base64 signs that holds both a letter and a digit.
+REASON_PATTERNS = {
+    "URL": r"https?://\S+",
+    "PATH": r"(?<![\w.~])(?:~|[A-Za-z]:)?(?:[\\/][\w.@+-]+){2,}[\\/]?",
+    "IDENTIFIER": (
+        r"\b[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\b"
+        r"|\bnode_[A-Za-z0-9_-]+"
+        r"|(?<![\w+/=-])(?=[\w+/=]*\d)(?=[\w+/=]*[A-Za-z])[\w+/=]{32,}"
+    ),
+}
+
+__all__ = ["REASON_PATTERNS", "REVISION_PATTERN", "VERSION_PATTERN"]

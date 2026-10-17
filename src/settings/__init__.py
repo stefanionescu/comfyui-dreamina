@@ -1,1 +1,1 @@
-"""The private settings, their local route, and the snapshot each run reads."""
+"""The private settings, the guard on their local routes, and the snapshot each run reads."""

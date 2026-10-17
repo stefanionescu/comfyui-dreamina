@@ -86,6 +86,11 @@ and `src/config/generations.py`, and the model check of
   | macOS, Linux | `https://dreamina.capcut.com/canvas-cli/install.sh`        | `bash <file>`                                                          | `~/.local/bin/dreamina-canvas`        |
   | Windows      | `https://dreamina.capcut.com/canvas-cli/install.ps1`       | `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <file>`       | `%USERPROFILE%\bin\dreamina-canvas.exe` |
 
+  - Each address answers 301 to `/canvas-cli/install/install.sh` (or
+    `.ps1`) on the same host, then 302 to the release on ByteDance's CDN,
+    `sf16-web-login-neutral.capcutstatic.com` (read on 2026-10-17). The pack
+    follows at most three redirects and keeps the script only from HTTPS on a
+    CapCut domain.
   - The installer honors `DREAMINA_CANVAS_INSTALL_DIR`. It keeps the folder
     of a `dreamina-canvas` already on `PATH`. It also installs the skill
     under `~/.agents/skills/dreamina-canvas-cli`; the pack never reads the

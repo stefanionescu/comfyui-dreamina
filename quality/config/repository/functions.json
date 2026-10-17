@@ -37,6 +37,11 @@
                 "path": "__init__.py",
                 "names": ["comfy_entrypoint", "Extension.on_load", "Extension.get_node_list"],
                 "reason": "ComfyUI calls these extension hooks itself."
+            },
+            {
+                "path": "src/dreamina/contract.py",
+                "names": ["validate_cli"],
+                "reason": "Called by a node built in a later milestone."
             }
         ]
     },

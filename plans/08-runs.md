@@ -69,13 +69,13 @@ names. Nothing here has been implemented. Written on 2026-10-16.
 | What does a failure of the wait say? | A failure of the wait or of `node show` that leaves the record is raised as `GENERATION_UNCOLLECTED`, which quotes it and sends the person to **Generation: Download**. 07's download messages say the same in their own words. | Telling the person to run the node again would bill a second generation. |
 | How does `REQUIRED_COMMANDS` grow? | It lists every command and flag the finished pack sends, from Part A on. No later plan adds an entry. | The version gate checks the installed CLI as a whole, so an incompatible CLI is refused at the first free call, not halfway through the node milestones. |
 | How do the paid nodes take media lists? | `is_input_list=True`; each media socket arrives whole, and every other input is read as its one value by B's `_read_single`, which also takes a plain value. | The owner's rule for O: everything connected goes into one run. [23-live-shopping-provider.md](23-live-shopping-provider.md) calls the nodes from Python with plain values. |
-| Which names do the functions take? | Every public function starts with a verb of `rules/NAMING.md`: `send_command`, `parse_reply`, `validate_cli`, `reset_cli_validation`, `find_canvas`, `create_canvas`, `wait_for_operation`, `validate_lost_run`, `wait_until_settled`. | The function check refuses any other verb (`python.function-verb`), and `ensure` is a banned term. |
+| Which names do the functions take? | Every public function starts with a verb of `rules/NAMING.md`: `send_command`, `parse_reply`, `validate_cli`, `find_canvas`, `create_canvas`, `wait_for_operation`, `validate_lost_run`, `wait_until_settled`. | The function check refuses any other verb (`python.function-verb`), and `ensure` is a banned term. |
 
 ## When each part is built
 
 | Part | Steps | Milestone | Why then |
 | ---- | ----- | --------- | -------- |
-| A | 1 to 6 | **Foundation**, between [05-foundation.md](05-foundation.md#when-each-part-is-built)'s Part A (its Steps 1 to 14) and its Part B (Steps 15 to 22), committed with 05 | 05's sign-in, install, and status routes call `send_command`, `parse_reply`, `build_failure`, `validate_cli`, and `reset_cli_validation`. Part A reads only 05 Part A's `ErrorCode`, `DreaminaError`, `Reply`, `Json`, `parse_json`, and `src/config/patterns.py`. Everything in it is free. |
+| A | 1 to 6 | **Foundation**, between [05-foundation.md](05-foundation.md#when-each-part-is-built)'s Part A (its Steps 1 to 14) and its Part B (Steps 15 to 22), committed with 05 | 05's sign-in, install, and status routes call `send_command`, `parse_reply`, `build_failure`, and `is_current_version`. Part A reads only 05 Part A's `ErrorCode`, `DreaminaError`, `Reply`, `Json`, `parse_json`, and `src/config/patterns.py`. Everything in it is free. |
 | B | 7 to 19 | **Media and runs**, after the contract runs of [21-test-runs.md](21-test-runs.md#part-1-contract-checks) | The operation reads the model, chooses the mode, and builds the flags (06), encodes, uploads, and downloads (07), and its state words come from runs C-7, C-8, and C-14 |
 
 Within the Media and runs milestone, Part B and [07-media.md](07-media.md)
@@ -275,7 +275,7 @@ Part B ([05-foundation.md](05-foundation.md#step-16-installer-and-sign-in-messag
 | `CLI_NOT_STARTED`        | `CONFIGURATION` | `The Dreamina CLI is installed but could not start on this computer. Select Update in Dreamina Settings to install it again.` |
 | `CLI_REPLY_INVALID`      | `TRANSPORT`     | `The Dreamina CLI gave a reply this extension cannot read. Try again. If it happens again, select Update in Dreamina Settings.` |
 | `CLI_TIMEOUT`            | `TRANSPORT`     | `The Dreamina CLI did not answer within {seconds} seconds, so ComfyUI stopped it. Check the internet connection, then try again.` |
-| `CLI_TOO_OLD`            | `CONFIGURATION` | `The Dreamina CLI is version {version}, and this extension needs version {minimum} or later. Select Update in Dreamina Settings.` |
+| `CLI_OUTDATED`            | `CONFIGURATION` | `The Dreamina CLI is version {version}, and this extension needs version {minimum} or later. Select Update in Dreamina Settings.` |
 | `CLI_VERSION_UNREADABLE` | `CONFIGURATION` | `The Dreamina CLI did not report its version and commands in a form this extension reads. Select Update in Dreamina Settings.` |
 
 Create `src/config/messages/run.py`, with the docstring "Messages for the
@@ -308,6 +308,10 @@ its other values.
 | `SIGN_IN_REQUIRED`       | `AUTHENTICATION` | `You are not signed in to Dreamina. In Dreamina Settings, select Sign in, then try again.` |
 | `TITLE_REQUIRED`         | `INVALID_INPUT`  | `Dreamina needs words in the prompt to name this run, so nothing was sent. Describe the result in prompt, then run again.` |
 | `UPGRADE_REQUIRED`       | `CONFIGURATION`  | `Dreamina no longer accepts this version of the Dreamina CLI. Select Update in Dreamina Settings, then try again.` |
+
+`RUN_REFUSED` arrives in Part B with its first reader, the run call of
+[Step 14](#step-14-generation-operation), as the owner's rule for messages
+says ([research/owner-rules.md](research/owner-rules.md#process-and-plans)).
 
 Why the texts say what they say:
 
@@ -358,7 +362,7 @@ CLI reply has, and the result of one call; unknown fields are ignored."
 | Record               | Kind | Fields |
 | -------------------- | ---- | ------ |
 | `Validation`         | `Reply` | `reason_code: str = ""` (`reasonCode`), `field_path: str \| None = None` (`fieldPath`), `detail: str = ""` |
-| `LocalStorage`       | `Reply` | `reason: str = ""`, `submission_phase: str \| None = None` (`submissionPhase`) |
+| `LocalStorage`       | `Reply` | `submission_phase: str \| None = None` (`submissionPhase`); its `reason` is not declared, because no row reads it (row 3 quotes `_choose_reason`) |
 | `CliFailure`         | `Reply` | `code: str = ""`, `failure_class: str = ""` (`class`), `message: str = ""`, `reason: str \| None = None`, `retryable: bool = False`, `required_action: str \| None = None` (`requiredAction`), `validation: Validation \| None = None`, `local_storage: LocalStorage \| None = None` (`localStorage`) |
 | `CreditConfirmation` | `Reply` | `reason: str = ""`, `minimum_credit_ceiling: int \| None = None` (`minimumCreditCeiling`) |
 | `PartialItem`        | `Reply` | `node_id: str \| None = None` (`nodeId`), `submit_id: str \| None = None` (`submitId`), `source_node_id: str \| None = None` (`sourceNodeId`) |
@@ -430,12 +434,12 @@ the docstring "Turn the Dreamina CLI's failure replies into reviewed
 messages, reading structured fields only." and the second paragraph "The
 CLI's message text is never matched; it is shown, cleaned, only where no
 field names the cause." Compile `REASON_PATTERNS["URL"]`, `["PATH"]`, and
-`["TOKEN"]` ([05-foundation.md](05-foundation.md#step-5-patterns)) as
-`_URL`, `_PATH`, and `_TOKEN`.
+`["IDENTIFIER"]` ([05-foundation.md](05-foundation.md#step-5-patterns)) as
+`_URL`, `_PATH`, and `_IDENTIFIER`.
 
 | Function | Does |
 | -------- | ---- |
-| `sanitize_reason(text: str) -> str` | F's `_sanitize_reason` (`F/src/fal/failures.py:98-111`), made public for 05's installer output: removes links (`_URL`), then paths (`_PATH`), then identifier-shaped text (`_TOKEN`); collapses whitespace; cuts to `MAX_REASON_CHARACTERS` with `…`; adds a full stop when the text does not end in a `REASON_ENDINGS` character. An empty result is `NO_REASON`. |
+| `sanitize_reason(text: str) -> str` | F's `_sanitize_reason` (`F/src/fal/failures.py:98-111`), made public for 05's installer output: removes links (`_URL`), then paths (`_PATH`), then identifier-shaped text (`_IDENTIFIER`); collapses whitespace; cuts to `MAX_REASON_CHARACTERS` with `…`; adds a full stop when the text does not end in a `REASON_ENDINGS` character. An empty result is `NO_REASON`. |
 | `build_failure(result: CliResult, context: str, *, credit_ceiling: int \| None = None) -> DreaminaError` | The map below. `context` is the caller's message for a failure no row names. `credit_ceiling` is the run's, passed by a run call so a stop at the quote names it. |
 
 Callers pass these contexts:
@@ -647,9 +651,9 @@ command and flag this extension sends." Compile `VERSION_PATTERN` as
 groups as integers).
 
 ```python
-# The binaries whose contract passed in this process, by path; an install clears them.
+# The binaries whose contract passed in this process, by path and modification time.
 _VALIDATED: set[str] = set()
-# The validations in flight on each event loop, keyed by binary path, which callers asking at the same time share.
+# The validations in flight on each event loop, keyed like _VALIDATED, which callers asking at the same time share.
 _VALIDATIONS: weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, dict[str, asyncio.Task[None]]] = (
     weakref.WeakKeyDictionary()
 )
@@ -657,18 +661,22 @@ _VALIDATIONS: weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, dict[str, asy
 
 | Function | Does |
 | -------- | ---- |
-| `is_current_version(version: str) -> bool` | `True` when `_VERSION` matches and groups 1 to 3, as integers, are at least `_MINIMUM` |
-| `validate_cli() -> None` | Returns at once when `find_binary()`'s path is in `_VALIDATED`. Otherwise shares one `_read_contract(binary)` per path and event loop, awaited through `asyncio.shield`, as F shares model reads (`F/src/fal/models.py:96-107`); adds the path to `_VALIDATED` when it passes. No binary raises `CLI_MISSING`. |
-| `reset_cli_validation() -> None` | `_VALIDATED.clear()`, so the next run validates the binary 05's `save_cli` just wrote ([05-foundation.md](05-foundation.md#step-18-the-installer)) |
+| `is_current_version(version: str \| None) -> bool` | `False` for `None`, a CLI not found; otherwise `True` when `_VERSION` matches and groups 1 to 3, as integers, are at least `_MINIMUM` |
+| `validate_cli() -> None` | Its key is `find_binary()`'s path and its `st_mtime_ns`. Returns at once when the key is in `_VALIDATED`. Otherwise shares one `_read_contract()` per key and event loop, awaited through `asyncio.shield`, as F shares model reads (`F/src/fal/models.py:96-107`); adds the key to `_VALIDATED` when it passes. No binary, or one that cannot be read, raises `CLI_MISSING`. |
 
-The private `_read_contract(binary: Path) -> None`:
+No reset function exists: 05's `save_cli` rewrites the binary, which changes
+its modification time, so the next run checks it again. A one-statement
+`reset_cli_validation` would be refused by `python.trivial-function`.
+
+The private `_read_contract() -> None`, whose calls find the binary through
+`send_command`:
 
 1. Run `send_command(("version",), CALL_SECONDS["LOCAL"])`. A failure reply,
    a `schema_version` other than `REPLY_SCHEMA_VERSION`, a payload that is
    not a `VersionReply`, or a `TRANSPORT` error raises
    `CLI_VERSION_UNREADABLE` with `CONFIGURATION`. `CLI_MISSING` and
    `CLI_NOT_STARTED` pass through.
-1. A version that is not current raises `CLI_TOO_OLD` with `CONFIGURATION`,
+1. A version that is not current raises `CLI_OUTDATED` with `CONFIGURATION`,
    formatted with `version` and `minimum=MINIMUM_VERSION`.
 1. Run `send_command(("schema",), CALL_SECONDS["LOCAL"])` and read
    `SchemaReply`, with the same refusals as step 1.
@@ -703,7 +711,7 @@ Why this shape:
   own calls never wait on it.
 
 The module ends with
-`__all__ = ["is_current_version", "reset_cli_validation", "validate_cli"]`.
+`__all__ = ["is_current_version", "validate_cli"]`.
 
 Part A ends here; see [Step 19](#step-19-allowlist-and-commits) for its
 allowlist entry.
@@ -1177,8 +1185,8 @@ self.generations = GenerationStore(self.configuration.directory / GENERATION_FOL
 Neither store creates a file or folder until it saves.
 
 The status document gets no canvas: Dreamina Settings shows no canvas link,
-so `AccountRoutes` and `register_routes` stay as
-[05-foundation.md](05-foundation.md#step-20-account-routes-and-the-status-document)
+so `SettingsRoutes` and `register_routes` stay as
+[05-foundation.md](05-foundation.md#step-20-settings-routes-and-the-status-document)
 builds them. The canvas link reaches the person only in each `result`
 ([Step 17](#step-17-node-outputs)).
 
@@ -1852,7 +1860,7 @@ Every other public name of Part A is called in the Foundation milestone:
 `send_command`, `parse_reply`, `find_binary`, and `build_failure` by
 `contract.py` and 05's account and installer modules; `sanitize_reason` by
 `failures.py`'s callers and 05's installer; `is_current_version` by 05's
-status; `reset_cli_validation` by 05's installer. In Part B:
+status. In Part B:
 `find_canvas`, `create_canvas`, `wait_for_operation`, `validate_lost_run`,
 `build_generation_failure`, and `wait_until_settled` by `operation.py`;
 `send_run` and `build_node_outputs` by `generate.py`; `wait_for_run` and
@@ -1960,10 +1968,9 @@ follow it, as the owner's rule for two plans says
 | `save_file`, `read_file` | 05 | `CanvasStore`, `GenerationStore` |
 | `ConfigurationStore.read_snapshot`, `create_account_token`; `Configuration` (`settings`, `account`, `account_changes`); `Settings` (`request_timeout_seconds`, `max_upload_megabytes`, `max_download_megabytes`) | 05 | `send_run`, `PaidNode.fingerprint_inputs`, the request timeout |
 | `read_account` | 05, `src/dreamina/account.py` | The account token |
-| `save_cli` | 05, `src/dreamina/installer.py` | Calls `reset_cli_validation` |
-| `Runtime`, `get_runtime`, `AccountRoutes`, `register_routes` | 05 | Step 12 adds the stores; `AccountRoutes` and `register_routes` stay as 05 builds them |
+| `Runtime`, `get_runtime`, `SettingsRoutes`, `register_routes` | 05 | Step 12 adds the stores; `SettingsRoutes` and `register_routes` stay as 05 builds them |
 | `ENVIRONMENT_VARIABLES`, `FILE_NAMES`, `MAX_FILE_BYTES`, and the values this plan adds | 05, `src/config/storage.py` | `find_binary`, the stores |
-| `VERSION_PATTERN`, `REASON_PATTERNS` (`URL`, `PATH`, `TOKEN`) | 05, `src/config/patterns.py` | The version gate, reason cleaning |
+| `VERSION_PATTERN`, `REASON_PATTERNS` (`URL`, `PATH`, `IDENTIFIER`) | 05, `src/config/patterns.py` | The version gate, reason cleaning |
 | `PROGRESS_STEPS`, `CANCELLATION_POLL_SECONDS` | 05 fixes the values; Step 7 creates the file | The progress bar and the cancel poll |
 | `STATE_UNREADABLE` | 05, `src/config/messages/settings.py` | `CanvasStore.read` |
 | `parse_arguments(text)`, `validate_argument_names(listed, values)`, `choose_prompt(prompt, values)`, `build_flags(mode, prompt, values)` | [06-model-check.md](06-model-check.md) | The checks and the run's flags, without `--prompt` |

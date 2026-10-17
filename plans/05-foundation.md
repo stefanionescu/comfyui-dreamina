@@ -32,7 +32,7 @@ Nothing here runs a paid generation. At the end of this plan:
 
 The canvas, the generation records, and the paid nodes arrive in later
 milestones. [Step 19](#step-19-runtime) and
-[Step 20](#step-20-account-routes-and-the-status-document) say how each joins
+[Step 20](#step-20-settings-routes-and-the-status-document) say how each joins
 without breaking this one.
 
 ## Contents
@@ -59,7 +59,7 @@ without breaking this one.
 - [Step 17: Sign-in and the account](#step-17-sign-in-and-the-account)
 - [Step 18: The installer](#step-18-the-installer)
 - [Step 19: Runtime](#step-19-runtime)
-- [Step 20: Account routes and the status document](#step-20-account-routes-and-the-status-document)
+- [Step 20: Account routes and the status document](#step-20-settings-routes-and-the-status-document)
 - [Step 21: Route registration](#step-21-route-registration)
 - [Step 22: Extension loading and package docstrings](#step-22-extension-loading-and-package-docstrings)
 - [Names this plan uses from other plans](#names-this-plan-uses-from-other-plans)
@@ -70,13 +70,13 @@ without breaking this one.
 | -------- | -------- | --- |
 | Where do credentials live? | Nowhere in the pack. F's `src/storage/credentials.py`, `src/types/credentials.py`, the credential route, its constants, and its messages are not ported. | The CLI keeps the sign-in in the OS credential store ([01-decisions.md](01-decisions.md#sign-in-and-privacy), [research/cli.md](research/cli.md#sign-in)). |
 | Which routes exist? | `GET /dreamina/v1/status`, `PATCH /dreamina/v1/settings`, `POST` and `DELETE /dreamina/v1/session`, `POST /dreamina/v1/cli`. Every one passes F's local route guard. Every change needs `X-Dreamina-Comfy: 1` and multi-user mode off. | [04-architecture.md](04-architecture.md#srcconfig) fixes `ROUTES`. F's guard is the owner's rule for every private route. |
-| Who owns which route? | `src/settings/routes.py` registers only `PATCH` settings. `src/comfy/account.py` registers the other four and reuses `build_local_route`. | `src.settings` and `src.dreamina` are siblings and may not import each other ([04-architecture.md](04-architecture.md#import-layers)). |
-| What does a settings save return? | The whole status document, as F's routes do. `ConfigurationRoutes` takes the status reader as a constructor argument from `register_routes`. | The dialog reads one reply shape for every route. Passing the reader in keeps `src.settings` free of `src.dreamina`. |
+| Who owns which route? | `SettingsRoutes` in `src/comfy/settings.py` registers all five and reuses `build_local_route` and `read_body`. F's `src/settings/routes.py` is not ported. | `src.settings` and `src.dreamina` are siblings and may not import each other ([04-architecture.md](04-architecture.md#import-layers)). With one route left, a settings-only `register` has two statements, which `python.trivial-function` refuses. |
+| What does a settings save return? | The whole status document, as F's routes do. | The dialog reads one reply shape for every route. |
 | What does the status read? | `version`, then `auth status`, then `auth account` when signed in: three CLI calls at most, each with a short timeout. A failed call never fails the route. It shows as "not found" or "signed out". | The dialog must open even when the CLI is missing or the network is down. `auth status` reads only local state ([02-dreamina-contract.md](02-dreamina-contract.md#sign-in)). |
 | How does a sign-in wait? | `SignInState` keeps the challenge in memory and owns one task on the server loop. The task runs `auth wait` until the challenge's `expiresAt`. `cli.login_wait_timeout` means wait again with the same code. `cli.login_expired` marks the sign-in expired. Any other failure marks it failed, with its reviewed message. | The two failure codes are captured ([research/cli.md](research/cli.md#sign-in)). A new code is needed only after `cli.login_expired`. |
 | What does the status say about a pending sign-in? | `sign_in` holds `state` (`waiting`, `expired`, or `failed`), `user_code`, `verification_url`, `expires_at`, and `message`. | The dialog shows "The sign-in link expired" only when the server says so. A failed wait shows the CLI's reviewed reason. |
 | What is the cache token? | An HMAC-SHA256 of `auth account`'s `userId`, keyed by 16 random bytes made once per process. It is read lazily and forgotten after a sign-in or sign-out. | [01-decisions.md](01-decisions.md#sign-in-and-privacy): a new account runs paid nodes again. The random key keeps the small integer `userId` from being recovered from the token. |
-| How does the installer reach the network? | `aiohttp` with `trust_env=False`, no redirects, and a byte cap. The two addresses are built from `INSTALLER_HOST`, so the host check holds by construction. | [04-architecture.md](04-architecture.md#how-the-cli-is-installed). A check of a host that a constant fixes would guard a state that cannot occur (`rules/GENERAL.md`). |
+| How does the installer reach the network? | `aiohttp` with `trust_env=False`, at most `INSTALLER_REDIRECTS` redirects, and a byte cap. The script is kept only when its final address is HTTPS on a host under `INSTALLER_DOMAINS` (`.capcut.com`, `.capcutstatic.com`). | [04-architecture.md](04-architecture.md#how-the-cli-is-installed). The address answers 301 to `/canvas-cli/install/install.sh`, then 302 to the release on ByteDance's CDN, `sf16-web-login-neutral.capcutstatic.com` (read on 2026-10-17); the CLI page's own `curl -fsSL` follows them. |
 | What does the installer run? | `bash <file>`, or `powershell.exe -NoProfile -ExecutionPolicy Bypass -File <file>` on Windows, with the server's environment, for at most 300 seconds. | ByteDance's installer is the only supported install ([research/cli.md](research/cli.md#release-and-install)). Nothing is bundled. |
 | What are the sign-in and install functions called? | `create_sign_in` (`auth login`), `wait_for_sign_in`, `delete_sign_in` (`auth logout`), `read_account`, `download_installer` (fetch the script), and `save_cli` (run it, which saves the CLI to disk). 08's are `send_command` and `validate_cli`. | Every function starts with a verb from `rules/NAMING.md`, which the function check enforces (`python.function-verb`). The table has no `start`, `sign`, `install`, `run`, or `check`. |
 | Which helpers in `account.py` are private? | `_create_sign_in` and `_wait_for_sign_in`. Only `SignInState` calls them. | The function check `python.module-only-public` refuses a public function no other module names. |
@@ -373,7 +373,7 @@ holds both a letter and a digit."
 REASON_PATTERNS = {
     "URL": r"https?://\S+",
     "PATH": r"(?<![\w.~])(?:~|[A-Za-z]:)?(?:[\\/][\w.@+-]+){2,}[\\/]?",
-    "TOKEN": (
+    "IDENTIFIER": (
         r"\b[0-9A-Fa-f]{8}(?:-[0-9A-Fa-f]{4}){3}-[0-9A-Fa-f]{12}\b"
         r"|\bnode_[A-Za-z0-9_-]+"
         r"|(?<![\w+/=-])(?=[\w+/=]*\d)(?=[\w+/=]*[A-Za-z])[\w+/=]{32,}"
@@ -702,33 +702,18 @@ Port `F/src/settings/access.py` and `F/src/settings/body.py` to
   most 4096 bytes (`413`), read in 1024-byte chunks within 5 seconds (`408`),
   then strict `parse_json` and an object (`F/src/settings/body.py:12-30`).
 
-Port `F/src/settings/routes.py` to `src/settings/routes.py` with the module
-docstring "Serve the request limits through a guarded local route." Add
-`REVISION_PATTERN` to `src/config/patterns.py`
-([Step 5](#step-5-patterns)) in the same change.
+Add `REVISION_PATTERN` to `src/config/patterns.py`
+([Step 5](#step-5-patterns)). Its reader is the settings handler of
+[Step 20](#step-20-settings-routes-and-the-status-document).
 
-`ConfigurationRoutes(store, read_status, *, is_multi_user=False)`:
-
-- `read_status` is `Callable[[], Awaitable[dict[str, Json]]]`: the status
-  reader of `AccountRoutes`, passed in by `register_routes`
-  ([Step 21](#step-21-route-registration)). The settings package never
-  imports `src.dreamina` or `src.comfy`.
-- `save_settings(request)` keeps F's body check
-  (`F/src/settings/routes.py:31-38`): exactly `{"revision": "<64 hex>",
-  "settings": {…}}`, else `SETTINGS_REVISION_REQUIRED`. It then runs
-  `store.save_settings` in `asyncio.to_thread` and returns `await
-  self.read_status()`.
-- `register(routes)` registers one route:
-
-| Method  | Path                      | Body                                                | Handler         | Returns |
-| ------- | ------------------------- | --------------------------------------------------- | --------------- | ------- |
-| `PATCH` | `/dreamina/v1/settings`   | exactly `{"revision": "<64 hex>", "settings": {…}}` | `save_settings` | The status document ([Step 20](#step-20-account-routes-and-the-status-document)) |
-
-F's `read_status`, `save_credential`, and `delete_credential` handlers and
-their routes are not ported (`F/src/settings/routes.py:26-29`,
-`F/src/settings/routes.py:40-53`). So F's `functions.json` entry for
-`ConfigurationRoutes.read_status` is not added: the policy check refuses an
-entry whose function does not exist.
+`F/src/settings/routes.py` is not ported. Its body check
+(`F/src/settings/routes.py:31-38`) becomes `SettingsRoutes.save_settings` in
+`src/comfy/settings.py` ([Step 20](#step-20-settings-routes-and-the-status-document)),
+because with only `PATCH` settings left, its `register` would have two
+statements, which `python.trivial-function` refuses. F's `read_status`,
+`save_credential`, and `delete_credential` handlers are not ported either
+(`F/src/settings/routes.py:26-29`, `F/src/settings/routes.py:40-53`), so F's
+`functions.json` entry for `ConfigurationRoutes.read_status` is not added.
 
 ## Step 15: Installer constants, account limits, and units
 
@@ -739,14 +724,17 @@ Create `src/config/installer.py`:
 ```python
 """ByteDance's official Dreamina CLI installer: where it is, how it runs, and how long it may take."""
 
-# The one host the installer comes from; the download follows no redirect away from it.
-INSTALLER_HOST = "dreamina.capcut.com"
-
-# The installer for each system: a shell script on macOS and Linux, a PowerShell script on Windows.
+# The installer for each system: a shell script on macOS and Linux, a PowerShell script on Windows. The address
+# redirects to the current release on ByteDance's CDN, as the CLI page's own curl -L command follows it.
 INSTALLER_URLS = {
-    "POSIX": f"https://{INSTALLER_HOST}/canvas-cli/install.sh",
-    "WINDOWS": f"https://{INSTALLER_HOST}/canvas-cli/install.ps1",
+    "POSIX": "https://dreamina.capcut.com/canvas-cli/install.sh",
+    "WINDOWS": "https://dreamina.capcut.com/canvas-cli/install.ps1",
 }
+
+# The installer is read only over HTTPS from a host under one of these CapCut domains, after at most
+# INSTALLER_REDIRECTS redirects.
+INSTALLER_DOMAINS = (".capcut.com", ".capcutstatic.com")
+INSTALLER_REDIRECTS = 3
 
 # The program and options that run a downloaded installer; the installer file goes last.
 INSTALLER_SHELLS = {
@@ -771,9 +759,10 @@ INSTALLER_REASON_LINES = 3
 
 __all__ = [
     "INSTALLER_BYTES",
+    "INSTALLER_DOMAINS",
     "INSTALLER_DOWNLOAD_SECONDS",
-    "INSTALLER_HOST",
     "INSTALLER_REASON_LINES",
+    "INSTALLER_REDIRECTS",
     "INSTALLER_SHELLS",
     "INSTALLER_URLS",
     "INSTALL_TIMEOUT_SECONDS",
@@ -782,6 +771,8 @@ __all__ = [
 
 Why these values:
 
+- **Config holds literal values,** so the addresses are written out in
+  full: `repo:lint` refuses an f-string in `src/config/`.
 - **The addresses** are the CLI page's
   ([research/cli.md](research/cli.md#release-and-install)). The Windows CMD
   form (`install.bat`) is not used: PowerShell runs `install.ps1` directly.
@@ -863,11 +854,11 @@ among 08's constants:
 | `INSTALL_DOWNLOAD_FAILED` | `The Dreamina installer could not be downloaded from dreamina.capcut.com. Check the internet connection, or run the install command from the extension's README in a terminal.` |
 | `INSTALL_FAILED`          | `The Dreamina installer stopped with an error: {reason} Run the install command from the extension's README in a terminal to see all of its output.` |
 | `INSTALL_NO_ANSWER`       | `The Dreamina installer finished, but the Dreamina CLI does not answer. Run dreamina-canvas version in a terminal to see why.` |
-| `INSTALL_SHELL_MISSING`   | `The Dreamina installer needs {shell}, which the ComfyUI computer does not have. Install {shell}, then select Install in Dreamina Settings again.` |
+| `INSTALL_SHELL_MISSING`   | `The Dreamina installer needs {program}, which the ComfyUI computer does not have. Install {program}, then select Install in Dreamina Settings again.` |
 | `INSTALL_TIMEOUT`         | `The Dreamina installer did not finish within {minutes} minutes. Run the install command from the extension's README in a terminal.` |
 
 `{reason}` is the installer's cleaned output, ending as a sentence
-([Step 18](#step-18-the-installer)). `{shell}` is `bash` or `powershell.exe`.
+([Step 18](#step-18-the-installer)). `{program}` is `bash` or `powershell.exe`.
 `{minutes}` is `INSTALL_TIMEOUT_SECONDS // SECONDS_PER_MINUTE`. The messages
 of a signed-out run, a CLI that is missing or too old, and every other CLI
 failure are 08's ([08-runs.md](08-runs.md)).
@@ -931,7 +922,7 @@ thread touches the state.
 | ------ | ---- |
 | `__init__(reset_account)` | `reset_account` is `Callable[[], None]`, the store's `reset_account_token`; the runtime passes it, because `src.dreamina` may not import `src.settings`. Sets `_lock`, `_task = None`, `_challenge = None`, `_expires_at = None`, `_state = None`, and `_message = None`. |
 | `async create_challenge() -> None` | Under the lock: cancels and awaits any wait task and forgets its challenge; runs `_create_sign_in`; with a challenge, keeps it, sets `_expires_at`, sets `_state` to `waiting`, and starts `_task = asyncio.create_task(self._wait_for_approval(challenge))` on the running loop |
-| `build_status() -> dict[str, Json] \| None` | `None` with no challenge; otherwise the `sign_in` object of the status document ([Step 20](#step-20-account-routes-and-the-status-document)). A `waiting` state past `_expires_at` is reported as `expired`. |
+| `build_status() -> dict[str, Json] \| None` | `None` with no challenge; otherwise the `sign_in` object of the status document ([Step 20](#step-20-settings-routes-and-the-status-document)). A `waiting` state past `_expires_at` is reported as `expired`. |
 | `async reset() -> None` | Under the lock: cancels and awaits the wait task, then clears the challenge, state, and message |
 | `async _wait_for_approval(challenge) -> None` | The task: runs `_wait_for_sign_in`. On `True`, clears the challenge and state and calls `reset_account()`. On `False`, sets `_state` to `expired`. On a `DreaminaError`, sets `_state` to `failed` and `_message` to `str(error)`. A cancel propagates. |
 
@@ -966,7 +957,7 @@ Create `src/dreamina/installer.py` with the docstring "Install the Dreamina
 CLI with ByteDance's official installer, and read which release is
 installed." It is the one module that downloads and runs the installer
 ([04-architecture.md](04-architecture.md#import-layers)). It defines
-`INSTALLER_SYSTEM = "WINDOWS" if sys.platform == "win32" else "POSIX"` at
+the private `_SYSTEM = "WINDOWS" if sys.platform == "win32" else "POSIX"` at
 module level, with the comment "The installer key for the server's system."
 
 `read_cli_version() -> str | None`:
@@ -982,8 +973,9 @@ temporary file:
 
 1. **Download.** Inside `asyncio.timeout(INSTALLER_DOWNLOAD_SECONDS)`, open
    `aiohttp.ClientSession(trust_env=False)` and send `GET
-   INSTALLER_URLS[INSTALLER_SYSTEM]` with `allow_redirects=False`. Any status
-   but `200`, a body over `INSTALLER_BYTES["SCRIPT"]` read in chunks, an
+   INSTALLER_URLS[_SYSTEM]` with `max_redirects=INSTALLER_REDIRECTS`. Any status
+   but `200`, a final address that is not HTTPS on a host ending in one of
+   `INSTALLER_DOMAINS`, a body over `INSTALLER_BYTES["SCRIPT"]` read in chunks, an
    `aiohttp.ClientError`, or a `TimeoutError` raises
    `INSTALL_DOWNLOAD_FAILED` with `TRANSPORT`. TLS is verified, as aiohttp
    does by default.
@@ -994,11 +986,12 @@ temporary file:
    PowerShell's `-File` needs `.ps1`. A failed write deletes the file before
    it raises.
 
-`save_cli(installer_path) -> str` runs the script, which saves the CLI to
-disk, and returns the new release:
+`save_cli(installer_path) -> None` runs the script, which saves the CLI to
+disk, and refuses a CLI that does not answer afterwards. The private
+`_wait_for_installer(installer_path)` holds steps 1 to 3:
 
 1. **Find the shell.** `shutil.which` on the first item of
-   `INSTALLER_SHELLS[INSTALLER_SYSTEM]`. No match raises `INSTALL_SHELL_MISSING`
+   `INSTALLER_SHELLS[_SYSTEM]`. No match raises `INSTALL_SHELL_MISSING`
    with `CONFIGURATION`. The full path replaces the bare name, so no process
    starts from a partial path.
 1. **Run.** Inside `asyncio.timeout(INSTALL_TIMEOUT_SECONDS)`, start
@@ -1018,13 +1011,14 @@ disk, and returns the new release:
    text to `MAX_REASON_CHARACTERS` (300), and ends it as a sentence.
 1. **Clean up.** `installer_path` is deleted in `finally`, in
    `asyncio.to_thread`, whatever the outcome.
-1. **Read the new release.** Call 08's `reset_cli_validation()`, so the next
-   run validates the new binary with `validate_cli`, then
-   `read_cli_version()`. `None` raises `INSTALL_NO_ANSWER` with
-   `CONFIGURATION`. Otherwise return the version.
+1. **Check the new release.** `read_cli_version()`; `None` raises
+   `INSTALL_NO_ANSWER` with `CONFIGURATION`. The route then reads the status,
+   which holds the new version. The next run validates the new binary with
+   `validate_cli`, because 08 keys a passed check by the binary's path and
+   modification time, which the install changed.
 
 The route calls the two in turn
-([Step 20](#step-20-account-routes-and-the-status-document)). The install's
+([Step 20](#step-20-settings-routes-and-the-status-document)). The install's
 worst case is 30 seconds of download, 300 of installer, and 10 for the
 version.
 
@@ -1048,8 +1042,8 @@ Notes:
   `clientUpgrade.installCommands` is never run. **Update** runs this same
   fixed installer ([02-dreamina-contract.md](02-dreamina-contract.md#install-upgrade-and-the-version-gate)).
 
-The module ends with `__all__ = ["INSTALLER_SYSTEM", "download_installer",
-"read_cli_version", "save_cli"]`.
+The module ends with `__all__ = ["download_installer", "read_cli_version",
+"save_cli"]`.
 
 ## Step 19: Runtime
 
@@ -1104,28 +1098,30 @@ Neither store creates a file or folder until it saves. Between milestones the
 runtime only has the stores built so far, and nothing reads a store before
 its plan.
 
-## Step 20: Account routes and the status document
+## Step 20: Settings routes and the status document
 
-Create `src/comfy/account.py` with the docstring "Serve the status,
-sign-in, sign-out, and install routes of Dreamina Settings." It imports
-`build_local_route` from `src/settings/access.py`, which the import layers
-allow ([04-architecture.md](04-architecture.md#import-layers)).
+Create `src/comfy/settings.py` with the docstring "Serve the routes of
+Dreamina Settings: the status, the request limits, sign-in, sign-out, and
+the CLI install." It imports `build_local_route` from
+`src/settings/access.py` and `read_body` from `src/settings/body.py`, which
+the import layers allow ([04-architecture.md](04-architecture.md#import-layers)),
+and compiles `REVISION_PATTERN` as `REVISION`.
 
-`AccountRoutes(configuration, sign_in, *, is_multi_user=False)`:
+`SettingsRoutes(configuration, sign_in, *, is_multi_user=False)`:
 
 | Handler | Method and path | Body | Does | Returns |
 | ------- | --------------- | ---- | ---- | ------- |
-| `read_status(_request=None)` | `GET /dreamina/v1/status` | none | Builds the status document below | The status document |
+| `read_status(_request)` | `GET /dreamina/v1/status` | none | Builds the status document below | The status document |
+| `save_settings(request)` | `PATCH /dreamina/v1/settings` | exactly `{"revision": "<64 hex>", "settings": {…}}`, else `400 SETTINGS_REVISION_REQUIRED` | F's body check (`F/src/settings/routes.py:31-38`), then `configuration.save_settings` in `asyncio.to_thread` | The status document |
 | `create_session(request)` | `POST /dreamina/v1/session` | none, else `400 BODY_NOT_ALLOWED` | `await sign_in.create_challenge()` | The status document |
 | `delete_session(request)` | `DELETE /dreamina/v1/session` | none, else `400 BODY_NOT_ALLOWED` | `await sign_in.reset()`, `await delete_sign_in()`, then `configuration.reset_account_token()` | The status document |
 | `save_release(request)` | `POST /dreamina/v1/cli` | none, else `400 BODY_NOT_ALLOWED` | `await save_cli(await download_installer())` | The status document |
 
 - A body is refused when `request.can_read_body` is true, as F refused one
   when clearing the key.
-- `read_status` takes an optional request, so `ConfigurationRoutes` can call
-  it with none.
+- Every other handler returns `await self.read_status(request)`.
 - `register(routes)` wraps each handler in `build_local_route` with
-  `is_multi_user`: `read_status` with `is_mutation=False`, the other three
+  `is_multi_user`: `read_status` with `is_mutation=False`, the other four
   with `is_mutation=True`, as F's `register` does
   (`F/src/settings/routes.py:55-61`).
 
@@ -1201,11 +1197,11 @@ sign-in.
 
 The account section is filled by one private method,
 `_read_account_status(is_found) -> dict[str, Json]`, so `read_status` stays
-short. No later plan adds a key or a parameter to `AccountRoutes`.
+short. No later plan adds a key or a parameter to `SettingsRoutes`.
 [16-frontend.md](16-frontend.md#step-4-local-replies-and-requests) parses the
 document.
 
-The module ends with `__all__ = ["AccountRoutes"]`.
+The module ends with `__all__ = ["SettingsRoutes"]`.
 
 ## Step 21: Route registration
 
@@ -1215,15 +1211,11 @@ docstring "Register the extension's local routes with ComfyUI."
 resolves the state folder and refuses it with `PRIVATE_STATE_LOCATION` when
 it lies inside `folder_paths.base_path`, the input, output, temp, or user
 folder, or the extension (`EXTENSION_ROOT = Path(__file__).resolve().parents[2]`).
-Then it registers both route sets on `PromptServer.instance.routes`:
+Then it registers the routes on `PromptServer.instance.routes`:
 
 ```python
-runtime = get_runtime()
-account = AccountRoutes(runtime.configuration, runtime.sign_in, is_multi_user=args.multi_user)
-account.register(PromptServer.instance.routes)
-ConfigurationRoutes(runtime.configuration, account.read_status, is_multi_user=args.multi_user).register(
-    PromptServer.instance.routes
-)
+routes = SettingsRoutes(runtime.configuration, runtime.sign_in, is_multi_user=args.multi_user)
+routes.register(PromptServer.instance.routes)
 ```
 
 The refusal runs before any route exists, so no setting is written into a
@@ -1301,7 +1293,7 @@ The build order commits here with
 | `find_binary() -> Path \| None` | [08-runs.md](08-runs.md) Part A | "Not found" in the status, before any call |
 | `build_failure(result, context)` with the context of a free call | [08-runs.md](08-runs.md) Part A | Failed auth calls |
 | `sanitize_reason(text)`, `MAX_REASON_CHARACTERS` | [08-runs.md](08-runs.md) Part A | The installer's error output; 08 makes F's private `_sanitize_reason` (`F/src/fal/failures.py:98-111`) public for this second caller |
-| `validate_cli`, `reset_cli_validation()`, `is_current_version(version)`, `MINIMUM_VERSION` | [08-runs.md](08-runs.md) Part A | Forgetting the cached validation after `save_cli`, and `is_current` in the status |
+| `is_current_version(version)`, `MINIMUM_VERSION` | [08-runs.md](08-runs.md) Part A | `is_current` in the status; `None`, for a CLI not found, is not current |
 | `VersionReply` (`version`), `AuthReply` (`logged_in` from `auth status`, `status`, `state.logged_in`, `challenge`), `AuthChallenge` (`device_code`, `user_code`, `verification_uri`, `verification_uri_complete`, `poll_seconds`, `expires_at`), `AccountReply` (`user_id`, `is_vip`, `vip_level`) | [08-runs.md](08-runs.md) Part A, `src/types/replies.py` | Reading the auth and version replies; `device_code` with `repr=False` |
 | `parse_reply(payload, record)` | [08-runs.md](08-runs.md) Part A | Reading a success payload into a reply record, with 08's invalid-reply `DreaminaError` |
 | `src/config/messages/cli.py`, `src/config/dreamina.py` | [08-runs.md](08-runs.md) Part A | The modules Steps 15 and 16 add to |

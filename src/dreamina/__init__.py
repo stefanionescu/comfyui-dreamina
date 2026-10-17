@@ -1,1 +1,1 @@
-"""Every call to the Dreamina CLI: sign-in, model reads, uploads, generations, and downloads."""
+"""Calls to the Dreamina CLI and its installer: sign-in, the model check, uploads, runs, and downloads."""

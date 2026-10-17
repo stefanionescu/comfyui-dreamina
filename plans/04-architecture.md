@@ -97,10 +97,9 @@ src.config
   `src/dreamina/installer.py` is the one module that downloads and runs the
   installer.
 - **`src.dreamina` and `src.settings` are siblings and do not import each
-  other.** So the routes that need the CLI (status, sign-in, sign-out,
-  install) live in `src/comfy/account.py`, which imports both. `src.settings`
-  keeps F's settings route and its local-route guard, which
-  `src/comfy/account.py` reuses.
+  other.** So the routes of Dreamina Settings live in `src/comfy/settings.py`,
+  which imports both. `src.settings` keeps F's local-route guard and body
+  reader, which `src/comfy/settings.py` reuses.
 
 ## Import-linter contracts
 
@@ -145,7 +144,7 @@ Rules every module follows:
 | -------------------------- | ----------------------------------------------------------------------------------------------------------------------------- | ---- |
 | `namespace.py`             | `NODE_PREFIX` (`"Dreamina"`), `MENUS` (`SHARED` `Dreamina`, `IMAGE` `Dreamina/Image`, `VIDEO` `Dreamina/Video`, `AUDIO` `Dreamina/Audio`), `SOCKET_TYPES` (`REFERENCES`) | 05 |
 | `dreamina.py`              | The CLI's names and limits: `BINARY_NAMES`, `INSTALL_FOLDERS`, `GLOBAL_ARGUMENTS` (`--format json --non-interactive`), `MINIMUM_VERSION` (`1.0.3`), `REPLY_SCHEMA_VERSION`, `REQUIRED_COMMANDS`, `EXIT_CODES`, `CALL_SECONDS`, `REPLY_BYTES`, `MAX_REPLY_DEPTH`, `MAX_REASON_CHARACTERS`, `REASON_ENDINGS`, `DREAMINA_URLS`; 08 Part B adds `WAIT_SLICE` (`15s`), `CANVAS_NAME` (`ComfyUI`), `CANVAS_PAGE_SIZE`; 05 adds `ACCOUNT_TIMEOUTS`, `SIGN_IN_FAILURES`, `SIGN_IN_SECONDS`; 13 adds `TITLE_MAX_UNITS` | 08, 05, 13 |
-| `installer.py`             | `INSTALLER_HOST`, `INSTALLER_URLS` (by OS), `INSTALLER_SHELLS`, `INSTALLER_DOWNLOAD_SECONDS`, `INSTALL_TIMEOUT_SECONDS`, `INSTALLER_BYTES`, `INSTALLER_REASON_LINES` | 05 |
+| `installer.py`             | `INSTALLER_URLS` (by OS), `INSTALLER_DOMAINS`, `INSTALLER_REDIRECTS`, `INSTALLER_SHELLS`, `INSTALLER_DOWNLOAD_SECONDS`, `INSTALL_TIMEOUT_SECONDS`, `INSTALLER_BYTES`, `INSTALLER_REASON_LINES` | 05 |
 | `patterns.py`              | Regular expression text, each added by its first user: `REVISION_PATTERN` (05), `VERSION_PATTERN` and `REASON_PATTERNS` (token shapes, links, paths; 08 Part A), `PLACEHOLDER_PATTERN` (07), `SCHEMA_RANGE_PATTERN` (12). 05 fixes every value but the last | 05, 07, 08, 12 |
 | `security.py`              | F's local route rules with `/dreamina/v1` and `X-Dreamina-Comfy`; `ROUTES` (`STATUS`, `SETTINGS`, `SESSION`, `CLI`), `CHANGE_HEADER`, `ACCOUNT_TOKEN_BYTES` | 05   |
 | `settings.py`              | `SETTING_RANGES` (`max_upload_megabytes` default 210, range 1 to 210), `SETTINGS_BODY`                                       | 05   |
@@ -194,12 +193,11 @@ F's five modules, re-valued:
 - `schema.py`;
 - `store.py` (`ConfigurationStore`);
 - `access.py` (`build_local_route`);
-- `body.py` (`read_body`);
-- `routes.py` (`ConfigurationRoutes`).
+- `body.py` (`read_body`).
 
-The store keeps the settings and the account cache token. The routes module
-registers only `PATCH /dreamina/v1/settings`. The status route moves to
-`src/comfy/account.py`, because it reports the CLI and the account
+The store keeps the settings and the account cache token. F's `routes.py` is
+not ported: every route, the settings save among them, is in
+`src/comfy/settings.py`, because the status reports the CLI and the account
 ([05-foundation.md](05-foundation.md)).
 
 ### `src/dreamina/`
@@ -208,8 +206,8 @@ registers only `PATCH /dreamina/v1/settings`. The status route moves to
 | -------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------- | ---- |
 | `cli.py`                   | `find_binary()`, `send_command(arguments, timeout_seconds)` → `CliResult`: the only subprocess start, with byte caps and kill on cancel; `parse_reply(payload, record)`, which reads every success payload | 08 |
 | `failures.py`              | `build_failure(result, context, *, credit_ceiling=None)` → `DreaminaError`: the map from exit code and `error` fields to messages; `sanitize_reason(text)`; `build_generation_failure(reply)` for a failed generation | 08 |
-| `contract.py`              | `validate_cli()`: `version` and `schema` once per process; the version gate and the required commands and flags; `is_current_version(version)`; `reset_cli_validation()`. 12 adds `read_command_flags(path)`, the schema's flags of one command | 08, 12 |
-| `installer.py`             | `INSTALLER_SYSTEM`; `read_cli_version()`; `download_installer()`: the OS's official installer from its fixed address, into a private temporary file; `save_cli(installer_path)`: run it, which saves the CLI to disk | 05 |
+| `contract.py`              | `validate_cli()`: `version` and `schema` once per process; the version gate and the required commands and flags; `is_current_version(version)`, `None` being not current; a passed check is kept per binary path and modification time, so an install is checked again. 12 adds `read_command_flags(path)`, the schema's flags of one command | 08, 12 |
+| `installer.py`             | `read_cli_version()`; `download_installer()`: the OS's official installer from its fixed address and ByteDance's CDN, into a private temporary file; `save_cli(installer_path)`: run it, which saves the CLI to disk | 05 |
 | `account.py`               | `is_signed_in()`, `read_account()`, `delete_sign_in()`, `SignInState`, whose `create_challenge` runs the private `_create_sign_in` (`auth login`) and `_wait_for_sign_in` (`auth wait`) | 05 |
 | `models.py`                | `find_model(name, kind)`, which Model: Info calls with `kind=None`; the private `_read_model_list(kind)`, with F's per-process cache and shared reads per event loop | 06 |
 | `modes.py`                 | `choose_mode(model, kind, connected, arguments)` → the mode entry, with its scenario; `describe_mode(mode)`, the mode as refusals name it | 06 |
@@ -232,8 +230,8 @@ registers only `PATCH /dreamina/v1/settings`. The status route moves to
 | Module          | Owns                                                                                                                       | Plan |
 | --------------- | -------------------------------------------------------------------------------------------------------------------------- | ---- |
 | `runtime.py`    | `Runtime` (configuration store, generation store, canvas store, sign-in state), `create_runtime`, `get_runtime`             | 05   |
-| `routes.py`     | `register_routes`: F's settings route plus `AccountRoutes`                                                                 | 05   |
-| `account.py`    | `AccountRoutes`: `GET status`, `POST` and `DELETE session`, `POST cli`                                                     | 05   |
+| `routes.py`     | `register_routes`: F's state folder check, then `SettingsRoutes`                                                           | 05   |
+| `settings.py`   | `SettingsRoutes`: `GET status`, `PATCH settings`, `POST` and `DELETE session`, `POST cli`                                  | 05   |
 | `execution.py`  | `send_run`, `wait_for_run`, `wait_for_thread` (F's `send_request`, `wait_for_request`, `wait_for_thread`, renamed to the vendor's word) | 08 |
 | `media.py`      | `list_local_media` (splits connected image and audio batches into items); `encode_local_file` (IMAGE to PNG, VIDEO to MP4, AUDIO to WAV, in a temporary folder); `decode_images`, `decode_video`, `decode_audio` | 07 |
 
@@ -289,7 +287,8 @@ their plan says.
 | `F/__init__.py`                                                 | same                                         | Names |
 | `F/src/comfy/{runtime,routes,execution}.py`                     | same                                         | Names; the runtime holds the generation, canvas, and sign-in state; `execution.py` renames request to run |
 | `F/src/settings/{access,body}.py`                               | same                                         | Names |
-| `F/src/settings/{schema,store,routes}.py`                       | same                                         | Names, setting ranges; no credential; the store's token follows the account; the status route moves to `src/comfy/account.py` |
+| `F/src/settings/{schema,store}.py`                              | same                                         | Names, setting ranges; no credential; the store's token follows the account |
+| `F/src/settings/routes.py`                                      | not ported                                   | Its settings save joins every other route in `src/comfy/settings.py` |
 | `F/src/storage/files.py`                                        | same                                         | Names |
 | `F/src/storage/credentials.py`                                  | not ported                                   | The CLI keeps the credentials |
 | `F/src/types/{__init__,errors,parsing,settings}.py`             | same                                         | `Kind` values, `DreaminaError` |
@@ -320,7 +319,7 @@ New modules with no source to port:
 - `src/dreamina/{contract,installer,account,modes,references,canvas,upscale,elements,voices,report}.py`;
 - `src/dreamina/generations/waiting.py`;
 - `src/types/specifications.py`;
-- `src/comfy/account.py`;
+- `src/comfy/settings.py`;
 - `src/storage/canvas.py`;
 - `src/nodes/upscale.py`.
 
@@ -466,8 +465,8 @@ flow with these differences:
 1. The dialog sends `POST /dreamina/v1/cli` with `X-Dreamina-Comfy: 1`, after
    the person confirms.
 1. `download_installer` downloads the installer for the server's OS from
-   `INSTALLER_URLS`. Only `https://dreamina.capcut.com` is accepted, with no
-   redirects and with a byte cap. The installer is saved to a private
+   `INSTALLER_URLS`, following at most three redirects to ByteDance's CDN.
+   Only a final HTTPS address on a CapCut domain is accepted, with a byte cap. The installer is saved to a private
    temporary file.
 1. `save_cli` runs the installer:
    - macOS and Linux: `bash <file>`;
@@ -476,8 +475,9 @@ flow with these differences:
 
    The server's environment is passed, and the run is bounded by
    `INSTALL_TIMEOUT_SECONDS`.
-1. It clears `validate_cli`'s cached result with `reset_cli_validation`, and
-   reads `version` again with `read_cli_version`.
+1. It reads `version` again with `read_cli_version`. The next run checks the
+   new binary, because `validate_cli` keys a passed check by the binary's
+   path and modification time.
 1. The reply holds the new version, or the installer's last lines of error
    output, cut to 300 characters, when it fails.
 

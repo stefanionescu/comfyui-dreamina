@@ -29,7 +29,7 @@ Every file is a port of the fal pack's current browser code
 changes. TypeScript in `web/scripts/` is bundled by esbuild into the
 committed `web/extension.js` and `web/extension.css`, which ComfyUI loads
 from `WEB_DIRECTORY`. The routes the dialog calls, and the status document
-they return, are [05-foundation.md](05-foundation.md#step-20-account-routes-and-the-status-document)'s.
+they return, are [05-foundation.md](05-foundation.md#step-20-settings-routes-and-the-status-document)'s.
 
 Readers: the engineer or agent who builds the Frontend milestone, and the
 owner, who approves the browser checks that sign in and install.
@@ -357,7 +357,7 @@ the checks of setting names, ranges with `minimum <= maximum`, and values
 inside their ranges stay. The credential checks go: `credential`,
 `credential_limit`, and `credentialLimitSchema`. The status document it
 reads is owned by
-[05-foundation.md](05-foundation.md#step-20-account-routes-and-the-status-document).
+[05-foundation.md](05-foundation.md#step-20-settings-routes-and-the-status-document).
 
 The parsed shape:
 
@@ -753,7 +753,7 @@ shows above it; and a tab opened after an awaited reply can be blocked.
 | Name | Owner | Used for |
 | ---- | ----- | -------- |
 | `ROUTES`, `CHANGE_HEADER` (`X-Dreamina-Comfy`) | [05-foundation.md](05-foundation.md#step-2-security-constants) | `routes.ts` and the request headers |
-| The status document: `settings`, `setting_ranges`, `revision`, `cli`, `account`, `sign_in`, `mutation_allowed` | [05-foundation.md](05-foundation.md#step-20-account-routes-and-the-status-document) | `schema.ts` and every part of the dialog |
+| The status document: `settings`, `setting_ranges`, `revision`, `cli`, `account`, `sign_in`, `mutation_allowed` | [05-foundation.md](05-foundation.md#step-20-settings-routes-and-the-status-document) | `schema.ts` and every part of the dialog |
 | `SETTING_RANGES` | [05-foundation.md](05-foundation.md#step-3-settings-constants) | The limit fields, read from the reply |
 | `BODY_NOT_ALLOWED`, `LOCAL_CONNECTION_REQUIRED` | [05-foundation.md](05-foundation.md#step-7-foundation-messages) | Server errors shown on the status line |
 | The installer messages and `SIGN_IN_CODE_MISSING` | [05-foundation.md](05-foundation.md#step-16-installer-and-sign-in-messages) | Server errors shown on the status line |

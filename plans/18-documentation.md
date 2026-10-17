@@ -1120,7 +1120,7 @@ Notes on Step 3:
   | ------- | ----------------- |
   | ComfyUI could not find the Dreamina CLI | `CLI_MISSING`, [08-runs.md](08-runs.md) |
   | The Dreamina installer finished, but the Dreamina CLI does not answer | `INSTALL_NO_ANSWER`, [05-foundation.md](05-foundation.md#step-16-installer-and-sign-in-messages) |
-  | Dreamina no longer accepts this version of the Dreamina CLI | `UPGRADE_REQUIRED`, [08-runs.md](08-runs.md); the entry also covers `CLI_TOO_OLD` and `CLI_CHANGED` |
+  | Dreamina no longer accepts this version of the Dreamina CLI | `UPGRADE_REQUIRED`, [08-runs.md](08-runs.md); the entry also covers `CLI_OUTDATED` and `CLI_CHANGED` |
   | You are not signed in to Dreamina | `SIGN_IN_REQUIRED`, [08-runs.md](08-runs.md) |
   | Open Dreamina Settings from a browser on the ComfyUI computer, at a localhost address | `LOCAL_CONNECTION_REQUIRED`, [05-foundation.md](05-foundation.md#step-7-foundation-messages) |
   | The model is not in your Dreamina model list | `MODEL_UNKNOWN`, [06-model-check.md](06-model-check.md) |

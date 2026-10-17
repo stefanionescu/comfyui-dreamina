@@ -2,7 +2,8 @@
 
 PYTHON_PREFIX_COLLISION_ALLOWLIST: tuple[str, ...] = ()
 
-SINGLE_FILE_PACKAGE_ALLOWLIST: tuple[str, ...] = ()
+# The canvas store joins files.py in the Media and runs milestone, which removes this entry.
+SINGLE_FILE_PACKAGE_ALLOWLIST: tuple[str, ...] = ("src/storage",)
 
 DISALLOWED_AMBIGUOUS_FOLDER_NAMES = (
     "bash",
