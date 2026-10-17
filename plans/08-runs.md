@@ -927,7 +927,7 @@ snake_case, with its alias as in [Step 3](#step-3-cli-records-and-the-first-repl
 | `ElementReply`      | `node: NodeView` | `node create element`, and the import `node create image --resource-id` | [12-node-upscale.md](12-node-upscale.md), its first reader by build order |
 | `UpscaleError`, `UpscaleItem`, `UpscaleReply` | `UpscaleError`: `status_code: int \| None = None` (`serviceCode`), `message: str = ""`; `UpscaleItem`: `source_node_id: str` (`sourceNodeId`), `submit_id: str` (`submitId`), `node_id: str \| None = None` (`nodeId`), `resource_ids: tuple[str, ...] = ()` (`resourceIds`), `state: str`, `error: UpscaleError \| None = None`; `UpscaleReply`: `items: tuple[UpscaleItem, ...] = ()` | `node upscale image` | 12 |
 | `NodeView.subjects` | `subjects: Mapping[str, Json] \| None = None` (`subjectBindings`) | An Element node's bindings | [13-node-element.md](13-node-element.md) |
-| `Voice`, `VoiceCatalog`, `VoicePage` | `Voice`: `voice_name: str` (`voiceName`); `VoiceCatalog`: `items: tuple[Voice, ...] = ()`, `has_more: bool` (`hasMore`), `next_offset: int` (`nextOffset`), `total_count: int` (`totalCount`); `VoicePage`: `models: Mapping[str, VoiceCatalog]` | `voice list` | [15-node-model-info.md](15-node-model-info.md) |
+| `Voice`, `ModelVoices`, `VoicePage` | `Voice`: `voice_name: str` (`voiceName`); `ModelVoices`: `items: tuple[Voice, ...] = ()`, `has_more: bool` (`hasMore`), `next_offset: int` (`nextOffset`), `total_count: int` (`totalCount`); `VoicePage`: `models: Mapping[str, ModelVoices]` | `voice list` | [15-node-model-info.md](15-node-model-info.md) |
 
 The schema's fields that are not declared, and why:
 

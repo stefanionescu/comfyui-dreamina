@@ -33,6 +33,11 @@ DNS_FAILED = (
     "settings, then try again."
 )
 
+FREE_TIMEOUT = (
+    "{node} did not finish within the request timeout of {seconds} seconds in Dreamina Settings. It bills nothing. "
+    "Select Run to try again."
+)
+
 FLAG_REFUSED = (
     "The Dreamina CLI refused a flag or a value, so nothing was sent: {reason} Check arguments against the model's "
     "flags in Model: Info."
@@ -105,6 +110,7 @@ __all__ = [
     "CREDENTIALS_UNREADABLE",
     "DNS_FAILED",
     "FLAG_REFUSED",
+    "FREE_TIMEOUT",
     "LOCAL_STATE_FAILED",
     "MODE_REQUIRED",
     "NETWORK_DENIED",

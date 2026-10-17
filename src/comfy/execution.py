@@ -39,7 +39,7 @@ async def _wait_for_thread[T](work: Callable[[], T]) -> T:
     return task.result()
 
 
-async def _wait_for_run[T](task: asyncio.Task[T]) -> T:
+async def wait_for_run[T](task: asyncio.Task[T]) -> T:
     """Forward ComfyUI's cancel to the owned asyncio task that runs an operation.
 
     A cancel after Dreamina accepted the run ends the task with the message that the generation keeps running, which
@@ -78,11 +78,11 @@ async def send_run[Result](
         await progress(0)
     configuration = await asyncio.to_thread(get_runtime().configuration.read_snapshot)
     operation.validate(configuration.settings)
-    result = await _wait_for_run(asyncio.create_task(operation.send(configuration, progress)))
+    result = await wait_for_run(asyncio.create_task(operation.send(configuration, progress)))
     outputs = await _wait_for_thread(lambda: build_outputs(result))
     if progress is not None:
         await progress(PROGRESS_STEPS["TOTAL"])
     return outputs
 
 
-__all__ = ["send_run"]
+__all__ = ["send_run", "wait_for_run"]

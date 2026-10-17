@@ -123,7 +123,7 @@ through `Field(alias=…)`, and no local name holds a banned word:
 | `CountRange`        | `minimum` (`min`), `maximum` (`max`)                                                                                                                                             |
 | `MaterialLimits`    | `max_file_bytes` (`maxFileSizeBytes`), `min_width_px` (`minWidthPx`), `max_width_px` (`maxWidthPx`), `min_height_px` (`minHeightPx`), `max_height_px` (`maxHeightPx`), `min_duration_ms` (`minDurationMs`), `max_duration_ms` (`maxDurationMs`), each `int \| None = None` |
 | `MaterialType`      | `media_type` (`mediaType`), `count` (`CountRange`), `limits` (`MaterialLimits \| None = None`)                                                                                   |
-| `MaterialSet`       | `total_count` (`totalCount`, `CountRange`), `types` (`tuple[MaterialType, ...]`), `max_total_video_duration_ms` (`maxTotalVideoDurationMs`), `max_total_audio_duration_ms` (`maxTotalAudioDurationMs`), each total `int \| None = None` |
+| `MaterialSet`       | `total_count` (`totalCount`, `CountRange`), `types` (`tuple[MaterialType, ...]`), `max_total_video_ms` (`maxTotalVideoDurationMs`), `max_total_audio_ms` (`maxTotalAudioDurationMs`), each total `int \| None = None` |
 | `SizeMembership`    | `size` (`resolution`), `is_vip` (`isVip`)                                                                                                                                        |
 | `ModeSpecification` | `model`, `mode`, `scenario` (`str \| None = None`), `materials` (`MaterialSet \| None = None`), `max_batch_count` (`maxBatchGenCount`, `int \| None = None`), `is_vip` (`isVip`, `bool \| None = None`), `vip_configs` (`vipConfigs`, `tuple[SizeMembership, ...] \| None = None`) |
 | `SpecificationMatch` | `kind`, `generation` (`ModeSpecification \| None = None`)                                                                                                                       |
@@ -183,7 +183,7 @@ ends, as 07's calls take it.
    so a sign-in, network, or upgrade failure has its own message. Run M-1
    records which fields an unsupported route gives, and this rule takes them.
 1. Read the payload with 08's `VoicePage`. The entry for `model` in its
-   `models` map, a `VoiceCatalog`, gives `items[].voice_name`, `has_more`,
+   `models` map, a `ModelVoices`, gives `items[].voice_name`, `has_more`,
    and `next_offset`. A payload that does not validate raises 08's
    `CLI_REPLY_INVALID` with `TRANSPORT`. A map without that entry returns the
    names read so far (an empty map is the CLI's answer for a region with no
@@ -268,8 +268,8 @@ Each object of `flags`:
 | `types`                       | One object per `types[]` entry: `media` (its `mediaType`), `minimum`, `maximum`, and `limits` (below, from the fitting specification's material type of the same `mediaType`, or `null`) |
 | `require_any_of`              | `requireAnyOfTypes`, `[]` when the mode has no such rule |
 | `mutually_exclusive`          | `mutuallyExclusiveTypes`, `[]` when the mode has no such rule |
-| `max_total_video_duration_ms` | The fitting specification's `maxTotalVideoDurationMs`, or `null` |
-| `max_total_audio_duration_ms` | Its `maxTotalAudioDurationMs`, or `null` |
+| `max_total_video_ms` | The fitting specification's `maxTotalVideoDurationMs`, or `null` |
+| `max_total_audio_ms` | Its `maxTotalAudioDurationMs`, or `null` |
 
 `limits`: `max_file_bytes`, `min_width_px`, `max_width_px`, `min_height_px`,
 `max_height_px`, `min_duration_ms`, and `max_duration_ms`, each the number
@@ -501,7 +501,7 @@ Record each result in [README.md](README.md#changes-made-while-building).
 | `NODE_PREFIX`, `MENUS["SHARED"]`, `NODE_TYPES`, `DreaminaError`, `ErrorCode.INVALID_INPUT`, `ErrorCode.TIMEOUT`, `Json`, `Kind`, `Reply`, `get_runtime` (`configuration`), the **Request timeout (seconds)** setting | [05-foundation.md](05-foundation.md) | Names, errors, records, the timeout |
 | `find_model`, `ListedModel` (`name`, `kind`, `aliases`, `modes`), `ModelMode` (`vip_required`, `vip_sizes`), `ModelFlag`, `ModelReferences`, `ReferenceLimit`, `FLAG_PREFIX`, `KIND_NODES`, `DEFAULT_MODELS`, `INPUT_NAMES["MODEL"]`, `MODEL_EMPTY`, `MODEL_UNKNOWN`, `MODEL_AMBIGUOUS`, `MODEL_LIST_EMPTY`, `src/config/models.py` | [06-model-check.md](06-model-check.md) | The match, the refusals, and the report |
 | `VOICE_REFERENCE["MODE"]` | [07-media.md](07-media.md) | The speech mode |
-| `send_command`, `build_failure`, `CLI_REPLY_INVALID`, `validate_cli`, `REQUIRED_COMMANDS`, `VoicePage`, `VoiceCatalog`, `wait_for_run`, the sign-in message, `src/config/messages/run.py` | [08-runs.md](08-runs.md) | The calls, their failures, and the owned task |
+| `send_command`, `build_failure`, `CLI_REPLY_INVALID`, `validate_cli`, `REQUIRED_COMMANDS`, `VoicePage`, `ModelVoices`, `wait_for_run`, the sign-in message, `src/config/messages/run.py` | [08-runs.md](08-runs.md) | The calls, their failures, and the owned task |
 | `AudioGenerate`, its starting values | [11-node-audio.md](11-node-audio.md) | audio-01 and the Audio milestone |
 | `FREE_TIMEOUT`'s second user | [13-node-element.md](13-node-element.md) | Element: Add's timeout |
 | The `ModelInfo` naming exception | [03-repository-setup.md](03-repository-setup.md) | The banned word `info` |

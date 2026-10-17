@@ -56,6 +56,9 @@ SUGGESTION_COUNT = 3
 # The CLI call that lists one kind's models; the kind follows it.
 LIST_COMMAND = ("model", "list", "--type")
 
+# Voices read per voice list call: the CLI's largest page, so a catalog of up to 100 voices takes one call.
+VOICE_PAGE_COUNT = 100
+
 # Seconds one model list read may take. A read takes well under a second; this bounds a CLI that stops answering.
 LIST_TIMEOUT_SECONDS = 60
 
@@ -75,4 +78,5 @@ __all__ = [
     "SCENARIOS",
     "SELECTION_KEYS",
     "SUGGESTION_COUNT",
+    "VOICE_PAGE_COUNT",
 ]

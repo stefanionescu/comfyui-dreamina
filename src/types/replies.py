@@ -330,6 +330,45 @@ class DownloadReply(Reply):
     sha256: str
 
 
+class Voice(Reply):
+    """One voice of a speech model.
+
+    Attributes:
+        voice_name: The name the voice-name flag takes.
+
+    """
+
+    voice_name: str = Field(alias="voiceName")
+
+
+class ModelVoices(Reply):
+    """One page of a model's voices.
+
+    Attributes:
+        items: The voices on this page.
+        has_more: Whether another page follows.
+        next_offset: The offset of the next page.
+        total_count: How many voices the catalog holds.
+
+    """
+
+    items: tuple[Voice, ...] = ()
+    has_more: bool = Field(alias="hasMore")
+    next_offset: int = Field(alias="nextOffset")
+    total_count: int = Field(alias="totalCount")
+
+
+class VoicePage(Reply):
+    """The reply of voice list.
+
+    Attributes:
+        models: Each model's page, by canonical name.
+
+    """
+
+    models: dict[str, ModelVoices]
+
+
 __all__ = [
     "AccountReply",
     "AuthChallenge",
@@ -339,6 +378,7 @@ __all__ = [
     "CanvasProject",
     "CanvasReply",
     "DownloadReply",
+    "ModelVoices",
     "NodeResource",
     "NodeShowItem",
     "NodeShowReply",
@@ -354,4 +394,6 @@ __all__ = [
     "SubmissionError",
     "UploadReply",
     "VersionReply",
+    "Voice",
+    "VoicePage",
 ]
