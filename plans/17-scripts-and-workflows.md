@@ -255,8 +255,9 @@ Two edits:
    The save nodes are sized for their empty state; ComfyUI grows them as
    their viewers fill. `IMAGE` and `SAVE_AUDIO` were measured as below.
 
-`AUDIO_PREVIEW` stays: audio-01's **Voice** and audio-02's **Speak** expose
-**Save Audio (Advanced)**'s player, which frontend 1.52.7 names `audioUI`.
+There is no `AUDIO_PREVIEW`: frontend 1.52.7 shows no audio player on a
+placed subgraph (Results, 2026-10-17), so **Voice** and **Speak** expose no
+preview, and their notes say where each file is saved.
 
 ### Re-measure the page on frontend 1.52.7
 
@@ -361,8 +362,14 @@ canvas zoom 1, with nothing queued.
 - video-04's `graphToPrompt()` output holds `DreaminaGenerationDownload`
   and `SaveVideo` only: the bypassed **Shot** bypasses its inner nodes, and
   the group stays.
-- The subgraph audio player waits for audio-01's run in
-  [Step 5](#step-5-run-each-example-once).
+- **Subgraph previews.** After audio-01's run, its output replayed into the
+  opened template (the `executed` event for `7:102`) left **Voice** with no
+  audio player, before and after switching to another workflow and back:
+  the inner **Save Audio (Advanced)** received the file, but its `audioUI`
+  player stayed hidden inside the subgraph. The same event gave a
+  **Save Audio (Advanced)** placed on the page its player. `AUDIO_PREVIEW`
+  and both audio entries in `previews` are removed, and audio-01, audio-02,
+  and the **Voice** and **Speak** blueprints are rebuilt.
 
 ## The page engine
 
@@ -511,8 +518,8 @@ the build ("{node}.{input} does not accept …").
    input or output it feeds goes in the subgraph's `inputs` or `outputs`.
 1. **Its result.** If it saves or shows a result inside a subgraph, add it
    to `previews`: `IMAGE_PREVIEW` for **Save Image** and **Preview Image**,
-   `AUDIO_PREVIEW` for **Save Audio (Advanced)**, and `VIDEO_PREVIEW` for
-   **Save Video**.
+   and `VIDEO_PREVIEW` for **Save Video**. **Save Audio (Advanced)** takes
+   none: frontend 1.52.7 shows no audio player on a placed subgraph.
 1. **Its texts.** A title or a new group takes a `SHARED_TEXTS` key; a new
    group takes a note, and a new subgraph a description, in `notes.py`.
 1. Run `mise run comfy:workflows:build`, and read the build's message if it
@@ -1067,7 +1074,7 @@ Stack 1:
 Group Voice (voice, STAGE): columns [voice]
   voice     subgraph Voice
 
-Subgraph Voice: inputs script → speak.prompt; previews save AUDIO_PREVIEW
+Subgraph Voice: inputs script → speak.prompt
   speak     DreaminaAudioGenerate (paid)  {arguments: VOICE_ARGUMENTS}
   save      SAVE_AUDIO  {filename_prefix: "audio/dreamina/script-voice"}
   links     speak.audio → save.audio
@@ -1126,7 +1133,7 @@ Subgraph Cast (CAST): inputs host → draw.prompt; outputs references ← draw.r
   links     draw.images → look.images
   columns   [draw] [look]
 
-Subgraph Speak: inputs references → speak.references, line → speak.prompt; previews save AUDIO_PREVIEW
+Subgraph Speak: inputs references → speak.references, line → speak.prompt
   speak     DreaminaAudioGenerate (paid)  {arguments: SPEAK_ARGUMENTS}
   save      SAVE_AUDIO  {filename_prefix: "audio/dreamina/host-voice"}
   links     speak.audio → save.audio

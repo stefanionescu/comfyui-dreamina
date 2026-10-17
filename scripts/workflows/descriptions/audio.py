@@ -7,9 +7,9 @@ from scripts.nodes.host import HostNode
 from src.config.namespace import NODE_PREFIX
 from scripts.workflows.descriptions.texts import SHARED_TEXTS
 from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
+from scripts.workflows.page.config import STAGE_COLOUR, IMAGE_PREVIEW
 from scripts.workflows.page.graph import Node, Group, Subgraph, Workflow
 from scripts.workflows.descriptions.nodes import AUDIO_GENERATE, IMAGE_GENERATE
-from scripts.workflows.page.config import STAGE_COLOUR, AUDIO_PREVIEW, IMAGE_PREVIEW
 
 SEED_AUDIO = "seed_audio_v1"
 VOICE_ARGUMENTS = json.dumps({"voice-name": "Good Guy"}, indent=2)
@@ -36,7 +36,6 @@ VOICE = Subgraph(
     columns=(("speak",), ("save",)),
     inputs=(("script", "speak.prompt"),),
     description=SCRIPT_TEXTS["voice_description"],
-    previews=(("save", AUDIO_PREVIEW),),
 )
 
 VOICE_SCRIPT = Workflow(
@@ -82,7 +81,6 @@ SPEAK = Subgraph(
     columns=(("speak",), ("save",)),
     inputs=(("references", "speak.references"), ("line", "speak.prompt")),
     description=HOST_TEXTS["speak_description"],
-    previews=(("save", AUDIO_PREVIEW),),
 )
 
 HOST_VOICE = Workflow(

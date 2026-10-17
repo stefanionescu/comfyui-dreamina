@@ -4,9 +4,9 @@ from scripts.nodes.host import HostNode
 
 # The note node the page draws each group's text in.
 NOTE = "MarkdownNote"
-# The previews a save node draws, which a placed subgraph can show: an image, an audio and a video player.
+# The previews a save node draws, which a placed subgraph can show: an image and a video player. Frontend 1.52.7
+# shows no audio player on a placed subgraph.
 IMAGE_PREVIEW = "$$canvas-image-preview"
-AUDIO_PREVIEW = "audioUI"
 VIDEO_PREVIEW = "video-preview"
 # Page layout: distances in page pixels.
 GUTTER = 30
@@ -68,7 +68,6 @@ DOM_SIZES: dict[str, tuple[int, int]] = {
 }
 
 __all__ = [
-    "AUDIO_PREVIEW",
     "AUTOGROW_TYPE",
     "BYPASS_MODE",
     "CANVAS_ORIGIN",

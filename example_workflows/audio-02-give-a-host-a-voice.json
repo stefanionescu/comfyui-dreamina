@@ -262,15 +262,7 @@
         }
       ],
       "outputs": [],
-      "properties": {
-        "previewExposures": [
-          {
-            "name": "audioUI",
-            "sourceNodeId": "202",
-            "sourcePreviewName": "audioUI"
-          }
-        ]
-      },
+      "properties": {},
       "widgets_values": [
         ""
       ],
