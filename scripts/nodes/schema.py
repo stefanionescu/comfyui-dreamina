@@ -77,7 +77,9 @@ def _build_host_schema(name: str) -> dict[str, object]:
 def _build_registered_schemas() -> dict[str, dict[str, object]]:
     """Describe every registered node, refusing a mismatched schema.
 
-    A paid node receives its inputs through send, and the run number through its base class.
+    A paid node receives its inputs through send, and the run number through its base class. Every required parameter
+    must be an input, and every input a parameter; the shared generation send also takes the media sockets a kind node
+    does not show, which default to None.
     """
     schemas: dict[str, dict[str, object]] = {}
     for node_type in NODE_TYPES:
@@ -85,11 +87,16 @@ def _build_registered_schemas() -> dict[str, dict[str, object]]:
         if schema.node_id in schemas:
             message = f"Register {schema.node_id} once."
             raise ValueError(message)
-        if issubclass(node_type, PaidNode):
-            parameters = {INPUT_NAMES["RUN_NUMBER"], *inspect.signature(node_type.send).parameters}
-        else:
-            parameters = set(inspect.signature(node_type.execute).parameters)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType] -- reason: The host leaves execute untyped.
-        if parameters != {item.id for item in schema.inputs}:
+        signature = inspect.signature(node_type.send if issubclass(node_type, PaidNode) else node_type.execute)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType] -- reason: The host leaves execute untyped.
+        accepted = (
+            {INPUT_NAMES["RUN_NUMBER"], *signature.parameters}
+            if issubclass(node_type, PaidNode)
+            else set(signature.parameters)
+        )
+        required = {
+            name for name, parameter in signature.parameters.items() if parameter.default is inspect.Parameter.empty
+        }
+        if not required <= {item.id for item in schema.inputs} <= accepted:
             message = f"Match the execute parameters of {schema.node_id} to its inputs."
             raise ValueError(message)
         schemas[schema.node_id] = _build_node_schema(schema)

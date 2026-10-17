@@ -12,6 +12,8 @@ account.
 
 - [Requirements](#requirements)
 - [Install](#install)
+- [Example workflows](#example-workflows)
+- [Nodes](#nodes)
 - [License](#license)
 
 ## Requirements
@@ -20,7 +22,6 @@ account.
 - ComfyUI 0.37.2 or later, with frontend 1.52.7 or later in the 1.x series.
 - A Dreamina account that can use the
   [Dreamina Canvas CLI](https://dreamina.capcut.com/canvas-cli).
-- The Dreamina Canvas CLI, installed with its official command.
 
 ## Install
 
@@ -68,6 +69,30 @@ From the folder that holds `ComfyUI` and `python_embeded`, in PowerShell:
 ```powershell
 .\python_embeded\python.exe -m pip install -r .\ComfyUI\custom_nodes\dreamina\requirements.txt
 ```
+
+**Dreamina Settings** installs the Dreamina CLI. To install it from a terminal instead:
+
+- macOS or Linux: `curl -fsSL https://dreamina.capcut.com/canvas-cli/install.sh | bash`
+- Windows PowerShell: `irm https://dreamina.capcut.com/canvas-cli/install.ps1 | iex`
+
+## Example workflows
+
+| Workflow                                                                            | Input                        |
+| ----------------------------------------------------------------------------------- | ---------------------------- |
+| [Image: Design a Host](example_workflows/image-01-design-a-host.json)               | A host description           |
+| [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json) | A product photo and a change |
+
+They are in **Browse Templates → dreamina**. Start with each workflow's
+**Start Here** note. Most steps are subgraphs. Media inputs start empty, and
+most workflows make their own inputs with Dreamina models.
+
+## Nodes
+
+The nodes are under **Dreamina** in the node menu, and each has a help page.
+
+| Node                                                 | What it does                                         | Paid |
+| ---------------------------------------------------- | ---------------------------------------------------- | ---- |
+| [Image: Generate](web/docs/DreaminaImageGenerate.md) | Makes or edits images with any Dreamina image model. | Yes  |
 
 ## License
 

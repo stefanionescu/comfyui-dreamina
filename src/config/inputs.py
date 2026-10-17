@@ -19,6 +19,12 @@ RUN_NUMBER = {"DEFAULT": 0, "MIN": 0, "MAX": 2**31 - 1}
 # The credit ceiling's range: the CLI takes any whole number from 0, and ComfyUI's number widget stops at 2**31 - 1.
 CREDIT_CEILING_RANGE = {"MIN": 0, "MAX": 2**31 - 1}
 
+# The starting credit_ceiling of each generation node: its default model's quote at its starting arguments, rounded up
+# to the next 10, from Part 0's price sweep.
+DEFAULT_CEILINGS = {
+    "image": 10,
+}
+
 # Tooltips of the inputs every generation node shares, in plain words.
 TOOLTIPS = {
     "IMAGES": "Images uploaded with the run. Create List joins several. In the prompt, {{image1}} is the first.",
@@ -58,4 +64,4 @@ ARGUMENTS_TOOLTIPS = {
     ),
 }
 
-__all__ = ["ARGUMENTS_TOOLTIPS", "CREDIT_CEILING_RANGE", "INPUT_NAMES", "RUN_NUMBER", "TOOLTIPS"]
+__all__ = ["ARGUMENTS_TOOLTIPS", "CREDIT_CEILING_RANGE", "DEFAULT_CEILINGS", "INPUT_NAMES", "RUN_NUMBER", "TOOLTIPS"]

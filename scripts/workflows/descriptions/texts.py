@@ -4,6 +4,11 @@ SHARED_TEXTS = {
     "start": "Start Here",
     "note": "Note",
     "input": "Input",
+    "host": "Host",
+    "design": "Design",
+    "photo": "Photo",
+    "change": "Change",
+    "edit": "Edit",
 }
 
 __all__ = ["SHARED_TEXTS"]
