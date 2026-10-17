@@ -14,13 +14,30 @@ from ...types.replies import OperationReply
 from ..cli import parse_reply, send_command
 from ...config.messages.run import CLI_FAILED
 from ...config.execution import PROGRESS_STEPS
-from ...types.errors import ErrorCode, DreaminaError
-from ...config.generations import OPERATION_STATES, WAIT_REREAD_SECONDS
-from ...config.messages.generations import RUN_UNCERTAIN, RUN_UNRECORDED
+from ...config.generations import SUBMISSION_ABSENT, WAIT_REREAD_SECONDS
+from ...types.errors import ErrorCode, DreaminaError, SubmissionAbsentError
 from ...config.dreamina import EXIT_CODES, WAIT_SLICE, CALL_SECONDS, DREAMINA_URLS
+from ...config.messages.generations import RUN_UNCERTAIN, RUN_UNRECORDED, GENERATION_ABSENT
 
 if TYPE_CHECKING:
     from ..operation import Progress
+    from ...types.cli import CliResult
+
+
+def _is_running(result: CliResult) -> bool:
+    """Whether a wait's answer says the generation still runs; a submission Dreamina keeps no record of is raised."""
+    failure = result.reply.error
+    if failure is not None and failure.code == SUBMISSION_ABSENT:
+        raise SubmissionAbsentError(ErrorCode.UNAVAILABLE, GENERATION_ABSENT.format(**DREAMINA_URLS))
+    return result.exit_code == EXIT_CODES["INCOMPLETE"]
+
+
+def _parse_terminal(result: CliResult) -> OperationReply | None:
+    """Read a finished wait's reply; None when it cannot be read, so the wait reads again."""
+    try:
+        return OperationReply.model_validate(result.reply.payload)
+    except ValidationError:
+        return None
 
 
 async def wait_for_operation(
@@ -28,11 +45,11 @@ async def wait_for_operation(
 ) -> OperationReply | None:
     """Wait for a generation to end, one short wait after another; None once the deadline passed.
 
-    Exit 20 is the normal answer while the generation runs. A reply that cannot be read is read again after a pause,
-    so a broken CLI does not spin.
+    Exit 20 is the normal answer while the generation runs, except with the code of a submission Dreamina keeps no
+    record of, which raises SubmissionAbsentError. A reply that cannot be read is read again after a pause, so a broken
+    CLI does not spin.
     """
     arguments = ("operation", "wait", submit_id, "--project-id", project_id, "--timeout", WAIT_SLICE)
-    is_running = False
     while (remaining := deadline - time.monotonic()) > 0:
         try:
             result = await send_command(arguments, min(remaining, CALL_SECONDS["WAIT"]))
@@ -41,17 +58,16 @@ async def wait_for_operation(
                 raise
             await asyncio.sleep(WAIT_REREAD_SECONDS)
             continue
-        if result.exit_code == EXIT_CODES["INCOMPLETE"]:
-            if progress is not None and not is_running:
+        if _is_running(result):
+            if progress is not None:
                 await progress(PROGRESS_STEPS["RUNNING"])
-            is_running = True
-        elif result.exit_code != EXIT_CODES["OK"]:
+            continue
+        if result.exit_code != EXIT_CODES["OK"]:
             raise build_failure(result, CLI_FAILED)
-        else:
-            try:
-                return OperationReply.model_validate(result.reply.payload)
-            except ValidationError:
-                await asyncio.sleep(WAIT_REREAD_SECONDS)
+        reply = _parse_terminal(result)
+        if reply is not None:
+            return reply
+        await asyncio.sleep(WAIT_REREAD_SECONDS)
     return None
 
 
@@ -66,10 +82,9 @@ async def validate_lost_run(submit_id: str, project_id: str) -> NoReturn:
         reply = parse_reply(result.reply.payload, OperationReply) if result.exit_code == EXIT_CODES["OK"] else None
     except DreaminaError:
         raise DreaminaError(ErrorCode.UNCERTAIN, RUN_UNCERTAIN.format(**DREAMINA_URLS)) from None
-    submission = reply.submission if reply is not None else None
-    is_known = result.exit_code == EXIT_CODES["INCOMPLETE"] or (
-        reply is not None and (submission is None or submission.state != OPERATION_STATES["ABSENT"])
-    )
+    failure = result.reply.error
+    is_absent = failure is not None and failure.code == SUBMISSION_ABSENT
+    is_known = reply is not None or (result.exit_code == EXIT_CODES["INCOMPLETE"] and not is_absent)
     raise DreaminaError(ErrorCode.UNCERTAIN, (RUN_UNRECORDED if is_known else RUN_UNCERTAIN).format(**DREAMINA_URLS))
 
 

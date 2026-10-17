@@ -10,6 +10,7 @@ from typing import TYPE_CHECKING
 from ..types.cli import CliFailure
 from ..config.patterns import REASON_PATTERNS
 from ..config.generations import OPERATION_STATES
+from ..config.messages.media import UPLOAD_INVALID
 from ..types.errors import ErrorCode, DreaminaError
 from ..config.dreamina import EXIT_CODES, DREAMINA_URLS, REASON_ENDINGS, MAX_REASON_CHARACTERS
 from ..config.messages.generations import GENERATION_EMPTY, GENERATION_FAILED, STATUS_CODE_REASON
@@ -19,6 +20,7 @@ from ..config.messages.run import (
     FLAG_REFUSED,
     MODE_REQUIRED,
     PRICE_UNKNOWN,
+    CANVAS_MISSING,
     NETWORK_DENIED,
     TITLE_REQUIRED,
     CEILING_TOO_LOW,
@@ -62,6 +64,8 @@ _CODE_FAILURES: dict[str, tuple[ErrorCode, str]] = {
     "cli.resource_unavailable": (ErrorCode.UNAVAILABLE, REFERENCE_UNAVAILABLE),
     "cli.region_not_available": (ErrorCode.UNAVAILABLE, REGION_UNAVAILABLE),
     "cli.passport_rate_limited": (ErrorCode.RATE_LIMITED, SIGN_IN_LIMITED),
+    "cli.invalid_upload_file": (ErrorCode.INVALID_INPUT, UPLOAD_INVALID),
+    "service.20009": (ErrorCode.UNAVAILABLE, CANVAS_MISSING),
 }
 
 

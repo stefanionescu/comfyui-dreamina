@@ -15,11 +15,14 @@ LABEL_CHARACTERS = {
 }
 
 # Dreamina's state words, as the contract runs recorded them. SUCCEEDED is a resource's state in an operation reply
-# once its output exists; ABSENT is a submission's state when Dreamina keeps no record of the submit ID.
+# once its output exists.
 OPERATION_STATES = {
     "SUCCEEDED": "succeeded",
-    "ABSENT": "absent",
 }
+
+# The code of operation status and operation wait, with exit 20, for a submit ID Dreamina keeps no record of (run
+# C-16). It never means the run is still going.
+SUBMISSION_ABSENT = "cli.operation_submission_absent"
 
 # A wait call that gave no readable answer is made again after this pause, so a broken CLI does not spin.
 WAIT_REREAD_SECONDS = 2
@@ -30,5 +33,6 @@ __all__ = [
     "OPERATION_STATES",
     "RECORD_RETENTION_SECONDS",
     "RECORD_VERSION",
+    "SUBMISSION_ABSENT",
     "WAIT_REREAD_SECONDS",
 ]

@@ -3,6 +3,11 @@
 {reason} is the CLI's cleaned reason, ending as a sentence, and page placeholders are filled from DREAMINA_URLS.
 """
 
+CANVAS_MISSING = (
+    "The Dreamina canvas this extension uses was deleted, so this step did not run. Run again: the next run creates a "
+    "new ComfyUI canvas."
+)
+
 CEILING_TOO_LOW = (
     "This run needs {minimum} credits, more than its credit_ceiling of {ceiling}. Nothing was billed. Raise "
     "credit_ceiling to {minimum} or more to run it."
@@ -93,6 +98,7 @@ UPGRADE_REQUIRED = (
 )
 
 __all__ = [
+    "CANVAS_MISSING",
     "CEILING_TOO_LOW",
     "CLI_FAILED",
     "CREDENTIALS_DENIED",

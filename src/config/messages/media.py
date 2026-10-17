@@ -49,6 +49,11 @@ RESOURCE_TYPE = (
     "run with Generation: Download."
 )
 
+UPLOAD_INVALID = (
+    "The Dreamina CLI refused a connected file before sending it: {reason} An image may be at most 30 MB "
+    "(31,457,280 bytes). Connect a smaller or valid file, then run again."
+)
+
 UPLOAD_LIMIT = (
     "A connected {kind} is {size} MB, above the maximum upload size of {maximum} MB in Dreamina Settings. Connect a "
     "smaller {kind}, or raise the limit there."
@@ -80,6 +85,7 @@ __all__ = [
     "IMAGE_UNREADABLE",
     "OUTPUTS_MISSING",
     "RESOURCE_TYPE",
+    "UPLOAD_INVALID",
     "UPLOAD_LIMIT",
     "UPLOAD_REFUSED",
     "UPLOAD_UNREADABLE",

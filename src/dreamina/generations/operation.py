@@ -22,10 +22,10 @@ from datetime import UTC, datetime, timedelta
 from ...config.execution import PROGRESS_STEPS
 from ..canvas import find_canvas, create_canvas
 from ..failures import build_generation_failure
-from ...types.errors import ErrorCode, DreaminaError
 from ...config.messages.run import CLI_FAILED, RUN_REFUSED
 from .waiting import validate_lost_run, wait_for_operation
 from ...types.replies import RunReply, NodeView, NodeShowReply
+from ...types.errors import ErrorCode, DreaminaError, SubmissionAbsentError
 from ...types.generations import RunCall, GenerationRecord, GenerationResult
 from ..references import format_prompt, plan_references, validate_references
 from ...config.dreamina import EXIT_CODES, CALL_SECONDS, DREAMINA_URLS, ACCEPTED_PHASE
@@ -35,7 +35,6 @@ from ...config.messages.generations import (
     WAIT_LIMIT,
     RUN_UNRECORDED,
     GENERATION_GONE,
-    GENERATION_ABSENT,
     GENERATION_EXPIRED,
     GENERATION_UNCOLLECTED,
     GENERATION_KEEPS_RUNNING,
@@ -104,13 +103,13 @@ class CollectOperation:
         record = self.record
         try:
             reply = await wait_for_operation(record.submit_id, record.project_id, deadline, progress)
+        except SubmissionAbsentError:
+            await asyncio.to_thread(self.generations.delete, record.submit_id)
+            raise
         except DreaminaError as error:
             raise DreaminaError(error.code, GENERATION_UNCOLLECTED.format(reason=str(error))) from None
         if reply is None:
             raise DreaminaError(ErrorCode.TIMEOUT, WAIT_LIMIT.format(seconds=settings.request_timeout_seconds))
-        if reply.submission is not None and reply.submission.state == OPERATION_STATES["ABSENT"]:
-            await asyncio.to_thread(self.generations.delete, record.submit_id)
-            raise DreaminaError(ErrorCode.UNAVAILABLE, GENERATION_ABSENT.format(**DREAMINA_URLS))
         if not any(resource.state == OPERATION_STATES["SUCCEEDED"] for resource in reply.resources):
             await asyncio.to_thread(self.generations.delete, record.submit_id)
             raise build_generation_failure(reply)

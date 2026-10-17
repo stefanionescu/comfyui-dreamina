@@ -30,4 +30,8 @@ class DreaminaError(RuntimeError):
         self.code = code
 
 
-__all__ = ["DreaminaError", "ErrorCode"]
+class SubmissionAbsentError(DreaminaError):
+    """A submission Dreamina keeps no record of; its record here is deleted, and nothing is sent again."""
+
+
+__all__ = ["DreaminaError", "ErrorCode", "SubmissionAbsentError"]
