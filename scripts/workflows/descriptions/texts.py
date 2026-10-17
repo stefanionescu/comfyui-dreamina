@@ -27,6 +27,11 @@ SHARED_TEXTS = {
     "film": "Film",
     "collect": "Collect",
     "shot": "Shot",
+    "opening": "Opening",
+    "closing": "Closing",
+    "keep": "Keep",
+    "shot_1": "Shot 1",
+    "shot_2": "Shot 2",
 }
 
 __all__ = ["SHARED_TEXTS"]

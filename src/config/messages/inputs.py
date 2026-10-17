@@ -42,6 +42,22 @@ UPSCALE_FLAG_NEEDED = "Add {key} to arguments: the {mode} mode needs it. Choose 
 
 UPSCALE_MODE_FLAG = "Leave {key} out of arguments when mode is {mode}: that mode does not take it."
 
+ELEMENT_MAIN_COUNT = "Connect one image to main: the clearest image of the subject. Connect other angles to auxiliary."
+
+ELEMENT_MAIN_MEDIA = "Connect an image to main. An Element, a video, or audio cannot be an Element's main image."
+
+ELEMENT_AUXILIARY_MEDIA = "Connect only images to auxiliary, such as the side and the back of the subject."
+
+ELEMENT_VOICE_COUNT = "Connect one voice clip to voice."
+
+ELEMENT_VOICE_MEDIA = "Connect audio to voice, such as the references output of Audio: Generate."
+
+ELEMENT_TITLE_EMPTY = (
+    "Type the Element's name into title, such as Host. Your Dreamina canvas shows the Element under this name."
+)
+
+ELEMENT_TITLE_LENGTH = "Shorten title to at most {maximum} characters. An emoji counts as two."
+
 # How a refusal names a JSON value that is not text or a number, or not an object.
 JSON_SHAPES = {
     "array": "a JSON list",
@@ -55,6 +71,13 @@ JSON_SHAPES = {
 __all__ = [
     "ARGUMENTS_INVALID",
     "ARGUMENTS_SHAPE",
+    "ELEMENT_AUXILIARY_MEDIA",
+    "ELEMENT_MAIN_COUNT",
+    "ELEMENT_MAIN_MEDIA",
+    "ELEMENT_TITLE_EMPTY",
+    "ELEMENT_TITLE_LENGTH",
+    "ELEMENT_VOICE_COUNT",
+    "ELEMENT_VOICE_MEDIA",
     "JSON_SHAPES",
     "PLACEHOLDER_UNCONNECTED",
     "PROMPT_REQUIRED",

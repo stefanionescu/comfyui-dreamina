@@ -1,6 +1,7 @@
 """Register the extension's nodes in menu order."""
 
 from .model import ModelInfo
+from .element import ElementAdd
 from comfy_api.latest import io
 from .audio import AudioGenerate
 from .image import ImageGenerate
@@ -13,6 +14,7 @@ NODE_TYPES: tuple[type[io.ComfyNode], ...] = (
     ImageUpscale,
     VideoGenerate,
     AudioGenerate,
+    ElementAdd,
     GenerationDownload,
     ModelInfo,
 )

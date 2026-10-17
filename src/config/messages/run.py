@@ -38,6 +38,11 @@ FREE_TIMEOUT = (
     "Select Run to try again."
 )
 
+ELEMENT_REFUSED = (
+    "Dreamina refused to make the Element: {reason} Check the connected images and voice, then run again. Nothing was "
+    "billed."
+)
+
 FLAG_REFUSED = (
     "The Dreamina CLI refused a flag or a value, so nothing was sent: {reason} Check arguments against the model's "
     "flags in Model: Info."
@@ -116,6 +121,7 @@ __all__ = [
     "CREDENTIALS_DENIED",
     "CREDENTIALS_UNREADABLE",
     "DNS_FAILED",
+    "ELEMENT_REFUSED",
     "FLAG_REFUSED",
     "FREE_TIMEOUT",
     "LOCAL_STATE_FAILED",

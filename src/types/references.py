@@ -47,4 +47,24 @@ class LocalMedia:
     position: int
 
 
-__all__ = ["LocalMedia", "Reference"]
+@dataclass(frozen=True, slots=True)
+class ElementRequest:
+    """One Element to create, every source already on the canvas.
+
+    Attributes:
+        main: The primary image.
+        auxiliary: More images of the same subject, node sources first.
+        voice: The voice, or None.
+        title: The Element's name on the canvas.
+        description: A note kept with the Element; empty sends nothing.
+
+    """
+
+    main: Reference
+    auxiliary: tuple[Reference, ...]
+    voice: Reference | None
+    title: str
+    description: str
+
+
+__all__ = ["ElementRequest", "LocalMedia", "Reference"]

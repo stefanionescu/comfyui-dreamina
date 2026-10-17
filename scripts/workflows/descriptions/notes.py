@@ -108,6 +108,23 @@ WORKFLOW_TEXTS = {
         "choose the video in **Collect**, and run.\n\n" + CANCEL_NOTE + " **Collect** downloads it.",
         "shot_description": "Makes a four-second clip and saves it.",
     },
+    "video-03-keep-a-host-across-shots": {
+        "input": SIGN_IN_STEP + "2. Describe the host in **Host**.\n3. Say what happens in the first shot in "
+        "**Opening**, and in the second in **Closing**.\n4. Press **Run**. Both shots are saved under "
+        "`video/dreamina`.",
+        "cast": "Seedream 5.0 Lite draws the host from the waist up. `references`, what an earlier Dreamina step made, "
+        "passes the portrait on to **Keep**.",
+        "keep": "**Element: Add** saves the portrait as an Element named **Host**, a character Dreamina keeps so it "
+        "looks the same in every video. Making an Element is free. Its `references` output gives both shots the same "
+        "host.\n\nTo keep more angles of the host, connect them to `auxiliary`. A voice clip goes in `voice`.",
+        "shot_1": "Seedance 2.0 Mini films **Opening** with the host from **Keep**, four seconds at `720p` in a `9:16` "
+        "frame. With an Element connected, the node uses `m2v`, the mode that takes references, and `{{reference1}}` "
+        "in the prompt marks the host.\n\n" + RECOVER_NOTE,
+        "shot_1_description": "Films the first shot with the kept host and saves it.",
+        "shot_2": "Seedance 2.0 Mini films **Closing** with the same Element, so the host matches **Shot 1**. Each "
+        "shot is its own run and is billed.\n\n" + RECOVER_NOTE,
+        "shot_2_description": "Films the second shot with the kept host and saves it.",
+    },
 }
 
 __all__ = ["WORKFLOW_TEXTS"]

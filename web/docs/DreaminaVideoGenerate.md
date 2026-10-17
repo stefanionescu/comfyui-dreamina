@@ -44,7 +44,7 @@ Dreamina cannot stop a run it has accepted. If you cancel, ComfyUI restarts,
 or the **Request timeout (seconds)** passes, the video is still made and
 billed. Collect it with **Generation: Download**.
 
-Examples: **video-01-animate-a-host**, **video-02-film-a-product-ad**, and
-**video-04-recover-a-video**.
+Examples: **video-01-animate-a-host**, **video-02-film-a-product-ad**,
+**video-03-keep-a-host-across-shots**, and **video-04-recover-a-video**.
 
 [Dreamina](https://dreamina.capcut.com/ai-tool/home)

@@ -137,6 +137,9 @@ CANVAS_NAME = "ComfyUI"
 # The canvases listed per canvas ls page, the CLI's maximum.
 CANVAS_PAGE_SIZE = 100
 
+# The schema's limit for a node or Element title: at most 512 UTF-16 code units.
+TITLE_MAX_UNITS = 512
+
 # How long each call of Dreamina Settings and the account read may take, in seconds. LOCAL bounds version, auth
 # status, and auth logout, which read or clear state on this computer. NETWORK bounds auth login and auth account,
 # which call Dreamina. WAIT_MARGIN is the time auth wait gets beyond its own --timeout, so the CLI ends the wait first.
@@ -176,5 +179,6 @@ __all__ = [
     "REQUIRED_COMMANDS",
     "SIGN_IN_FAILURES",
     "SIGN_IN_SECONDS",
+    "TITLE_MAX_UNITS",
     "WAIT_SLICE",
 ]

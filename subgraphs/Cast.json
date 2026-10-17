@@ -6,7 +6,7 @@
   "nodes": [
     {
       "id": 1,
-      "type": "4b817c37-8d20-51f3-a001-15631d504b39",
+      "type": "ce27e740-c0d2-5ace-8afc-1bf678a78078",
       "pos": [
         0,
         0
@@ -58,7 +58,7 @@
   "definitions": {
     "subgraphs": [
       {
-        "id": "4b817c37-8d20-51f3-a001-15631d504b39",
+        "id": "ce27e740-c0d2-5ace-8afc-1bf678a78078",
         "version": 1,
         "state": {
           "lastGroupId": 0,
@@ -89,7 +89,7 @@
         },
         "inputs": [
           {
-            "id": "34b2151a-e499-5290-9aed-30fda08fa760",
+            "id": "0d2923ac-4fd7-51f0-a625-c5e5cb818f52",
             "name": "host",
             "type": "STRING",
             "linkIds": [
@@ -103,7 +103,7 @@
         ],
         "outputs": [
           {
-            "id": "bae6f416-0e5d-59ba-b388-48fe9feaa97c",
+            "id": "f2815f8a-5ee3-5064-bdf1-e7e50e097d67",
             "name": "references",
             "type": "DREAMINA_REFERENCES",
             "linkIds": [

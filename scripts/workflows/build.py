@@ -17,6 +17,7 @@ from scripts.workflows.page.sizes import measure, measure_note
 from scripts.workflows.descriptions.audio import AUDIO_WORKFLOWS
 from scripts.workflows.descriptions.image import IMAGE_WORKFLOWS
 from scripts.workflows.descriptions.video import VIDEO_WORKFLOWS
+from scripts.workflows.descriptions.elements import ELEMENT_WORKFLOWS
 from scripts.workflows.page.layout import place_stacks, place_columns
 from scripts.paths import REPO_ROOT, README_PATH, EXAMPLES_DIR, SUBGRAPHS_DIR
 from scripts.workflows.page.serialize import (
@@ -38,6 +39,7 @@ FAMILIES = (
     (IMAGE_WORKFLOWS, MENUS["IMAGE"]),
     (AUDIO_WORKFLOWS, MENUS["AUDIO"]),
     (VIDEO_WORKFLOWS, MENUS["VIDEO"]),
+    (ELEMENT_WORKFLOWS, MENUS["VIDEO"]),
 )
 WORKFLOWS = tuple(workflow for workflows, _menu in FAMILIES for workflow in workflows)
 
