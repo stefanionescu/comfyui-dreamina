@@ -213,7 +213,8 @@ The finished README, as it ships after the Documentation and brand milestone.
 Sections arrive milestone by milestone as
 [When each part is added](#when-each-part-is-added) says. Its outline is F's,
 heading for heading. Sections that keep F's text word for word with names
-changed: **Install** (Step 1), **Development**, and **License**.
+changed: **Install** (Step 1) and **License**. **Development** keeps F's setup
+and points to the advanced guide for every other task.
 
 The example rows, titles, inputs, and the group names in **First run** are
 copied from [17-scripts-and-workflows.md](17-scripts-and-workflows.md#summary);
@@ -277,17 +278,17 @@ To send the same run again, change `run_number`.
 
 ## Example workflows
 
-| Workflow                                                                                         | Input                          |
-| ------------------------------------------------------------------------------------------------ | ------------------------------ |
-| [Image: Design a Host](example_workflows/image-01-design-a-host.json)                            | A host description             |
-| [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json)              | A product photo and a change   |
-| [Image: Upscale a Poster](example_workflows/image-03-upscale-a-poster.json)                      | A brief                        |
-| [Audio: Voice a Script](example_workflows/audio-01-voice-a-script.json)                          | A script                       |
-| [Audio: Give a Host a Voice](example_workflows/audio-02-give-a-host-a-voice.json)                | A host and a line              |
-| [Video: Animate a Host](example_workflows/video-01-animate-a-host.json)                          | A host and a scene             |
-| [Video: Film a Product Ad](example_workflows/video-02-film-a-product-ad.json)                    | A host, a product, and a scene |
-| [Video: Keep a Host across Shots](example_workflows/video-03-keep-a-host-across-shots.json)      | A host and two scenes          |
-| [Video: Recover a Video](example_workflows/video-04-recover-a-video.json)                        | A video left running           |
+| Workflow                                                                                    | Input                          |
+| ------------------------------------------------------------------------------------------- | ------------------------------ |
+| [Image: Design a Host](example_workflows/image-01-design-a-host.json)                       | A host description             |
+| [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json)         | A product photo and a change   |
+| [Image: Upscale a Poster](example_workflows/image-03-upscale-a-poster.json)                 | A brief                        |
+| [Audio: Voice a Script](example_workflows/audio-01-voice-a-script.json)                     | A script                       |
+| [Audio: Give a Host a Voice](example_workflows/audio-02-give-a-host-a-voice.json)           | A host and a line              |
+| [Video: Animate a Host](example_workflows/video-01-animate-a-host.json)                     | A host and a scene             |
+| [Video: Film a Product Ad](example_workflows/video-02-film-a-product-ad.json)               | A host, a product, and a scene |
+| [Video: Keep a Host across Shots](example_workflows/video-03-keep-a-host-across-shots.json) | A host and two scenes          |
+| [Video: Recover a Video](example_workflows/video-04-recover-a-video.json)                   | A video left running           |
 
 They are in **Browse Templates → dreamina**. Start with each workflow's
 **Start Here** note. Most steps are subgraphs. Media inputs start empty, and
@@ -301,23 +302,22 @@ The nodes are under **Dreamina** in the node menu, and each has a help page.
 
 ![Node map: one card for each kind of node. Image: Generate, Video: Generate, and Audio: Generate each run any Dreamina model of their kind, and Image: Generate feeds Image: Upscale. The references output of Element: Add and of every paid node feeds any paid node. Generation: Download collects runs left running, and Model: Info shows what a model takes. A blue square marks a node that starts a paid run, and a hollow square one that bills nothing.](docs/images/diagrams/node-map.svg)
 
-| Node                                                           | What it does                                                                      | Paid |
-| -------------------------------------------------------------- | --------------------------------------------------------------------------------- | ---- |
-| [Image: Generate](web/docs/DreaminaImageGenerate.md)           | Makes or edits images with any Dreamina image model.                              | Yes  |
-| [Image: Upscale](web/docs/DreaminaImageUpscale.md)             | Makes images larger and sharper with Dreamina's upscale.                          | Yes  |
-| [Video: Generate](web/docs/DreaminaVideoGenerate.md)           | Makes video from a prompt, frames, or references with any Dreamina video model.   | Yes  |
-| [Audio: Generate](web/docs/DreaminaAudioGenerate.md)           | Reads text aloud in a chosen voice, or voices a picture, with any Dreamina audio model. | Yes  |
-| [Element: Add](web/docs/DreaminaElementAdd.md)                 | Makes an Element that keeps a character, product, or place the same across runs.  | No   |
-| [Generation: Download](web/docs/DreaminaGenerationDownload.md) | Downloads what Dreamina made for a run after the run stopped.                     | No   |
-| [Model: Info](web/docs/DreaminaModelInfo.md)                   | Shows a model's modes, settings, reference and file limits, and voices, as JSON.  | No   |
+| Node                                                           | What it does                                                                               | Paid |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---- |
+| [Image: Generate](web/docs/DreaminaImageGenerate.md)           | Makes or edits images with any Dreamina image model.                                       | Yes  |
+| [Image: Upscale](web/docs/DreaminaImageUpscale.md)             | Makes images larger and sharper with Dreamina's upscale.                                   | Yes  |
+| [Video: Generate](web/docs/DreaminaVideoGenerate.md)           | Makes video from a prompt, frames, or references with any Dreamina video model.            | Yes  |
+| [Audio: Generate](web/docs/DreaminaAudioGenerate.md)           | Reads text in a chosen voice, or dubs speech for a picture, with any Dreamina audio model. | Yes  |
+| [Element: Add](web/docs/DreaminaElementAdd.md)                 | Makes an Element that keeps a character, product, or place the same across runs.           | No   |
+| [Generation: Download](web/docs/DreaminaGenerationDownload.md) | Downloads what Dreamina made for a run after the run stopped.                              | No   |
+| [Model: Info](web/docs/DreaminaModelInfo.md)                   | Shows a model's modes, settings, reference and file limits, and voices, as JSON.           | No   |
 
 ## Models
 
 Type any Dreamina model name in `model`, such as `seedance_2.5`. Nothing in
-the extension lists or limits models. Its only model names are the starting
-values of the `model` boxes. When you queue a workflow, and again when it
-runs, the node checks the name and your settings against your own live model
-list from Dreamina, before anything is paid. **Model: Info** shows any
+the extension lists or limits models. When you queue a workflow, and again
+when it runs, the node checks the name and your settings against your own
+model list from Dreamina, before anything is paid. **Model: Info** shows any
 model's modes, settings, and voices, for free.
 
 ![Video: Generate on the canvas: the images, videos, audio, and references inputs; model set to seedance_2.0_mini; credit_ceiling; run_number; a prompt about a host holding up a green bottle; and arguments holding ratio 16:9, resolution 720p, and duration 4.](docs/images/screenshots/video-generate-node.png)
@@ -325,22 +325,23 @@ model's modes, settings, and voices, for free.
 Write the model's settings in `arguments` as JSON, under Dreamina's names,
 such as `{"ratio": "9:16", "resolution": "720p", "duration": 5}`. The node
 stops if the model makes another kind of output, or does not take a setting
-or value you sent. The [advanced guide](ADVANCED.md#models) lists the checks.
+or value you sent. The [advanced guide](ADVANCED.md#models) says how the
+mode is chosen.
 
 ## How a run works
 
-1. The node reads your model list and checks your inputs against it, and
-   stops before anything is paid.
-2. It uploads your images, video, and audio to your Dreamina canvas, and
-   sends one run with `credit_ceiling`, the most credits the run may cost.
-   Dreamina runs it only if its price is within that. The node records the
-   run and waits. Nothing is sent twice.
-3. Outputs also carry `references` to what Dreamina made, so the next
-   Dreamina node uses it with no download or upload. Nodes connected to an
-   empty output are skipped.
+1. The node checks your inputs against your model list, and stops before
+   anything is paid.
+2. It uploads your images, video, and audio to the **ComfyUI** canvas in your
+   Dreamina account, and sends one run with `credit_ceiling`, the most
+   credits the run may cost. Dreamina runs it only if its price is within
+   that.
+3. The node records the run, waits, and downloads the outputs. They also
+   carry `references` to what Dreamina made, so the next Dreamina node uses
+   it with no download or upload.
 
 The [advanced guide](ADVANCED.md#what-each-node-sends) lists what each node
-sends and returns.
+sends.
 
 ## Development
 
@@ -360,22 +361,20 @@ mise run repo:setup
 mise run repo:check
 ```
 
-Restart ComfyUI after changing Python. After changing the browser code, run
-`mise run comfy:frontend:build`; after changing a workflow description, run
-`mise run comfy:workflows:build`. The [advanced guide](ADVANCED.md#development)
-lists every task.
+Restart ComfyUI after changing Python. The
+[advanced guide](ADVANCED.md#development) lists every task.
 
 ## Common problems
 
-| Problem                                   | Fix                                                                                                                           |
-| ----------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
-| ComfyUI could not find the Dreamina CLI         | Select **Install** in **Dreamina Settings**, or run the command under [Install](#install) in a terminal on the ComfyUI computer. |
-| Dreamina asks you to sign in              | Select **Sign in** in **Dreamina Settings**, as the computer user that runs ComfyUI.                                         |
-| A run stops above its `credit_ceiling`    | Nothing was billed. Raise `credit_ceiling` to the number the message gives, and run again.                                    |
-| The model is not in your list             | Copy a name the message suggests, or check it with **Model: Info**. Your Dreamina plan may not offer that model.              |
-| Dreamina no longer accepts this version of the Dreamina CLI               | Select **Update** in **Dreamina Settings**.                                                                                   |
-| No Dreamina nodes in the menu             | Check that the folder is `ComfyUI/custom_nodes/dreamina` and the console shows no import error, then restart ComfyUI.         |
-| The templates are missing                 | Reinstall the whole extension, including `example_workflows`.                                                                 |
+| Problem                                 | Fix                                                                                                                   |
+| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
+| ComfyUI could not find the Dreamina CLI | Select **Install** in **Dreamina Settings**, or run the command under [Install](#install) on the ComfyUI computer.    |
+| You are not signed in to Dreamina       | Select **Sign in** in **Dreamina Settings**. ComfyUI must run as the computer user who signed in.                     |
+| A run stops above its `credit_ceiling`  | Nothing was billed. Raise `credit_ceiling` to the number the message gives, and run again.                            |
+| The model is not in your list           | Copy a name the message suggests, or check it with **Model: Info**. Your Dreamina plan may not offer that model.      |
+| A canceled run was billed               | Dreamina cannot stop a run it accepted. Collect its outputs with **Generation: Download**.                            |
+| No Dreamina nodes in the menu           | Check that the folder is `ComfyUI/custom_nodes/dreamina` and the console shows no import error, then restart ComfyUI. |
+| The templates are missing               | Reinstall the whole extension, including `example_workflows`.                                                         |
 
 More in the [advanced guide's troubleshooting](ADVANCED.md#troubleshooting).
 ````
@@ -415,10 +414,11 @@ Notes on Step 2:
   Video: Generate's and Audio: Generate's are drafted here until 10 and 11
   write theirs; then theirs win.
 - **Models** says plainly what the owner asked for: any model name, nothing
-  in the pack that lists or limits models, the starting values of the
-  `model` boxes as its only model names, the check against the person's live
-  list when the workflow is queued and again when the node runs, before
-  paying, and **Model: Info** for any model's settings
+  in the pack that lists or limits models, the check against the person's
+  live list when the workflow is queued and again when the node runs, before
+  paying, and **Model: Info** for any model's settings. It does not call the
+  starting values the pack's only model names, because the examples name
+  models too (video-02 sets `seedance_2.5`)
   ([01-decisions.md](01-decisions.md#how-the-nodes-cover-every-model)). It
   links no model page: Dreamina's site has no public page of model names,
   and the names come from the person's own list. The screenshot's alt text is
@@ -427,14 +427,19 @@ Notes on Step 2:
   the capture.
 - **How a run works** keeps F's three steps. Step 2 names `credit_ceiling`
   because Dreamina's own approval is part of every run
-  ([01-decisions.md](01-decisions.md#credits)); step 3 says `references`
-  where F said fal links.
+  ([01-decisions.md](01-decisions.md#credits)), and the **ComfyUI** canvas
+  the uploads go to; step 3 says the outputs are downloaded and carry
+  `references` where F said fal links.
 - **Common problems** keeps F's seven rows, re-valued for what goes wrong
-  with a CLI and an account instead of a key. F's rows on multi-user mode,
+  with a CLI and an account instead of a key. A row named for a message uses
+  the message's first sentence. Dreamina's "no longer accepts this version"
+  row gave way to "A canceled run was billed": that message already says
+  **Update**, and a cancel that keeps billing is the Dreamina behavior no
+  message can show before it happens. F's rows on multi-user mode,
   `pydantic`, help pages, and duplicate folders move to the advanced guide or
   drop: the first is a troubleshooting entry there, and the others did not
   happen in F's or B's use.
-- Length: 203 lines, F's own length.
+- Length: 201 lines, within F's 203.
 
 ## Step 3: Advanced guide
 
@@ -508,34 +513,33 @@ The finished text:
 ## What each node sends
 
 - **Image: Generate**, **Video: Generate**, and **Audio: Generate** first read
-  your model list of their kind from the Dreamina CLI, free and once per kind
-  while ComfyUI runs. They upload your images as PNG, your video as MP4, and
-  your audio as WAV to your Dreamina canvas with each run, and send `prompt`,
-  the settings in `arguments`, and every reference, with `credit_ceiling`.
-  They send one run, record it as soon as Dreamina accepts it, and wait.
-  Then they download each output file and return it, with `references` to
-  what was made and Dreamina's record of the run as JSON in `result`.
+  your model list of their kind from the Dreamina CLI, for free. They upload
+  your images as PNG, your video as MP4, and your audio as WAV to your
+  Dreamina canvas, and send `prompt`, the settings in `arguments`, and every
+  reference, with `credit_ceiling`. They send one run, record it as soon as
+  Dreamina accepts it, and wait. Then they download each output and return
+  it, with `references` to what was made, and `result`: JSON with the canvas
+  link, the request ID, and Dreamina's record of the run.
 - **Image: Upscale** upscales up to 20 images in one run, the same way. Each
-  ComfyUI image is first uploaded and imported as an image node, for free.
+  ComfyUI image is first uploaded and imported to the canvas, for free.
 - **Element: Add** makes an Element on your canvas from a main image, more
   angles, and a voice, and returns it in `references`. It bills nothing.
-- **Generation: Download** downloads a recorded run's files, for free.
+- **Generation: Download** downloads a recorded run's outputs, for free.
 - **Model: Info** returns one model's modes, settings, limits, and voices as
   JSON, for free.
-
-Every run goes out once, and only through the Dreamina CLI.
 
 ## Sign-in and access
 
 Select **Sign in** in **ComfyUI menu → Extensions → Dreamina → Dreamina
 Settings**, check that Dreamina's page shows the dialog's code, and approve.
-The Dreamina CLI keeps the sign-in in your system's credential store, for
-your computer user only. The extension never sees it. **Sign out** clears
-it. ComfyUI must run as the user who signed in, on the same computer.
+The Dreamina CLI keeps the sign-in in your computer's sign-in store, for your
+computer user only. The extension never sees it. **Sign out** clears it.
+ComfyUI must run as the user who signed in, on the same computer.
 
-Signing in, signing out, installing, and saving settings need a direct local
-connection to the ComfyUI server. Otherwise, run `dreamina-canvas auth login`
-on the server as the user that runs ComfyUI.
+Dreamina Settings works only from a browser on the ComfyUI computer, at a
+localhost address. In ComfyUI's multi-user mode it shows the state but
+changes nothing. From another computer, or in multi-user mode, run
+`dreamina-canvas auth login` on the server as the user that runs ComfyUI.
 
 The private folder holds the settings, the canvas ID, and the run records:
 
@@ -546,8 +550,8 @@ The private folder holds the settings, the canvas ID, and the run records:
 | Windows | `%LOCALAPPDATA%\DreaminaComfyUI`                   |
 
 To use another folder, set `DREAMINA_COMFY_STATE_DIRECTORY` to an absolute
-path outside the extension and ComfyUI's folders. Files are unencrypted, with
-owner-only permissions.
+path outside ComfyUI, the extension, and their media folders. Files are
+unencrypted, with owner-only permissions.
 
 ## The Dreamina CLI
 
@@ -562,9 +566,9 @@ dreamina.capcut.com, and **Update** runs it again. Or run it from a terminal:
 - macOS or Linux: `curl -fsSL https://dreamina.capcut.com/canvas-cli/install.sh | bash`
 - Windows PowerShell: `irm https://dreamina.capcut.com/canvas-cli/install.ps1 | iex`
 
-On first use the extension checks the CLI's version and commands. When
-Dreamina says the CLI is too old, select **Update**. When a command is
-missing, the CLI has changed: update the extension.
+The extension checks the CLI's version and commands once, and again after
+the CLI is installed or updated. When Dreamina says the CLI is too old,
+select **Update**. When a command is missing, update the extension.
 
 ## Settings
 
@@ -592,23 +596,25 @@ Each node starts with a model and settings that run as they are:
 | Audio: Generate | `audio`             | `seed_audio_v1`     | `{"voice-name": "Jessie"}`                               |
 | Image: Upscale  | none                | none                | `{"resolution": "2K"}`                                   |
 
-Before anything is paid, the node reads your model list of its kind, free,
-once while ComfyUI runs and again when a name is not found, and checks your
-inputs against it, as [When a node stops](#when-a-node-stops) says.
+The node reads your model list once while ComfyUI runs, and again when a name
+is not found.
 
 `arguments` is a JSON object of the model's settings by the CLI's names,
 without dashes, such as `ratio`, `resolution`, `duration`, `count`,
 `voice-name`, and `scenario`, with values the list gives, such as `720p`.
-`ratio`, `resolution`, and `duration` have no default on Dreamina. **Model:
-Info** lists every setting with its choices and limits.
+**Model: Info** lists every setting with its choices and limits.
 
-Each run has a mode, set in `arguments` as `"mode"`, and `"scenario"` for
-speech, or chosen from what is connected. With nothing connected, the nodes
-use `t2i`, `t2v`, and text reading. Images, references, or an Element make
-Image: Generate use `i2i` and Audio: Generate use omni dubbing. On Video:
-Generate, one or two images and nothing else are the first and last frames
-(`first_last_frame`), and anything else uses `m2v`. Set `"mode": "m2v"` to
-use one or two images as references instead.
+Each run has a mode. Set it in `arguments` as `"mode"`, and `"scenario"` for
+speech, or let the node choose. A model with one mode uses it. Otherwise:
+
+- **Image: Generate** uses `t2i`, or `i2i` when images, references, or an
+  Element are connected.
+- **Video: Generate** uses `t2v` with nothing connected, `first_last_frame`
+  with one or two images and nothing else, and `m2v` with anything else. Set
+  `"mode": "m2v"` to use one or two images as references instead.
+- **Audio: Generate** reads the prompt aloud (`text-reading`) with nothing
+  connected, and dubs what is connected (`omni-dubbing`). `voice-name` fits
+  text reading only: for dubbing, set `arguments` to `{}`.
 
 ## Credit ceiling
 
@@ -617,7 +623,7 @@ approval: the CLI runs nothing without one, and the extension never approves
 an amount for you. Dreamina prices each run when it is saved and runs it only
 within the ceiling. A run priced above it stops with nothing billed, and the
 message gives the price to raise it to, or says Dreamina could not price it.
-Each node's ceiling starts at its starting model's price at its starting
+Each node's starting ceiling covers its starting model at its starting
 settings, so a larger size, a longer video, or another model may need more.
 
 A stopped run leaves an unrun draft on your canvas, which bills nothing and
@@ -630,7 +636,7 @@ asks for one output, so a model never makes and bills several by default.
 or upload: a paid node's `references` output, or **Element: Add**'s Element.
 One connection reaches each `references` input. ComfyUI images, video, and
 audio connected to `images`, `videos`, or `audio` are uploaded to your canvas
-with each run, as PNG, MP4, or WAV, for free.
+with each run, for free.
 
 The model gets `references` first, then `images`, `videos`, and `audio`,
 which matters for `first_last_frame`. Mark where each goes in the prompt with
@@ -654,23 +660,25 @@ stops the node. Write `\{{` for a `{{` the prompt should keep.
 Every paid node records each run as soon as Dreamina accepts it. The run
 keeps going, and is billed, after a cancel, a restart, or the **Request
 timeout (seconds)**. Collect it with **Generation: Download** (press R to
-list new runs). A record leaves the list once its files are downloaded, or
-when Dreamina no longer has the run. Then look for it on your canvas.
+list new runs). A record leaves the list once its outputs are collected,
+when Dreamina no longer has the run, or after 30 days. Then look for it on
+your canvas.
 
 ## The canvas
 
 Every run goes on one canvas named **ComfyUI** in your Dreamina account, made
 by the first run that needs it. The link in each node's `result` opens it,
-with each run's prompt and files. The extension names this canvas in every
-call, so your other Dreamina tools keep their own. A deleted canvas is made
-again before anything is billed.
+with each run's prompt and outputs. The extension names this canvas in every
+call, so your other Dreamina tools keep their own. If you delete it, the next
+run makes a new one.
 
 ## Limits
 
 The extension adds no limits of its own. Only the **Request limits** in
-**Dreamina Settings** and the limits **Model: Info** reports apply. Dreamina
-refuses a file outside its limits when the run is saved, before anything is
-billed. Your Dreamina plan sets your models and your credits.
+**Dreamina Settings** and the limits **Model: Info** reports apply. The
+Dreamina CLI refuses an image over 30 MB before uploading it, and Dreamina
+refuses a file outside its limits before anything is billed. Your Dreamina
+plan sets your models and your credits.
 
 ## When a node stops
 
@@ -689,12 +697,13 @@ Video: Generate, and Audio: Generate stop when:
 - A file is over the upload limit.
 - The Dreamina CLI is missing or too old, or you are not signed in.
 
-**Image: Upscale** stops when no image or more than 20 are connected, or a
-setting is not one the upscale takes. **Element: Add** stops when `main` is
-not one image, `title` is empty or too long, `auxiliary` holds anything but
-images, or `voice` holds more than one clip. **Generation: Download** stops
-when the chosen run is not recorded on this server. **Model: Info** stops
-when `model` is empty or not in your model list.
+**Image: Upscale** stops when no image or more than 20 are connected, a
+reference is not an image, or a setting is not one the upscale takes.
+**Element: Add** stops when `main` is not one image, `title` is empty or too
+long, `auxiliary` holds anything but images, or `voice` holds more than one
+clip. **Generation: Download** stops when the chosen run is not recorded on
+this server. **Model: Info** stops when `model` is empty or not in your model
+list.
 
 ## Use from another extension
 
@@ -707,9 +716,7 @@ output = await clone.execute(model="seedance_2.5")
 model = json.loads(output.args[0])
 ```
 
-- Call a node by its ID on a class clone with an empty hidden holder, as
-  above, and await it. It needs the CLI signed in, and leaves the calling
-  node's progress bar alone.
+- Call a node on a class clone with an empty hidden holder, as above.
 - A paid node takes `model`, `prompt`, and `arguments` as text, the last a
   JSON object of Dreamina's setting names, and `credit_ceiling` as a number.
   `images`, `videos`, and `audio` are lists of ComfyUI media, and
@@ -758,7 +765,7 @@ mise run comfy:workflows:build     # Build the example workflows
 ```
 
 The example workflows are generated from `scripts/workflows/descriptions/`:
-one module per category, the group notes in `notes.py`, and the titles in
+one module per category, the notes in `notes.py`, and the titles in
 `texts.py`. The build reads the node definitions through ComfyUI's Python. It
 also writes every subgraph to `subgraphs/`, which ComfyUI lists under
 **Subgraph Blueprints** in its node library.
@@ -847,7 +854,7 @@ To skip a run, set `SKIP_HOOKS=1`. To skip only part of it, set `SKIP_LINT=1`
 
 Testing is manual: restart ComfyUI after Python changes, or rebuild the
 browser files and reload after browser changes, then run the affected
-workflows with inexpensive models.
+workflows at the smallest sizes and shortest durations.
 
 ### Import rules
 
@@ -892,13 +899,14 @@ its own module uses is private. `repo:lint:policy` checks all four.
 The README's and this guide's images are in `docs/images/`:
 
 - `brand/banner.svg`, `diagrams/node-map.svg`, and the four `badges/*.svg`
-  files are SVG files; edit them as text. They follow the owner's other
-  packs' layout in this pack's colors: near-black `#080A12`, surfaces
-  `#121522`, hairlines `#252A3A`, light text `#EEF3FF`, muted text
+  files are SVG files; edit them as text. They use near-black `#080A12`,
+  surfaces `#121522`, hairlines `#252A3A`, light text `#EEF3FF`, muted text
   `#8C93A8`, aqua `#60D5E6`, the gradient `#7FE3F0` to `#2F80FF` to
   `#6366F1`, and yellow `#F0FF41` for the mark's socket and one sparkle in
   each rail. Headings use Helvetica Neue with tight spacing; labels use a
-  monospace font in wide-spaced capitals.
+  monospace font in wide-spaced capitals. The badges name the ComfyUI,
+  frontend, and Python versions and the license; update them when those
+  change.
 - `brand/logo.png` is the extension's mark: a tilted four-point star,
   orange at its top point through aqua to blue, cut by a curved gap, with a
   yellow socket at the end of its right point, at 400 × 400 pixels on a
@@ -909,14 +917,10 @@ The README's and this guide's images are in `docs/images/`:
 - The node map has one card for each kind of node. A blue square marks a
   node that starts a paid run, a hollow square one that bills nothing, and
   an arrow an output that feeds the next node.
-- The badges under the banner name the ComfyUI, frontend, and Python
-  versions and the license, as near-black pills with a blue value; update
-  them when those change.
 - `screenshots/video-02-workflow.png` is video-02 at 100% zoom, with link
-  midpoint markers off.
+  midpoint markers off, in 256 colors.
 - `screenshots/video-generate-node.png` is a new **Video: Generate** node,
-  420 pixels wide, at 100% zoom, with a model, a prompt, and `arguments`
-  typed in.
+  420 pixels wide, at 100% zoom, with a prompt typed in.
 - `screenshots/settings-dialog.png` is the **Dreamina Settings** dialog,
   signed in, with default request limits.
 
@@ -929,15 +933,14 @@ image under 100 KB, and give it alt text.
   under [troubleshooting](#troubleshooting) if it has one.
 - **A node's labels or tooltips:** edit its `io.Schema` call in `src/nodes/`,
   or `TOOLTIPS` in `src/config/inputs.py` for the inputs every paid node
-  shares, then its help page in `web/docs/`. A model's own settings come
-  from Dreamina and are not part of the extension.
+  shares, then its help page in `web/docs/`.
 - **The dialog:** edit `web/scripts/text.ts`, then rebuild the browser files.
 - **A workflow's notes:** edit `scripts/workflows/descriptions/notes.py`; for
   titles, `texts.py`; for nodes, models, or prompts, the workflow's module. Then
   rebuild the workflows.
-- **A node's starting model or settings:** edit them in
-  `src/config/models.py`, then the table under [models](#models), the node's
-  help page, and the examples that rely on them.
+- **A node's starting model or settings:** edit `src/config/models.py`, then
+  the table under [models](#models), the node's help page, and the examples
+  that rely on them.
 
 ## Package and publish
 
@@ -1021,10 +1024,6 @@ may not offer the model, or Dreamina may have renamed or removed it.
 
 Your Dreamina plan offers none. Check it on dreamina.capcut.com.
 
-### The Dreamina CLI sent a model list this extension cannot read
-
-The CLI has changed. Update the extension, or try again later.
-
 ### The Dreamina settings file has an unknown setting
 
 Delete the settings file in the [private folder](#sign-in-and-access) to
@@ -1032,19 +1031,25 @@ return to the defaults.
 
 ### A Dreamina state file is larger than expected
 
-Delete it. A run record can go once you have its files.
+Delete it. A run record can go once you have its outputs.
 ````
 
 Notes on Step 3:
 
 - **What each node sends** keeps F's one bullet per node, with the three
-  generation nodes in one bullet because they send the same way, and ends
-  with F's closing sentence in Dreamina's terms. Image: Upscale's bullet is
+  generation nodes in one bullet because they send the same way. `result`
+  is named by what `build_result_document` writes: the canvas link, the
+  request ID, and the node. F's closing sentence is dropped, since **Caching
+  and reruns** says every run is sent once. Image: Upscale's bullet is
   [12-node-upscale.md](12-node-upscale.md#step-2-the-upscale-operation)'s
   flow; Element: Add's is [13-node-element.md](13-node-element.md#step-3-element-add)'s.
 - **Sign-in and access** takes F's **Keys and access** shape: how to sign in,
   where the sign-in lives, the local-only rule and its way around, and the
-  private folder table with `DREAMINA_COMFY_STATE_DIRECTORY`
+  private folder table with `DREAMINA_COMFY_STATE_DIRECTORY`. As built, every
+  Dreamina Settings route is local-only, reading too, and multi-user mode
+  shows the dialog with changes disabled (`src/settings/access.py`); the
+  folder must lie outside ComfyUI, the extension, and their media folders
+  (`PRIVATE_STATE_LOCATION`)
   ([01-decisions.md](01-decisions.md#sign-in-and-privacy),
   [05-foundation.md](05-foundation.md#step-4-storage-constants)). The dialog's
   own words are [16-frontend.md](16-frontend.md#step-3-browser-text)'s
@@ -1055,7 +1060,9 @@ Notes on Step 3:
   ([05-foundation.md](05-foundation.md#step-18-the-installer)), the CLI
   page's one-line commands for a terminal, as the README's **Install** gives
   them ([research/cli.md](research/cli.md#release-and-install)), and the
-  version gate. The dialog shows no command.
+  version gate, checked once and again after an install or update, since
+  `validate_cli` keys a passed check by the binary's path and modification
+  time. The dialog shows no command.
 - **Settings** copies [05-foundation.md](05-foundation.md#step-3-settings-constants)'s
   defaults and ranges: the upload maximum is 210 MB, the first whole number
   of decimal megabytes above `seedance_2.5`'s 209,715,200-byte reference
@@ -1065,13 +1072,20 @@ Notes on Step 3:
 - **Models** copies the starting values of
   [01-decisions.md](01-decisions.md#choosing-a-model) and the mode rule of
   [01-decisions.md](01-decisions.md#how-the-mode-is-chosen), including that
-  `"mode": "m2v"` makes one or two images references. The checks are listed
-  once, under **When a node stops**.
+  `"mode": "m2v"` makes one or two images references, as one bullet per
+  node, with `src/dreamina/modes.py`'s rule that a model with one mode uses
+  it. Audio's bullet says `voice-name` fits text reading only, as the
+  `arguments` tooltip does. The claim that `ratio`, `resolution`, and
+  `duration` have no default on Dreamina is dropped: no run checked it, and
+  a required setting left out is a refusal under **When a node stops**,
+  where the checks are listed once.
 - **Credit ceiling** is new, from [01-decisions.md](01-decisions.md#credits)
   and [02-dreamina-contract.md](02-dreamina-contract.md#credit-approval): the
   approval Dreamina requires, why every run carries it, a ceiling below the
   price stopping with nothing billed, the draft left on the canvas, and
-  `--count 1`, said as "one output". It names no number. If run C-5 or a
+  `--count 1`, said as "one output". It names no number, and says the
+  starting ceiling covers the starting model, since `DEFAULT_CEILINGS` rounds
+  each quote up to the next 10. If run C-5 or a
   Part 0 finding in [21-test-runs.md](21-test-runs.md) changes how a ceiling
   of 0 or a missing price behaves, this section follows.
 - **References and uploads** takes the place of F's **Files and uploads**,
@@ -1083,18 +1097,21 @@ Notes on Step 3:
   in place of the key, sent once, uploads per run, and Dreamina's missing
   cancel ([02-dreamina-contract.md](02-dreamina-contract.md#waiting-and-recovery)).
 - **Recover a generation** is F's paragraph with Dreamina's facts: a record
-  per accepted run, no cancel, and a record deleted when Dreamina no longer
-  has the run, which also covers a record past retention
-  ([14-node-download.md](14-node-download.md#decisions)). It gives no number
-  of hours, because how long Dreamina keeps a submission is an open question
+  per accepted run, no cancel, a record deleted when Dreamina no longer has
+  the run, and the pack's own 30 days, after which a collect deletes the
+  record with `GENERATION_EXPIRED` (`RECORD_RETENTION_SECONDS`;
+  [14-node-download.md](14-node-download.md#decisions)). How long Dreamina
+  itself keeps a submission is still open
   ([research/cli.md](research/cli.md#open-questions), question 10).
 - **The canvas** is new, from [01-decisions.md](01-decisions.md#the-canvas):
   one canvas, its link in each `result` (the dialog has none), `--project-id`
-  on every call said in plain words, and a deleted canvas made again before
-  anything is billed.
+  on every call said in plain words, and a deleted canvas replaced by the
+  next run: a run that finds it gone stops with `CANVAS_MISSING` and asks
+  for another run, so "made again before anything is billed" is not said.
 - **Limits** keeps F's paragraph, with the file limits Model: Info reports
-  ([research/catalog.md](research/catalog.md#file-limits)) and the plan
-  sentence in place of fal's concurrency link.
+  ([research/catalog.md](research/catalog.md#file-limits)), the CLI's 30 MB
+  image limit (`UPLOAD_INVALID`), and the plan sentence in place of fal's
+  concurrency link.
 - **When a node stops** lists the checks the code makes, shared checks said
   once: 06's model, mode, and argument refusals, 07's reference and
   placeholder refusals and upload limit, and the free nodes' checks in 12,
@@ -1103,16 +1120,19 @@ Notes on Step 3:
 - **Use from another extension** is F's section re-valued from
   [23-live-shopping-provider.md](23-live-shopping-provider.md), which owns
   the contract: media as lists, `references` as returned, `credit_ceiling` on
-  every call, and Model: Info needing the CLI signed in.
+  every call, and the error `code`.
 - **Update or remove** adds the CLI, the skill folder its installer writes,
   and sign-out ([research/cli.md](research/cli.md#release-and-install)).
 - **Development** and **Package and publish** are F's word for word, with
-  names changed ([20-release.md](20-release.md) follows this). **Function
+  names changed ([20-release.md](20-release.md) follows this), except that
+  **Test a change** runs the smallest sizes and shortest durations, the
+  owner's test rule. **Function
   names** also lists the verbs of `quality/config/repository/functions.json`,
   so a reader sees them without opening the rules. **Images** is
   [19-brand-assets.md](19-brand-assets.md#text-for-advanced)'s text word for
   word.
-- **Troubleshooting** has ten entries, F's count. Each heading is the first
+- **Troubleshooting** has nine entries. `MODEL_LIST_UNREADABLE`'s entry is
+  dropped: its message already says everything the entry did. Each heading is the first
   sentence of a message the code shows, without its placeholders, copied
   from its owning plan:
 
@@ -1125,7 +1145,6 @@ Notes on Step 3:
   | Open Dreamina Settings from a browser on the ComfyUI computer, at a localhost address | `LOCAL_CONNECTION_REQUIRED`, [05-foundation.md](05-foundation.md#step-7-foundation-messages) |
   | The model is not in your Dreamina model list | `MODEL_UNKNOWN`, [06-model-check.md](06-model-check.md) |
   | Your Dreamina model list holds no models of this kind | `MODEL_LIST_EMPTY`, 06, its `{made}` written as "of this kind" |
-  | The Dreamina CLI sent a model list this extension cannot read | `MODEL_LIST_UNREADABLE`, 06 |
   | The Dreamina settings file has an unknown setting | `SETTING_UNKNOWN`, 05 |
   | A Dreamina state file is larger than expected | `STATE_FILE_SIZE`, 05 |
 
@@ -1135,8 +1154,7 @@ Notes on Step 3:
   cannot use a model, the safety check) and its fix needs more than the
   message can hold, its entry replaces the least needed entry above. No entry
   gives a price or a number of credits.
-- Length: 550 lines, the most the new sections allow: F's 546, plus four
-  for the one-line commands in **The Dreamina CLI**.
+- Length: 544 lines, within F's 546.
 
 ## Step 4: Help pages
 
@@ -1251,8 +1269,8 @@ After the captures:
 1. Correct each alt text in the README and ADVANCED to what the capture
    shows, with the inputs in node order and the labels as the dialog writes
    them, and give 19 the same text.
-1. The settings dialog shows no personal data: 19's step replaces the
-   account's name, email, or ID before the capture.
+1. The settings dialog shows no personal data: its account part shows only
+   "Signed in to Dreamina." and the plan, so nothing is replaced.
 1. The node screenshot shows the starting model the catalog gives,
    `seedance_2.0_mini`, with its starting `arguments`.
 1. The workflow screenshot's alt text names only the groups the crop shows,

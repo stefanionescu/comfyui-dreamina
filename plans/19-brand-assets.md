@@ -78,7 +78,7 @@ drafts are not kept in the repository.
 | What does Model: Info's subtitle say?      | "What a model takes"                                                                                                                                                           | F's ", for free" does not fit a third of the `SHARED` card. The hollow square already says it bills nothing.                                                                          |
 | Where is the logo's source?                | `.artifacts/brand/logo.svg`, which Git ignores, as F keeps it                                                                                                                  | B tracks no source for its logo; F keeps one so the logo can be rendered again.                                                                                                       |
 | How are the screenshots made?              | F's three roles and F's method: full-color crops at device scale 1, compressed with `oxipng`, in a 1,800 × 1,200 viewport                                                      | F's shipped screenshots (row 264 of `F/plans/README.md`). The Dreamina dialog has three parts, so the viewport is taller than F's 1,000 pixels.                                       |
-| What personal data may a screenshot show?  | None. Any account name, email, or ID is replaced before the capture. The dialog shows no canvas address.                                                                       | [rules/DOCUMENTATION.md](../rules/DOCUMENTATION.md) asks for realistic but fictional data, with personal information removed.                                                         |
+| What personal data may a screenshot show?  | None. The dialog's account part shows only "Signed in to Dreamina." and the plan, and no canvas address, so nothing is replaced.                                                | [rules/DOCUMENTATION.md](../rules/DOCUMENTATION.md) asks for realistic but fictional data, with personal information removed.                                                         |
 
 ## Palette
 
@@ -567,9 +567,9 @@ ComfyUI during the build unless the owner says).
 
 | Output                                            | Shows                                                                                                                | Expected size                                      | Used in                      |
 | ------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------- | -------------------------------------------------- | ---------------------------- |
-| `docs/images/screenshots/settings-dialog.png`     | The **Dreamina Settings** dialog, signed in, with default request limits: all three parts and the footer, nothing else | About 608 wide, the dialog's height; F's was 36 KB | ADVANCED **Settings**        |
-| `docs/images/screenshots/video-generate-node.png` | A new **Video: Generate** node, 420 pixels wide, with a model, a prompt, and `arguments` typed in; nothing connected | 452 wide, the node's height; F's was 12 KB         | README **Models**            |
-| `docs/images/screenshots/video-02-workflow.png`   | video-02 at 100% zoom: the **Start Here** note and the groups that fit the viewport                                  | Up to 1,800 wide; F's was 62 KB, B's 63 KB         | README **Example workflows** |
+| `docs/images/screenshots/settings-dialog.png`     | The **Dreamina Settings** dialog, signed in, with default request limits: all three parts and the footer, nothing else | 608 × 968, 40,109 bytes; F's was 36 KB            | ADVANCED **Settings**        |
+| `docs/images/screenshots/video-generate-node.png` | A new **Video: Generate** node, 420 pixels wide, with a model, a prompt, and `arguments` typed in; nothing connected | 452 × 352, 13,929 bytes; F's was 12 KB            | README **Models**            |
+| `docs/images/screenshots/video-02-workflow.png`   | video-02 at 100% zoom: the **Start Here** note and the groups that fit the viewport                                  | 1,722 × 744, 256 colors, 43,658 bytes; F's was 62 KB | README **Example workflows** |
 
 Why these three: they are F's three roles (the dialog, the main paid node,
 one example). Each shows what only this pack does: a dialog that installs the
@@ -593,16 +593,22 @@ example another slug, the file takes its slug.
 1. In ComfyUI's settings: the default dark theme, the Classic node design,
    100% canvas zoom, and link midpoint markers off (**Settings → Lite Graph →
    Link midpoint markers**: None). For the node and the workflow, turn on
-   focus mode, so no side panel shows.
+   focus mode, so no side panel shows. On 2026-10-17 the server already
+   had the dark theme, Classic nodes, and markers off, so no shared setting
+   changed.
+1. Drop the execution events of prompts other sessions run, so no node in
+   the page shows as running: with Playwright's `page.route_web_socket`,
+   connect to the server and forward every message except `status`,
+   `executing`, `progress`, `progress_state`, `executed`, and the
+   `execution_*` events. Nothing is queued from the page.
 
 ### Each view
 
 - **Settings dialog.** Open **ComfyUI menu → Extensions → Dreamina →
-  Dreamina Settings**. The dialog must not scroll; if it does, make the
-  viewport taller. Then remove personal data with `evaluate_script`: set the
-  text of any element that shows the account's name, email, or user ID to
-  `Dreamina account`. [16-frontend.md](16-frontend.md) names those elements'
-  classes.
+  Dreamina Settings** (the `dreamina.OpenSettings` command), and wait until
+  it shows the CLI version and the plan. The dialog must not scroll; if it
+  does, make the viewport taller. It shows no personal data: the account
+  part shows only "Signed in to Dreamina." and the plan.
 - **Video: Generate node.** Add a new **Video: Generate** node and set its
   width to 420 with `evaluate_script`
   (`node.setSize([420, node.size[1]])`, then `app.canvas.setDirty(true, true)`).
@@ -619,8 +625,9 @@ example another slug, the file takes its slug.
 
     Connect nothing. `credit_ceiling` and `run_number` keep their defaults.
 
-- **Workflow.** Open video-02 from **Browse Templates → dreamina**, and pan
-  so the **Start Here** note is at the top left.
+- **Workflow.** Open video-02 from **Browse Templates → dreamina**, or load
+  `example_workflows/video-02-film-a-product-ad.json` with
+  `app.loadGraphData`, and pan so the **Start Here** note is at the top left.
 
 ### Capture, crop, and compress
 
@@ -648,7 +655,9 @@ example another slug, the file takes its slug.
         };
         ```
 
-        At 100% zoom the width is 420 + 32 = 452, as F's is.
+        At 100% zoom the width is 420 + 32 = 452, as F's is. ComfyUI draws
+        the node's `dreamina` source badge above its title, so the crop
+        starts 12 pixels higher and is 12 taller: 452 × 352.
 
     - the workflow: the same computation over the **Start Here** note and
       every group (`group.pos`, `group.size`) whose right edge fits in the
@@ -664,7 +673,9 @@ example another slug, the file takes its slug.
 
 1. `stat` must print less than 100000. If it does not, crop closer and
    repeat. If the workflow is still too large, reduce it to 256 colors
-   without dithering, as B's plan did, then run `oxipng` again:
+   without dithering, as B's plan did, then run `oxipng` again. On
+   2026-10-17 the full-color workflow crop was 104,439 bytes, so it was
+   reduced:
 
     ```sh
     magick docs/images/screenshots/video-02-workflow.png +dither -colors 256 PNG8:docs/images/screenshots/video-02-workflow.png
@@ -688,23 +699,24 @@ sockets, then widgets, then text boxes.
 | ------------------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | `settings-dialog.png`     | The Dreamina Settings dialog, signed in: Dreamina CLI with the installed version and Update; Account with the plan and Sign out; Request limits with Request timeout (seconds), Maximum upload size (MB), Maximum download size (MB), and Save limits; and Reload settings at the bottom.                                              |
 | `video-generate-node.png` | Video: Generate on the canvas: the images, videos, audio, and references inputs; model set to seedance_2.0_mini; credit_ceiling; run_number; a prompt about a host holding up a green bottle; and arguments holding ratio 16:9, resolution 720p, and duration 4.                                                                         |
-| `video-02-workflow.png`   | Written from the capture in F's form: "Screenshot of video-02: the Start Here note and the &lt;name&gt; note sit above &lt;count&gt; groups. &lt;Group&gt; holds &lt;its nodes or prompts&gt;, and &lt;Group&gt; holds &lt;its nodes or prompts&gt;." It names only the groups the crop shows, with 17's group names.                    |
+| `video-02-workflow.png`   | Screenshot of video-02: the Start Here note and a note for each step sit above four groups. Input holds the Host, Product, and Scene prompts; Cast draws the host; Packshot draws the product; and Film sends both to Seedance 2.5.                                                                                                     |
 
 ### Text for ADVANCED
 
 [18-documentation.md](18-documentation.md) takes this text for the
-"Images" section of `ADVANCED.md`, in F's form:
+"Images" section of `ADVANCED.md`, in F's form, as shipped:
 
 > The README's and this guide's images are in `docs/images/`:
 >
 > - `brand/banner.svg`, `diagrams/node-map.svg`, and the four `badges/*.svg`
->   files are SVG files; edit them as text. They follow the owner's other
->   packs' layout in this pack's colors: near-black `#080A12`, surfaces
->   `#121522`, hairlines `#252A3A`, light text `#EEF3FF`, muted text
+>   files are SVG files; edit them as text. They use near-black `#080A12`,
+>   surfaces `#121522`, hairlines `#252A3A`, light text `#EEF3FF`, muted text
 >   `#8C93A8`, aqua `#60D5E6`, the gradient `#7FE3F0` to `#2F80FF` to
 >   `#6366F1`, and yellow `#F0FF41` for the mark's socket and one sparkle in
 >   each rail. Headings use Helvetica Neue with tight spacing; labels use a
->   monospace font in wide-spaced capitals.
+>   monospace font in wide-spaced capitals. The badges name the ComfyUI,
+>   frontend, and Python versions and the license; update them when those
+>   change.
 > - `brand/logo.png` is the extension's mark: a tilted four-point star,
 >   orange at its top point through aqua to blue, cut by a curved gap, with a
 >   yellow socket at the end of its right point, at 400 × 400 pixels on a
@@ -715,14 +727,10 @@ sockets, then widgets, then text boxes.
 > - The node map has one card for each kind of node. A blue square marks a
 >   node that starts a paid run, a hollow square one that bills nothing, and
 >   an arrow an output that feeds the next node.
-> - The badges under the banner name the ComfyUI, frontend, and Python
->   versions and the license, as near-black pills with a blue value; update
->   them when those change.
 > - `screenshots/video-02-workflow.png` is video-02 at 100% zoom, with link
->   midpoint markers off.
+>   midpoint markers off, in 256 colors.
 > - `screenshots/video-generate-node.png` is a new **Video: Generate** node,
->   420 pixels wide, at 100% zoom, with a model, a prompt, and `arguments`
->   typed in.
+>   420 pixels wide, at 100% zoom, with a prompt typed in.
 > - `screenshots/settings-dialog.png` is the **Dreamina Settings** dialog,
 >   signed in, with default request limits.
 >
