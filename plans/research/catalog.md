@@ -120,6 +120,46 @@ modes; `--prompt` is required in `t2i` and optional in `i2i`.
 - Resolution spelling is mixed in the lists (`720p`, `4K`, `4k`). The pack
   checks the value exactly as the flag's `values` list writes it.
 
+### Measured output
+
+Part 3 of [21-test-runs.md](../21-test-runs.md) ran every model and mode
+through **Video: Generate** on 2026-10-17, at each model's lowest resolution
+and shortest duration, `count` 1 unless noted. Credits are the quote and
+Dreamina's `creditsAmount`, which agreed on every row; Seconds run from
+queueing to the end of the run. Every video is 60 fps. Only the round 1
+`m2v` rows set `mode`; the node chose every other mode from what was
+connected. S-4 was filled earlier by C-14, and S-9 by V-2, which failed with
+20114.
+
+| Row  | Model               | Mode               | Settings sent                             | Credits | Seconds | Width × height | Duration (s) | Sound | Result | Notes                                                                                         |
+| ---- | ------------------- | ------------------ | ----------------------------------------- | ------- | ------- | -------------- | ------------ | ----- | ------ | --------------------------------------------------------------------------------------------- |
+| S-1  | `seedance_2.5`      | `t2v`              | 16:9, 480p, 4 s                           | 48      | 157     | 854 × 480      | 4.06         | yes   | pass   |                                                                                               |
+| S-2  | `seedance_2.0`      | `t2v`              | 16:9, 720p, 4 s                           | 52      | 152     | 1280 × 720     | 4.06         | yes   | pass   |                                                                                               |
+| S-3  | `seedance_2.0_fast` | `t2v`              | 16:9, 720p, 4 s                           | 24      | 208     | 1280 × 720     | 4.10         | yes   | pass   |                                                                                               |
+| S-5  | `seedance_pro_fast` | `t2v`              | 16:9, 720p, 5 s                           | 20      | 48      | 1248 × 704     | 5.02         | no    | pass   | Its 720p is 1248 × 704                                                                        |
+| S-6  | `seedance_2.5`      | `first_last_frame` | 1 image, 16:9, 480p, 4 s                  | 48      | 164     | 854 × 480      | 4.06         | yes   | pass   |                                                                                               |
+| S-7  | `seedance_2.0`      | `first_last_frame` | 1 image, 16:9, 720p, 4 s                  | 52      | 172     | 1280 × 720     | 4.06         | yes   | pass   |                                                                                               |
+| S-8  | `seedance_2.0_fast` | `first_last_frame` | 1 image, 16:9, 720p, 4 s                  | 24      | 152     | 1280 × 720     | 4.10         | yes   | pass   |                                                                                               |
+| S-10 | `seedance_pro_fast` | `first_last_frame` | 1 image, 16:9, 720p, 5 s                  | 20      | 52      | 1248 × 704     | 5.02         | no    | pass   |                                                                                               |
+| S-11 | `seedance_2.5`      | `first_last_frame` | 2 images, 16:9, 480p, 4 s                 | 48      | 172     | 854 × 480      | 4.06         | yes   | pass   |                                                                                               |
+| S-12 | `seedance_2.0`      | `first_last_frame` | 2 images, 16:9, 720p, 4 s                 | 52      | 136     | 1280 × 720     | 4.06         | yes   | pass   |                                                                                               |
+| S-13 | `seedance_2.0_fast` | `first_last_frame` | 2 images, 16:9, 720p, 4 s                 | 24      | 160     | 1280 × 720     | 4.10         | yes   | pass   |                                                                                               |
+| S-14 | `seedance_2.0_mini` | `first_last_frame` | 2 images, 16:9, 720p, 4 s                 | 16      | 84      |                |              |       | fail   | Resource `errorCode` 20114, `creditsAmount` 16                                                |
+| S-15 | `seedance_2.5`      | `m2v`              | 1 image, 16:9, 480p, 4 s                  | 48      | 160     | 854 × 480      | 4.06         | yes   | pass   |                                                                                               |
+| S-16 | `seedance_2.0`      | `m2v`              | 1 image, 16:9, 720p, 4 s                  | 52      | 144     | 1280 × 720     | 4.06         | yes   | pass   |                                                                                               |
+| S-17 | `seedance_2.0_fast` | `m2v`              | 1 image, 16:9, 720p, 4 s                  | 24      | 200     | 1280 × 720     | 4.10         | yes   | pass   |                                                                                               |
+| S-18 | `seedance_2.0_mini` | `m2v`              | 1 image, 16:9, 720p, 4 s                  | 16      | 140     | 1280 × 720     | 4.10         | yes   | pass   |                                                                                               |
+| S-19 | `seedance_2.0_mini` | `t2v`              | 9:16, 720p, 4 s                           | 16      | 100     | 720 × 1280     | 4.10         | yes   | pass   |                                                                                               |
+| S-20 | `seedance_2.0_mini` | `t2v`              | 16:9, 720p, 4 s, `count` 2                | 32      | 104     | 1280 × 720     | 4.10         | yes   | pass   | Two resources of 16 each; `references` holds both; **Save Video** saved two files             |
+| S-21 | `seedance_2.5`      | `m2v`              | 1 image and A-1's speech, 16:9, 480p, 4 s | 48      | 168     | 854 × 480      | 4.06         | yes   | pass   | The apple speaks A-1's line: the loudness pattern matches A-1's (correlation 0.83) from 0.5 s |
+| S-22 | `seedance_2.0_mini` | `m2v`              | `clip.mp4` only, 16:9, 720p, 4 s          | 36      | 140     | 1280 × 720     | 4.10         | yes   | pass   | A video reference raises the price from 16 to 36                                              |
+
+- `seedance_pro_fast` makes no sound and returns in under a minute; every
+  Seedance 2.x video has sound.
+- 20114 failed three `seedance_2.0_mini` runs (V-1, V-2, S-14), while other
+  runs of that model passed, among them S-18, S-19, S-20, and S-22 with the
+  same prompt.
+
 ## Audio models
 
 | Model           | Mode and scenario       | Flags                                                   | References                                                                 |

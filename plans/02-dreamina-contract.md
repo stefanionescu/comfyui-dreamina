@@ -467,6 +467,12 @@ item carries `nodeId`, `result`, `node`, `errorCode`, and `errmsg`, and
   `promptParts[]`;
 - `upstreamNodeIds`, `layout`, `title`, `status`, `resourceObservedAtMs`.
 
+A failed resource has `status` `failed`, a numeric `errorCode`, no message,
+and still shows its `creditsAmount`. Code 20114 is undocumented. It failed
+three `seedance_2.0_mini` runs on 2026-10-17 (V-1, V-2, and S-14 in
+[21-test-runs.md](21-test-runs.md)) after 80 to 100 seconds, while the same
+model and settings passed in other runs.
+
 The pack downloads the resources of the run's submit ID, in order. Every
 resource of the node carries `submitId`. The whole `node` goes into `result`
 ([01-decisions.md](01-decisions.md#outputs)).
@@ -568,7 +574,7 @@ node create element --project-id <canvas> --main <node-id|resource-id>
 | Stopped at the ceiling (exit 10)                       | No: "nothing has been charged"                                                          | skill    |
 | Refused at save, before the quote                      | No                                                                                      | skill (save precedes quote) |
 | Accepted, then the wait is canceled or times out      | Yes, the generation keeps running                                                       | skill: no cancel |
-| Accepted, then the generation fails                    | **Unconfirmed**. The skill warns against describing "net spend or refund status" without ledger facts | run C-17 |
+| Accepted, then the generation fails                    | **Unconfirmed**. The skill warns against describing "net spend or refund status" without ledger facts. The three 20114 failures show `creditsAmount` 16 each | run C-17 |
 | A replayed submit ID                                   | No: "reusing the same `submitId` replays the first run and does not charge twice"        | skill    |
 | Uploads, Elements, imports, reads                      | No                                                                                      | skill    |
 

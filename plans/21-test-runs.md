@@ -1570,8 +1570,8 @@ doubles the price.
 | S-19 | The cheapest `t2v` at 9:16 | The vertical shape live-shopping uses | 16 |
 | S-20 | The cheapest `t2v` with `count` 2 | Two outputs: two resources, and `references` holding each as `res:` ([01-decisions.md](01-decisions.md#references)) | 32 |
 | S-21 | `seedance_2.5` `m2v` at 480p with an image and A-1's speech | An audio reference: does the video speak the line? | 48 |
-| S-22 | The cheapest `m2v` with `clip.mp4` only | A video reference alone | 16 |
-| | **Total** | | **112** |
+| S-22 | The cheapest `m2v` with `clip.mp4` only | A video reference alone | 36 (quoted; Part 0 priced no video reference) |
+| | **Total** | | **132** |
 
 The quotes:
 

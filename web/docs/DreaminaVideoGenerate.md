@@ -10,7 +10,7 @@ video, and a reference to it for the next Dreamina node.
 | ---------------- | ---------------------------------------------------------------------------------------------------------------------------- |
 | `images`         | Frames or reference images, uploaded with the run. **Create List** joins several.                                            |
 | `videos`         | Reference videos, uploaded with the run.                                                                                     |
-| `audio`          | Reference audio, uploaded with the run.                                                                                      |
+| `audio`          | Reference audio, uploaded with the run. A recorded line becomes the speech in the video.                                     |
 | `references`     | Outputs of other Dreamina nodes, and Elements, sent with no upload.                                                          |
 | `model`          | The model's Dreamina name, such as `seedance_2.5`. The default is `seedance_2.0_mini`.                                       |
 | `credit_ceiling` | The most credits the run may cost. A run that costs more stops, and nothing is billed.                                       |
@@ -40,7 +40,8 @@ references, set `"mode": "m2v"` in `arguments`.
    the first is the first frame, and the second the last.
 3. Connect `video` to **Save Video**, and select **Run**.
 
-Dreamina cannot stop a run it has accepted. If you cancel, ComfyUI restarts,
+The node makes one video unless `arguments` sets `count`, and each video is
+billed. Dreamina cannot stop a run it has accepted. If you cancel, ComfyUI restarts,
 or the **Request timeout (seconds)** passes, the video is still made and
 billed. Collect it with **Generation: Download**.
 
