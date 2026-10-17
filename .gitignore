@@ -1,0 +1,4 @@
+# The plans are tracked; the copy of ByteDance's skill and the account captures stay local
+/plans/research/docs/
+/plans/research/captures/
+.DS_Store
