@@ -436,15 +436,7 @@
         }
       ],
       "outputs": [],
-      "properties": {
-        "previewExposures": [
-          {
-            "name": "video-preview",
-            "sourceNodeId": "202",
-            "sourcePreviewName": "video-preview"
-          }
-        ]
-      },
+      "properties": {},
       "widgets_values": [
         ""
       ],
@@ -480,15 +472,7 @@
         }
       ],
       "outputs": [],
-      "properties": {
-        "previewExposures": [
-          {
-            "name": "video-preview",
-            "sourceNodeId": "302",
-            "sourcePreviewName": "video-preview"
-          }
-        ]
-      },
+      "properties": {},
       "widgets_values": [
         ""
       ],

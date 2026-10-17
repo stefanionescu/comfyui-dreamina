@@ -6,10 +6,10 @@ import json
 from scripts.nodes.host import HostNode
 from src.config.namespace import NODE_PREFIX
 from scripts.workflows.descriptions.audio import CAST
+from scripts.workflows.page.config import STAGE_COLOUR
 from scripts.workflows.descriptions.texts import SHARED_TEXTS
 from scripts.workflows.descriptions.nodes import VIDEO_GENERATE
 from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
-from scripts.workflows.page.config import STAGE_COLOUR, VIDEO_PREVIEW
 from scripts.workflows.page.graph import Node, Group, Subgraph, Workflow
 
 SHOT_ARGUMENTS = json.dumps({"ratio": "9:16", "resolution": "720p", "duration": 4}, indent=2)
@@ -37,7 +37,6 @@ SHOT_1 = Subgraph(
     columns=(("video",), ("save",)),
     inputs=(("element", "video.references"), ("scene", "video.prompt")),
     description=KEEP_TEXTS["shot_1_description"],
-    previews=(("save", VIDEO_PREVIEW),),
 )
 
 SHOT_2 = Subgraph(
@@ -50,7 +49,6 @@ SHOT_2 = Subgraph(
     columns=(("video",), ("save",)),
     inputs=(("element", "video.references"), ("scene", "video.prompt")),
     description=KEEP_TEXTS["shot_2_description"],
-    previews=(("save", VIDEO_PREVIEW),),
 )
 
 KEEP_HOST_ACROSS_SHOTS = Workflow(

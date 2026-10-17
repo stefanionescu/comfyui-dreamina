@@ -39,15 +39,7 @@
         }
       ],
       "outputs": [],
-      "properties": {
-        "previewExposures": [
-          {
-            "name": "video-preview",
-            "sourceNodeId": "102",
-            "sourcePreviewName": "video-preview"
-          }
-        ]
-      },
+      "properties": {},
       "widgets_values": [
         ""
       ],

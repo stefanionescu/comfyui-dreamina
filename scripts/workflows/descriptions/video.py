@@ -8,9 +8,9 @@ from src.config.namespace import NODE_PREFIX
 from scripts.workflows.descriptions.audio import CAST
 from scripts.workflows.descriptions.texts import SHARED_TEXTS
 from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
+from scripts.workflows.page.config import STAGE_COLOUR, IMAGE_PREVIEW
 from scripts.workflows.page.graph import Node, Group, Subgraph, Workflow
 from scripts.workflows.descriptions.nodes import IMAGE_GENERATE, VIDEO_GENERATE
-from scripts.workflows.page.config import STAGE_COLOUR, IMAGE_PREVIEW, VIDEO_PREVIEW
 
 SEEDANCE_2_5 = "seedance_2.5"
 PORTRAIT_ARGUMENTS = json.dumps({"ratio": "9:16", "resolution": "2K"}, indent=2)
@@ -67,7 +67,6 @@ ANIMATE = Subgraph(
     columns=(("video",), ("save",)),
     inputs=(("references", "video.references"), ("scene", "video.prompt")),
     description=ANIMATE_TEXTS["animate_description"],
-    previews=(("save", VIDEO_PREVIEW),),
 )
 
 ANIMATE_HOST = Workflow(
@@ -120,7 +119,6 @@ FILM = Subgraph(
     columns=(("video",), ("save",)),
     inputs=(("host", "video.references"), ("product", "video.images"), ("scene", "video.prompt")),
     description=FILM_TEXTS["film_description"],
-    previews=(("save", VIDEO_PREVIEW),),
 )
 
 FILM_AD = Workflow(
@@ -158,7 +156,6 @@ SHOT = Subgraph(
     links=(("video.video", "save.video"),),
     columns=(("video",), ("save",)),
     description=RECOVER_TEXTS["shot_description"],
-    previews=(("save", VIDEO_PREVIEW),),
 )
 
 RECOVER_VIDEO = Workflow(

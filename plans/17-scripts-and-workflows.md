@@ -255,9 +255,10 @@ Two edits:
    The save nodes are sized for their empty state; ComfyUI grows them as
    their viewers fill. `IMAGE` and `SAVE_AUDIO` were measured as below.
 
-There is no `AUDIO_PREVIEW`: frontend 1.52.7 shows no audio player on a
-placed subgraph (Results, 2026-10-17), so **Voice** and **Speak** expose no
-preview, and their notes say where each file is saved.
+There is no `AUDIO_PREVIEW` or `VIDEO_PREVIEW`: frontend 1.52.7 shows no
+audio player on a placed subgraph, and a broken image in place of a video
+(Results, 2026-10-17). Only `IMAGE_PREVIEW` is exposed, and each note says
+where its files are saved.
 
 ### Re-measure the page on frontend 1.52.7
 
@@ -362,14 +363,23 @@ canvas zoom 1, with nothing queued.
 - video-04's `graphToPrompt()` output holds `DreaminaGenerationDownload`
   and `SaveVideo` only: the bypassed **Shot** bypasses its inner nodes, and
   the group stays.
-- **Subgraph previews.** After audio-01's run, its output replayed into the
-  opened template (the `executed` event for `7:102`) left **Voice** with no
-  audio player, before and after switching to another workflow and back:
-  the inner **Save Audio (Advanced)** received the file, but its `audioUI`
-  player stayed hidden inside the subgraph. The same event gave a
-  **Save Audio (Advanced)** placed on the page its player. `AUDIO_PREVIEW`
-  and both audio entries in `previews` are removed, and audio-01, audio-02,
-  and the **Voice** and **Speak** blueprints are rebuilt.
+- **Subgraph previews.** Each kind was checked by replaying a real run's
+  output into the opened template (ComfyUI's `executed` event for the inner
+  node), with the same event sent to the same node placed on the page as a
+  control, with Nodes 2.0 off and on. Every control showed its result.
+
+  | Placed subgraph (inner node)                                        | Nodes 2.0 off                                    | Nodes 2.0 on                                 |
+  | ------------------------------------------------------------------- | ------------------------------------------------ | -------------------------------------------- |
+  | Voice (`7:102` Save Audio (Advanced)), audio-01                     | Nothing, also after switching workflows and back | Nothing                                      |
+  | Design (`4:102` Save Image), image-01                               | Nothing, also at 340 × 420                       | The image                                    |
+  | Portrait (`6:102` Preview Image), video-01                          | Nothing                                          | The image                                    |
+  | Animate (`7:202` Save Video), video-01; Shot 1 (`11:202`), video-03 | Nothing                                          | "Image failed to load" in place of the video |
+
+  `AUDIO_PREVIEW`, `VIDEO_PREVIEW`, and their `previews` entries are
+  removed, and audio-01, audio-02, video-01 to video-04, and the **Voice**,
+  **Speak**, **Animate**, **Film**, **Shot**, **Shot 1**, and **Shot 2**
+  blueprints are rebuilt. `IMAGE_PREVIEW` stays: it shows with Nodes 2.0 on
+  and draws nothing with it off.
 
 ## The page engine
 
@@ -517,9 +527,10 @@ the build ("{node}.{input} does not accept …").
 1. **Its links.** Add each link as `("key.output", "key.input")`. A subgraph
    input or output it feeds goes in the subgraph's `inputs` or `outputs`.
 1. **Its result.** If it saves or shows a result inside a subgraph, add it
-   to `previews`: `IMAGE_PREVIEW` for **Save Image** and **Preview Image**,
-   and `VIDEO_PREVIEW` for **Save Video**. **Save Audio (Advanced)** takes
-   none: frontend 1.52.7 shows no audio player on a placed subgraph.
+   to `previews`: `IMAGE_PREVIEW` for **Save Image** and **Preview Image**.
+   **Save Audio (Advanced)** and **Save Video** take none: frontend 1.52.7
+   shows no audio player on a placed subgraph, and a broken image in place
+   of a video.
 1. **Its texts.** A title or a new group takes a `SHARED_TEXTS` key; a new
    group takes a note, and a new subgraph a description, in `notes.py`.
 1. Run `mise run comfy:workflows:build`, and read the build's message if it
@@ -1197,7 +1208,7 @@ Subgraph Portrait (PORTRAIT): inputs host → draw.prompt; outputs references �
   links     draw.images → look.images
   columns   [draw] [look]
 
-Subgraph Animate (ANIMATE): inputs references → video.references, scene → video.prompt; previews save VIDEO_PREVIEW
+Subgraph Animate (ANIMATE): inputs references → video.references, scene → video.prompt
   video     DreaminaVideoGenerate (paid)  {arguments: ANIMATE_ARGUMENTS}
   save      SAVE_VIDEO  {filename_prefix: "video/dreamina/host"}
   links     video.video → save.video
@@ -1264,7 +1275,7 @@ Subgraph Packshot: inputs product → draw.prompt; outputs images ← draw.image
   links     draw.images → look.images
   columns   [draw] [look]
 
-Subgraph Film: inputs host → video.references, product → video.images, scene → video.prompt; previews save VIDEO_PREVIEW
+Subgraph Film: inputs host → video.references, product → video.images, scene → video.prompt
   video     DreaminaVideoGenerate (paid)  {model: SEEDANCE_2_5, arguments: FILM_ARGUMENTS}
   save      SAVE_VIDEO  {filename_prefix: "video/dreamina/product-ad"}
   links     video.video → save.video
@@ -1350,7 +1361,7 @@ Group Shot 2 (shot_2, STAGE): columns [shot_2]
 
 Subgraph Cast: CAST, as in audio-02
 
-Subgraph Shot 1: inputs element → video.references, scene → video.prompt; previews save VIDEO_PREVIEW
+Subgraph Shot 1: inputs element → video.references, scene → video.prompt
   video     DreaminaVideoGenerate (paid)  {arguments: SHOT_ARGUMENTS}
   save      SAVE_VIDEO  {filename_prefix: "video/dreamina/host-shot-1"}
   links     video.video → save.video
@@ -1436,7 +1447,7 @@ Group Collect (collect, STAGE): columns [download] [save]
 Group Shot (shot, STAGE): columns [shot]
   shot      subgraph Shot  (bypassed)
 
-Subgraph Shot: previews save VIDEO_PREVIEW
+Subgraph Shot
   video     DreaminaVideoGenerate (paid)  {prompt: SHOT_PROMPT}
   save      SAVE_VIDEO  {filename_prefix: "video/dreamina/shot"}
   links     video.video → save.video

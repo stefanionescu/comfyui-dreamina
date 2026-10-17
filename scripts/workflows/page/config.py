@@ -4,10 +4,9 @@ from scripts.nodes.host import HostNode
 
 # The note node the page draws each group's text in.
 NOTE = "MarkdownNote"
-# The previews a save node draws, which a placed subgraph can show: an image and a video player. Frontend 1.52.7
-# shows no audio player on a placed subgraph.
+# The image a save or preview node draws, which a placed subgraph shows with Nodes 2.0 on. Frontend 1.52.7 shows
+# no audio player there, and a broken image in place of a video.
 IMAGE_PREVIEW = "$$canvas-image-preview"
-VIDEO_PREVIEW = "video-preview"
 # Page layout: distances in page pixels.
 GUTTER = 30
 # Space between nodes inside a group.
@@ -99,7 +98,6 @@ __all__ = [
     "STAGE_COLOUR",
     "SUBGRAPH_ID_STEP",
     "TITLE_HEIGHT",
-    "VIDEO_PREVIEW",
     "WIDGETS_PADDING",
     "WIDGET_GAP",
     "WIDGET_HEIGHT",
