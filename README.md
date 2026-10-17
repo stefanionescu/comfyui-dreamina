@@ -81,6 +81,7 @@ From the folder that holds `ComfyUI` and `python_embeded`, in PowerShell:
 | ----------------------------------------------------------------------------------- | ---------------------------- |
 | [Image: Design a Host](example_workflows/image-01-design-a-host.json)               | A host description           |
 | [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json) | A product photo and a change |
+| [Image: Upscale a Poster](example_workflows/image-03-upscale-a-poster.json)         | A brief                      |
 
 They are in **Browse Templates → dreamina**. Start with each workflow's
 **Start Here** note. Most steps are subgraphs. Media inputs start empty, and
@@ -90,9 +91,10 @@ most workflows make their own inputs with Dreamina models.
 
 The nodes are under **Dreamina** in the node menu, and each has a help page.
 
-| Node                                                 | What it does                                         | Paid |
-| ---------------------------------------------------- | ---------------------------------------------------- | ---- |
-| [Image: Generate](web/docs/DreaminaImageGenerate.md) | Makes or edits images with any Dreamina image model. | Yes  |
+| Node                                                 | What it does                                             | Paid |
+| ---------------------------------------------------- | -------------------------------------------------------- | ---- |
+| [Image: Generate](web/docs/DreaminaImageGenerate.md) | Makes or edits images with any Dreamina image model.     | Yes  |
+| [Image: Upscale](web/docs/DreaminaImageUpscale.md)   | Makes images larger and sharper with Dreamina's upscale. | Yes  |
 
 ## License
 

@@ -21,10 +21,16 @@ class SchemaFlag(Reply):
 
     Attributes:
         name: The flag's name without its dashes.
+        type: The flag's value type, such as string or integer.
+        default: The value the CLI uses when the flag is left out.
+        constraints: The flag's rule as the schema writes it, such as normal|pro or 1..100.
 
     """
 
     name: str
+    type: str = ""
+    default: Json = None
+    constraints: str = ""
 
 
 class SchemaCommand(Reply):
@@ -369,6 +375,62 @@ class VoicePage(Reply):
     models: dict[str, ModelVoices]
 
 
+class ElementReply(Reply):
+    """The reply of node create element and of an import with node create image --resource-id.
+
+    Attributes:
+        node: The saved node.
+
+    """
+
+    node: NodeView
+
+
+class UpscaleError(Reply):
+    """Why Dreamina refused one image of an upscale.
+
+    Attributes:
+        status_code: Dreamina's code for the refusal.
+        message: Dreamina's text, shown cleaned.
+
+    """
+
+    status_code: int | None = Field(default=None, alias="serviceCode")
+    message: str = ""
+
+
+class UpscaleItem(Reply):
+    """One image of an upscale.
+
+    Attributes:
+        source_node_id: The image node upscaled.
+        submit_id: The upscale's submit ID for this image.
+        node_id: The new node that holds the upscaled image; None when Dreamina refused it.
+        resource_ids: The new resources.
+        state: The item's state, such as ACCEPTED.
+        error: Why Dreamina refused it.
+
+    """
+
+    source_node_id: str = Field(alias="sourceNodeId")
+    submit_id: str = Field(alias="submitId")
+    node_id: str | None = Field(default=None, alias="nodeId")
+    resource_ids: tuple[str, ...] = Field(default=(), alias="resourceIds")
+    state: str
+    error: UpscaleError | None = None
+
+
+class UpscaleReply(Reply):
+    """The reply of node upscale image.
+
+    Attributes:
+        items: One item per image, matched to the sources by source node ID.
+
+    """
+
+    items: tuple[UpscaleItem, ...] = ()
+
+
 __all__ = [
     "AccountReply",
     "AuthChallenge",
@@ -378,6 +440,7 @@ __all__ = [
     "CanvasProject",
     "CanvasReply",
     "DownloadReply",
+    "ElementReply",
     "ModelVoices",
     "NodeResource",
     "NodeShowItem",
@@ -393,6 +456,9 @@ __all__ = [
     "Submission",
     "SubmissionError",
     "UploadReply",
+    "UpscaleError",
+    "UpscaleItem",
+    "UpscaleReply",
     "VersionReply",
     "Voice",
     "VoicePage",

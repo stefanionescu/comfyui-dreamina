@@ -38,6 +38,7 @@ The node makes one image unless `arguments` sets `count`. Once Dreamina
 accepts a run, a cancel stops only the wait: the images are still made and
 billed.
 
-Examples: **image-01-design-a-host** and **image-02-edit-a-product-photo**.
+Examples: **image-01-design-a-host**, **image-02-edit-a-product-photo**, and
+**image-03-upscale-a-poster**.
 
 [Dreamina](https://dreamina.capcut.com/ai-tool/home)

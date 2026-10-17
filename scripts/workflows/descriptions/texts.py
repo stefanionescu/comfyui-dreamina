@@ -9,6 +9,9 @@ SHARED_TEXTS = {
     "photo": "Photo",
     "change": "Change",
     "edit": "Edit",
+    "brief": "Brief",
+    "poster": "Poster",
+    "enlarge": "Enlarge",
 }
 
 __all__ = ["SHARED_TEXTS"]

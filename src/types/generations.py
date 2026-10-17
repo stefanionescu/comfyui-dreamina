@@ -117,6 +117,58 @@ class RunCall:
 
 
 @dataclass(frozen=True, slots=True)
+class UpscaleRequest:
+    """One upscale a node asks for, as its inputs came; send checks it against the CLI's schema.
+
+    Attributes:
+        images: The ComfyUI images to upload and import, one per frame, in order.
+        references: The connected references, in socket order.
+        credit_ceiling: The most credits the whole batch may cost.
+        arguments: The arguments input's JSON text.
+        title: The node's display name, the title of each imported image node.
+
+    """
+
+    images: tuple[LocalMedia, ...]
+    references: tuple[Reference, ...]
+    credit_ceiling: int
+    arguments: str
+    title: str
+
+
+@dataclass(frozen=True, slots=True)
+class UpscaleCall:
+    """One upscale call, built after every check and import: one submit ID per source, one ceiling for all.
+
+    Attributes:
+        project_id: The canvas the sources are on.
+        sources: The image node IDs, references first.
+        submit_ids: One new submit ID per source, in the same order.
+        flags: The --mode, --resolution, and --detail pairs arguments sets.
+        mode: The upscale mode that runs, recorded with each source.
+        credit_ceiling: The most credits the whole batch may cost.
+
+    """
+
+    project_id: str
+    sources: tuple[str, ...]
+    submit_ids: tuple[str, ...]
+    flags: tuple[str, ...]
+    mode: str
+    credit_ceiling: int
+
+    @property
+    def arguments(self) -> tuple[str, ...]:
+        """Write the upscale call, which is sent once and never again."""
+        return (
+            "node", "upscale", "image", "--project-id", self.project_id,
+            *(item for source in self.sources for item in ("--node-id", source)),
+            *(item for submit_id in self.submit_ids for item in ("--submit-id", submit_id)),
+            *self.flags, "--credit-ceiling", str(self.credit_ceiling),
+        )  # fmt: skip
+
+
+@dataclass(frozen=True, slots=True)
 class OutputFile:
     """One downloaded output, checked against Dreamina's size and SHA-256.
 
@@ -154,4 +206,13 @@ class GenerationResult:
     request_id: str | None
 
 
-__all__ = ["CanvasRecord", "GenerationPlan", "GenerationRecord", "GenerationResult", "OutputFile", "RunCall"]
+__all__ = [
+    "CanvasRecord",
+    "GenerationPlan",
+    "GenerationRecord",
+    "GenerationResult",
+    "OutputFile",
+    "RunCall",
+    "UpscaleCall",
+    "UpscaleRequest",
+]

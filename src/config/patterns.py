@@ -10,6 +10,9 @@ VERSION_PATTERN = r"^(\d+)\.(\d+)\.(\d+)(?:[-+][0-9A-Za-z.-]+)?$"
 # braces, not after the backslash the CLI uses for a literal {{.
 PLACEHOLDER_PATTERN = r"(?<!\\)\{\{(image|video|audio|reference)([1-9][0-9]*)\}\}"
 
+# A whole-number range at the start of a schema constraint, such as "1..100" or "1..20 unique canonical Node IDs".
+SCHEMA_RANGE_PATTERN = r"^(\d+)\.\.(\d+)\b"
+
 # A CLI reason or the installer's output is cleaned before a person sees it. Links, file paths, and identifier-shaped
 # text are removed. Identifier-shaped text is a UUID, a canvas node ID, or a run of 32 or more letters, digits, and
 # base64 signs that holds both a letter and a digit.
@@ -27,5 +30,6 @@ __all__ = [
     "PLACEHOLDER_PATTERN",
     "REASON_PATTERNS",
     "REVISION_PATTERN",
+    "SCHEMA_RANGE_PATTERN",
     "VERSION_PATTERN",
 ]

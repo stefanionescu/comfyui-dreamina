@@ -21,15 +21,18 @@ from ..config.dreamina import CALL_SECONDS, MINIMUM_VERSION, REQUIRED_COMMANDS, 
 if TYPE_CHECKING:
     from ..types import Reply
     from collections.abc import Iterator
-    from ..types.replies import SchemaCommand
+    from ..types.replies import SchemaFlag, SchemaCommand
 
 _VERSION = re.compile(VERSION_PATTERN)
 # The oldest release accepted, as three numbers.
 _MINIMUM = tuple(int(part) for part in MINIMUM_VERSION.split("."))
-# The binaries whose contract passed in this process, by path and modification time.
-_VALIDATED: set[str] = set()
+# Each command this extension sends, with its flags by name, by command path.
+type CommandFlags = dict[str, dict[str, SchemaFlag]]
+
+# The binaries whose contract passed in this process, by path and modification time, with their command flags.
+_VALIDATED: dict[str, CommandFlags] = {}
 # The validations in flight on each event loop, keyed like _VALIDATED, which callers asking at the same time share.
-_VALIDATIONS: weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, dict[str, asyncio.Task[None]]] = (
+_VALIDATIONS: weakref.WeakKeyDictionary[asyncio.AbstractEventLoop, dict[str, asyncio.Task[CommandFlags]]] = (
     weakref.WeakKeyDictionary()
 )
 
@@ -55,16 +58,16 @@ async def _read_document[R: Reply](command: str, record: type[R]) -> R:
 
 def _list_commands(
     commands: tuple[SchemaCommand, ...], parents: tuple[str, ...] = ()
-) -> Iterator[tuple[str, frozenset[str]]]:
-    """Yield each command's path, its parents' names and its own joined by spaces, with its flag names."""
+) -> Iterator[tuple[str, dict[str, SchemaFlag]]]:
+    """Yield each command's path, its parents' names and its own joined by spaces, with its flags by name."""
     for command in commands:
         path = (*parents, command.name)
-        yield " ".join(path), frozenset(flag.name for flag in command.flags)
+        yield " ".join(path), {flag.name: flag for flag in command.flags}
         yield from _list_commands(command.subcommands, path)
 
 
-async def _read_contract() -> None:
-    """Refuse a CLI that is too old, or that lacks a command or a flag this extension sends."""
+async def _read_contract() -> CommandFlags:
+    """Refuse a CLI that is too old, or that lacks a command or a flag this extension sends; return their flags."""
     version = (await _read_document("version", VersionReply)).version
     if not is_current_version(version):
         raise DreaminaError(ErrorCode.CONFIGURATION, CLI_OUTDATED.format(version=version, minimum=MINIMUM_VERSION))
@@ -77,9 +80,12 @@ async def _read_contract() -> None:
         missing = path if names is None else next((f"{path} --{flag}" for flag in flags if flag not in names), None)
         if missing is not None:
             raise DreaminaError(ErrorCode.CONFIGURATION, CLI_CHANGED.format(command=missing))
+    return {path: commands[path] for path in REQUIRED_COMMANDS}
 
 
-def _delete_validation(validations: dict[str, asyncio.Task[None]], key: str, task: asyncio.Task[None]) -> None:
+def _delete_validation(
+    validations: dict[str, asyncio.Task[CommandFlags]], key: str, task: asyncio.Task[CommandFlags]
+) -> None:
     """Drop a finished validation, so a later caller checks again when this one failed.
 
     Its failure already reached every caller still waiting; taking it here keeps a validation whose callers all
@@ -98,11 +104,12 @@ def is_current_version(version: str | None) -> bool:
     return match is not None and tuple(int(part) for part in match.groups()) >= _MINIMUM
 
 
-async def validate_cli() -> None:
+async def validate_cli() -> CommandFlags:
     """Check the installed CLI once per process, sharing the check with every caller that asks at the same time.
 
-    A task belongs to its event loop, and ComfyUI runs each prompt on a new one, so the checks in flight are kept per
-    loop. A caller's cancel leaves the check running for the others.
+    It returns the schema's flags of every command this extension sends, so a caller that needs a flag's rule reads it
+    from the same check. A task belongs to its event loop, and ComfyUI runs each prompt on a new one, so the checks in
+    flight are kept per loop. A caller's cancel leaves the check running for the others.
     """
     binary = find_binary()
     try:
@@ -111,15 +118,16 @@ async def validate_cli() -> None:
         key = None
     if key is None:
         raise DreaminaError(ErrorCode.CONFIGURATION, CLI_MISSING)
-    if key in _VALIDATED:
-        return
+    flags = _VALIDATED.get(key)
+    if flags is not None:
+        return flags
     validations = _VALIDATIONS.setdefault(asyncio.get_running_loop(), {})
     task = validations.get(key)
     if task is None:
         task = validations[key] = asyncio.create_task(_read_contract())
         task.add_done_callback(lambda done: _delete_validation(validations, key, done))
-    await asyncio.shield(task)
-    _VALIDATED.add(key)
+    flags = _VALIDATED[key] = await asyncio.shield(task)
+    return flags
 
 
 __all__ = ["is_current_version", "validate_cli"]

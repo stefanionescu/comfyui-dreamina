@@ -44,9 +44,9 @@
                 "reason": "The run wrapper calls it through the Operation protocol."
             },
             {
-                "path": "src/nodes/outputs.py",
-                "names": ["build_result_document"],
-                "reason": "Called by a node built in a later milestone."
+                "path": "src/dreamina/upscale.py",
+                "names": ["UpscaleOperation.validate"],
+                "reason": "The run wrapper calls it through the Operation protocol."
             }
         ]
     },

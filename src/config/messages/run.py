@@ -98,6 +98,13 @@ TITLE_REQUIRED = (
     "run again."
 )
 
+UPSCALE_PARTLY_REFUSED = (
+    "Dreamina refused to upscale image {number}: {reason} The other images are being upscaled and billed. Collect "
+    "them with Generation: Download."
+)
+
+UPSCALE_REFUSED = "Dreamina refused to upscale image {number}: {reason}"
+
 UPGRADE_REQUIRED = (
     "Dreamina no longer accepts this version of the Dreamina CLI. Select Update in Dreamina Settings, then try again."
 )
@@ -126,4 +133,6 @@ __all__ = [
     "SIGN_IN_REQUIRED",
     "TITLE_REQUIRED",
     "UPGRADE_REQUIRED",
+    "UPSCALE_PARTLY_REFUSED",
+    "UPSCALE_REFUSED",
 ]
