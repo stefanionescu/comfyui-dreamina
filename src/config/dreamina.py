@@ -91,10 +91,18 @@ EXIT_CODES = {
     "INCOMPLETE": 20,
 }
 
+# The phase a failure of the CLI's own records reports when Dreamina had already accepted the run.
+ACCEPTED_PHASE = "after_submit"
+
 # How long one call may take when no run's deadline bounds it, in seconds. LOCAL bounds version and schema, which read
-# only this computer.
+# only this computer. READ bounds a canvas call and the read-only check of a lost run reply. RUN bounds the run call,
+# which saves, quotes, approves, and submits, and returns once Dreamina accepts the run. WAIT bounds one operation wait
+# of WAIT_SLICE, with room for the CLI to start and to finish its last read.
 CALL_SECONDS = {
     "LOCAL": 10,
+    "READ": 60,
+    "RUN": 120,
+    "WAIT": 45,
 }
 
 # A reply is read in chunks. stdout holds a success reply, the largest being the 272,322-byte schema reply; stderr
@@ -120,6 +128,15 @@ DREAMINA_URLS = {
     "cli_page": "dreamina.capcut.com/canvas-cli",
 }
 
+# One short operation wait; the loop calls it again until the run ends or the request timeout passes. A Go duration.
+WAIT_SLICE = "15s"
+
+# The canvas every node of this extension lives on.
+CANVAS_NAME = "ComfyUI"
+
+# The canvases listed per canvas ls page, the CLI's maximum.
+CANVAS_PAGE_SIZE = 100
+
 # How long each call of Dreamina Settings and the account read may take, in seconds. LOCAL bounds version, auth
 # status, and auth logout, which read or clear state on this computer. NETWORK bounds auth login and auth account,
 # which call Dreamina. WAIT_MARGIN is the time auth wait gets beyond its own --timeout, so the CLI ends the wait first.
@@ -140,9 +157,12 @@ SIGN_IN_FAILURES = {
 SIGN_IN_SECONDS = 600
 
 __all__ = [
+    "ACCEPTED_PHASE",
     "ACCOUNT_TIMEOUTS",
     "BINARY_NAMES",
     "CALL_SECONDS",
+    "CANVAS_NAME",
+    "CANVAS_PAGE_SIZE",
     "DREAMINA_URLS",
     "EXIT_CODES",
     "GLOBAL_ARGUMENTS",
@@ -156,4 +176,5 @@ __all__ = [
     "REQUIRED_COMMANDS",
     "SIGN_IN_FAILURES",
     "SIGN_IN_SECONDS",
+    "WAIT_SLICE",
 ]

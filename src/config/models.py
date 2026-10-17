@@ -17,6 +17,13 @@ DEFAULT_MODELS = {
     "audio": "seed_audio_v1",
 }
 
+# The starting value of each node's arguments box: the required flags of the default model's first mode.
+DEFAULT_ARGUMENTS = {
+    "image": '{"ratio": "1:1", "resolution": "2K"}',
+    "video": '{"ratio": "16:9", "resolution": "720p", "duration": 4}',
+    "audio": '{"voice-name": "Jessie"}',
+}
+
 # The modes a node chooses by itself, by kind and role. Any other mode a model lists runs when arguments sets it.
 MODES = {
     "image": {"TEXT": "t2i", "IMAGES": "i2i"},
@@ -55,6 +62,7 @@ LIST_TIMEOUT_SECONDS = 60
 __all__ = [
     "COUNT_FLAG",
     "COUNT_VALUE",
+    "DEFAULT_ARGUMENTS",
     "DEFAULT_MODELS",
     "FLAG_PREFIX",
     "FRAME_IMAGES",

@@ -1049,7 +1049,6 @@ reads it for the status and the executor loop writes it:
 | ------ | ---- |
 | `read() -> CanvasRecord \| None` | Under the lock, `None` when the file does not exist; reads at most `MAX_FILE_BYTES["CANVAS"]` with `read_file`; a file that is not a valid `CanvasRecord` is `None`, so the next save replaces it; an `OSError` raises `STATE_UNREADABLE` with `CONFIGURATION` |
 | `save(record: CanvasRecord) -> None` | Under the lock, `save_file(path, (record.model_dump_json(indent=2) + "\n").encode())` |
-| `delete() -> None` | Under the lock, `path.unlink(missing_ok=True)`, with F's `bearer:disable python_lang_path_traversal` comment and the reason "The canvas file is a fixed name inside the private state folder." |
 
 The module ends with `__all__ = ["CanvasStore"]`.
 
@@ -1160,15 +1159,15 @@ Download collect it." Changes:
 - F's `read(request_id)` and `_REQUEST_ID` are not ported.
   [14-node-download.md](14-node-download.md) adds `find_record(label)`, which
   reads a record back by its label.
-- The private `_build_label(record) -> str` joins, with `LABEL_SEPARATOR`:
-  the first `LABEL_CHARACTERS["SUBMIT_ID"]` characters of `submit_id`; the
+- The property `GenerationRecord.label` joins, with `LABEL_SEPARATOR`: the
+  first `LABEL_CHARACTERS["SUBMIT_ID"]` characters of `submit_id`; the
   `model`; and the first `LABEL_CHARACTERS["TIME"]` characters of
   `submitted_at` with `T` replaced by a space. `submitted_at` is written in
-  UTC, so the label's minute is UTC. 14's `find_record` uses it too.
-- `list_generation_labels(generations: GenerationStore) -> list[str]` labels
-  every record with `_build_label`, newest first, for 14's dropdown.
+  UTC, so the label's minute is UTC. 14's dropdown and `find_record` use it.
+  A `_build_label` or `list_generation_labels` function would have one or two
+  statements, which `python.trivial-function` refuses; a property is exempt.
 
-The module ends with `__all__ = ["GenerationStore", "list_generation_labels"]`.
+The module ends with `__all__ = ["GenerationStore"]`.
 
 Add the two stores to `Runtime` in one change, as
 [05-foundation.md](05-foundation.md#step-19-runtime)'s table gives them: the
@@ -1853,7 +1852,6 @@ removes each name with its first call, and the entry with its last name.
 | Milestone | File | Names | Removed by |
 | --------- | ---- | ----- | ---------- |
 | Foundation (Part A) | `src/dreamina/contract.py` | `validate_cli` | This plan's Part B ([Step 14](#step-14-generation-operation)) |
-| Media and runs (Part B) | `src/dreamina/generations/records.py` | `list_generation_labels` | [14-node-download.md](14-node-download.md) |
 | Media and runs (Part B) | `src/nodes/outputs.py` | `build_result_document` | [12-node-upscale.md](12-node-upscale.md) |
 
 Every other public name of Part A is called in the Foundation milestone:

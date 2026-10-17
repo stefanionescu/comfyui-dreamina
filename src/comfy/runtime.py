@@ -1,10 +1,13 @@
 """Create the shared stores when ComfyUI loads the extension."""
 
+from ..storage.canvas import CanvasStore
 from ..dreamina.account import SignInState
 from ..settings.store import ConfigurationStore
 from ..storage.files import choose_state_directory
 from ..types.errors import ErrorCode, DreaminaError
 from ..config.messages.settings import RUNTIME_NOT_READY
+from ..config.storage import FILE_NAMES, GENERATION_FOLDER
+from ..dreamina.generations.records import GenerationStore
 
 
 class Runtime:
@@ -13,18 +16,24 @@ class Runtime:
     Attributes:
         configuration: Private settings and the account cache token.
         sign_in: The pending Dreamina sign-in, kept in memory.
+        canvas: The pack's saved Dreamina canvas.
+        generations: Recorded generations, one per submit ID.
 
     """
 
-    __slots__ = ("configuration", "sign_in")
+    __slots__ = ("canvas", "configuration", "generations", "sign_in")
 
     configuration: ConfigurationStore
     sign_in: SignInState
+    canvas: CanvasStore
+    generations: GenerationStore
 
     def __init__(self) -> None:
         """Create the shared stores and place their state under one private directory."""
         self.configuration = ConfigurationStore(choose_state_directory())
         self.sign_in = SignInState(self.configuration.reset_account_token)
+        self.canvas = CanvasStore(self.configuration.directory / FILE_NAMES["CANVAS"])
+        self.generations = GenerationStore(self.configuration.directory / GENERATION_FOLDER)
 
 
 _runtime: Runtime | None = None

@@ -39,24 +39,14 @@
                 "reason": "ComfyUI calls these extension hooks itself."
             },
             {
-                "path": "src/dreamina/contract.py",
-                "names": ["validate_cli"],
+                "path": "src/dreamina/generations/operation.py",
+                "names": ["CollectOperation.validate", "GenerationOperation.validate"],
+                "reason": "The run wrapper calls it through the Operation protocol."
+            },
+            {
+                "path": "src/nodes/outputs.py",
+                "names": ["build_result_document"],
                 "reason": "Called by a node built in a later milestone."
-            },
-            {
-                "path": "src/dreamina/models.py",
-                "names": ["find_model"],
-                "reason": "The generation nodes and Model: Info find models here; 08 Part B removes this entry with GenerationOperation."
-            },
-            {
-                "path": "src/dreamina/modes.py",
-                "names": ["choose_mode"],
-                "reason": "The generation run chooses its mode here; 08 Part B removes this entry with GenerationOperation."
-            },
-            {
-                "path": "src/dreamina/arguments.py",
-                "names": ["build_flags", "choose_prompt", "parse_arguments", "validate_argument_names"],
-                "reason": "The generation run and its queue check read arguments here; 08 Part B removes this entry with GenerateNode."
             }
         ]
     },

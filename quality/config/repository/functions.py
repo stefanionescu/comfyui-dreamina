@@ -3,6 +3,6 @@
 FUNCTION_POLICY_PATH = "quality/config/repository/functions.json"
 FUNCTION_POLICY_VERSION = 1
 # ComfyUI calls these methods on a node class itself, so they cannot be inlined at a caller.
-# The paid nodes reach ComfyNode through the extension's shared base class.
-HOST_NODE_BASES = ("comfy_api.latest.io.ComfyNode", "src.nodes.base.PaidNode")
+# The paid nodes reach ComfyNode through PaidNode, and the kind nodes through GenerateNode.
+HOST_NODE_BASES = ("comfy_api.latest.io.ComfyNode", "src.nodes.base.PaidNode", "src.nodes.generate.GenerateNode")
 HOST_NODE_HOOKS = ("define_schema", "execute", "fingerprint_inputs", "validate_inputs")

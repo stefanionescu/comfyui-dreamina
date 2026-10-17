@@ -15,7 +15,7 @@ followed the same way: `operation wait <submitId>`, `node show`, and
 `resource download`.
 
 The machinery is [08-runs.md](08-runs.md)'s: `GenerationStore`,
-`list_generation_labels`, `CollectOperation`, `send_run`, `wait_for_run`, and
+`GenerationRecord.label`, `CollectOperation`, `send_run`, `wait_for_run`, and
 `build_node_outputs`. This plan owns `src/nodes/download.py`, the empty-list
 message, the node's help page, its README row, the node settings of its
 example, and its first live run.
@@ -44,7 +44,7 @@ It ships in the **Video and downloads** milestone, built before
 | -------- | -------- | --- |
 | Why is the node needed? | Dreamina has no cancel for a generation it accepted, and deleting the node "does not … cancel accepted generation tasks or refund credits". A cancel, a timeout, or a restart stops only ComfyUI's wait. The generation is still made and billed, and its record stays. | [02-dreamina-contract.md](02-dreamina-contract.md#waiting-and-recovery); [01-decisions.md](01-decisions.md#paid-runs). |
 | Does it start anything? | Never. It runs only `operation wait`, `node show`, and `resource download`, all free and read-only. | The skill: "a new read-only `operation wait` with the returned submit ID is safe"; "do not replay the run". |
-| How does it list records? | A plain `io.Combo` whose options are `list_generation_labels(get_runtime().generations)`, read each time ComfyUI builds the node definitions. ComfyUI's **R** (Refresh Node Definitions) reads them again and updates a node already on the canvas. No route and no frontend code. | F's Request: Download; [01-decisions.md](01-decisions.md#browser-code). |
+| How does it list records? | A plain `io.Combo` whose options are `[record.label for record in get_runtime().generations.list_records()]`, read each time ComfyUI builds the node definitions. ComfyUI's **R** (Refresh Node Definitions) reads them again and updates a node already on the canvas. No route and no frontend code. | F's Request: Download; [01-decisions.md](01-decisions.md#browser-code). |
 | What does a label show? | `<first 8 characters of the submit ID> · <model> · <YYYY-MM-DD HH:MM>`, the time in UTC, newest first. An upscale shows the model `upscale`. | 08's label form; enough to tell runs apart without the whole UUID. |
 | A label recorded after the definitions were built | Accepted. `validate_inputs(**inputs)` returns `True` for any label, so ComfyUI skips its own dropdown check, as F's and O's Download nodes do. The node finds the record when it runs. | The owner's rule: a Download node's `validate_inputs` takes `**inputs`. |
 | One node for every kind? | Yes. The outputs are the union of the paid nodes' outputs, in [01-decisions.md](01-decisions.md#outputs)'s order. An output the generation did not fill stops the nodes connected to it (`ExecutionBlocker`). | Any example that saves a paid node's output can save this node's the same way. |
@@ -63,15 +63,18 @@ This step adds `find_record(label: str) -> GenerationRecord` to 08's
 `GenerationStore` in `src/dreamina/generations/records.py`, as
 [08-runs.md](08-runs.md#step-12-generation-store-the-runtime-and-the-status)
 leaves it to this plan. It returns the newest record whose label, built by
-the same private `_build_label` as `list_generation_labels`, equals `label`,
+`GenerationRecord.label`, equals `label`,
 else raises `DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_UNKNOWN)`.
 Comparing whole labels, not only the eight characters of the submit ID,
 keeps two records whose IDs start alike apart. It blocks, so the node calls
 it in a worker thread.
 
-`list_generation_labels` has its first caller here, so this milestone removes
-its entry from `quality/config/repository/functions.json`, as 08's allowlist
-table says. `find_record` is a method, so it needs no entry.
+`find_record` is a method, so it needs no allowlist entry. 08 has no
+`list_generation_labels`: a one-line function would be refused by
+`python.trivial-function`, so the node builds its options from
+`GenerationRecord.label`, a property. This milestone makes 08's private
+`_wait_for_run` public again as `wait_for_run`, since it is its first caller
+outside `src/comfy/execution.py`.
 
 ### Messages
 
@@ -126,7 +129,7 @@ class GenerationDownload(io.ComfyNode):
             inputs=[
                 io.Combo.Input(
                     "generation",
-                    options=list_generation_labels(get_runtime().generations),
+                    options=[record.label for record in get_runtime().generations.list_records()],
                     tooltip="A generation recorded on this server. Press R to list generations recorded later.",
                 )
             ],
@@ -336,7 +339,7 @@ and check each billed run on the `ComfyUI` canvas at dreamina.capcut.com.
 | ---- | ----- | -------- |
 | `NODE_PREFIX`, `MENUS["SHARED"]`, `SOCKET_TYPES["REFERENCES"]`, `NODE_TYPES`, `DreaminaError`, `ErrorCode.INVALID_INPUT`, `get_runtime` (`generations`), the **Request timeout (seconds)** setting | [05-foundation.md](05-foundation.md) | Names, errors, the runtime |
 | `download_resources`, `decode_images`, `decode_video`, `decode_audio`, `Reference` | [07-media.md](07-media.md) | Downloads through `CollectOperation`, decoding through `build_node_outputs` |
-| `GenerationStore` (`list_records`, `_build_label`, and `find_record`, added here), `GenerationRecord`, `list_generation_labels`, `LABEL_SEPARATOR`, `LABEL_CHARACTERS`, `RECORD_RETENTION_SECONDS`, `CanvasStore`, `CollectOperation`, `send_run`, `wait_for_run`, `build_node_outputs`, `src/config/messages/generations.py` and its messages, the allowlist entry for `list_generation_labels` | [08-runs.md](08-runs.md) | Records, collecting, outputs |
+| `GenerationStore` (`list_records`, and `find_record`, added here), `GenerationRecord` (`label`), `LABEL_SEPARATOR`, `LABEL_CHARACTERS`, `RECORD_RETENTION_SECONDS`, `CanvasStore`, `CollectOperation`, `send_run`, `wait_for_run`, `build_node_outputs`, `src/config/messages/generations.py` and its messages, the allowlist entry for `list_generation_labels` | [08-runs.md](08-runs.md) | Records, collecting, outputs |
 | `VideoGenerate`, runs V-1 and V-4 | [10-node-video.md](10-node-video.md) | video-04's steps and run D-1 |
 | `UPSCALE_MODEL` | [12-node-upscale.md](12-node-upscale.md) | An upscale's label |
 | `video-04-recover-a-video`, `CANCEL_NOTE`, `RECOVER_NOTE`, `UPSCALE_RECOVER_NOTE` | [17-scripts-and-workflows.md](17-scripts-and-workflows.md) | The example and every video and upscale step's note |

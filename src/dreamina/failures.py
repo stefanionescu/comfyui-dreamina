@@ -9,8 +9,10 @@ import re
 from typing import TYPE_CHECKING
 from ..types.cli import CliFailure
 from ..config.patterns import REASON_PATTERNS
+from ..config.generations import OPERATION_STATES
 from ..types.errors import ErrorCode, DreaminaError
 from ..config.dreamina import EXIT_CODES, DREAMINA_URLS, REASON_ENDINGS, MAX_REASON_CHARACTERS
+from ..config.messages.generations import GENERATION_EMPTY, GENERATION_FAILED, STATUS_CODE_REASON
 from ..config.messages.run import (
     NO_REASON,
     DNS_FAILED,
@@ -34,6 +36,7 @@ from ..config.messages.run import (
 )
 
 if TYPE_CHECKING:
+    from ..types.replies import OperationReply
     from ..types.cli import CliResult, Validation
 
 _URL = re.compile(REASON_PATTERNS["URL"])
@@ -126,4 +129,30 @@ def build_failure(result: CliResult, context: str, *, credit_ceiling: int | None
     return DreaminaError(code, template.format(reason=reason, **DREAMINA_URLS))
 
 
-__all__ = ["build_failure", "sanitize_reason"]
+def build_generation_failure(reply: OperationReply) -> DreaminaError:
+    """Build the error of a generation that ended with no successful output, from Dreamina's fields only.
+
+    An empty resource set is not a success, so a run that made nothing says so.
+    """
+    error = reply.submission_error
+    if error is not None:
+        text = _choose_reason(error.validation, error.message).strip()
+        if not text and error.status_code is not None:
+            text = STATUS_CODE_REASON.format(code=error.status_code)
+        return DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_FAILED.format(reason=sanitize_reason(text)))
+    code = next(
+        (
+            resource.status_code
+            for resource in reply.resources
+            if resource.state != OPERATION_STATES["SUCCEEDED"] and resource.status_code is not None
+        ),
+        None,
+    )
+    if code is not None:
+        return DreaminaError(
+            ErrorCode.INVALID_INPUT, GENERATION_FAILED.format(reason=STATUS_CODE_REASON.format(code=code))
+        )
+    return DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_EMPTY)
+
+
+__all__ = ["build_failure", "build_generation_failure", "sanitize_reason"]

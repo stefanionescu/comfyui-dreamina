@@ -72,6 +72,11 @@ REGION_UNAVAILABLE = (
     "The Dreamina CLI is not available for this account's region: {reason} See {cli_page} for who can use it."
 )
 
+RUN_REFUSED = (
+    "Dreamina refused this run, so it did not start and nothing was billed: {reason} Change the prompt, the connected "
+    "inputs, or arguments, then run again."
+)
+
 SIGN_IN_LIMITED = (
     "Dreamina is limiting sign-in requests from this computer: {reason} Wait a few minutes, then try again."
 )
@@ -104,6 +109,7 @@ __all__ = [
     "REFERENCE_REFUSED",
     "REFERENCE_UNAVAILABLE",
     "REGION_UNAVAILABLE",
+    "RUN_REFUSED",
     "SIGN_IN_LIMITED",
     "SIGN_IN_REQUIRED",
     "TITLE_REQUIRED",

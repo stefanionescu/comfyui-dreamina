@@ -10,6 +10,12 @@ PROMPT_TWICE = "The prompt input and arguments both set prompt. Remove it from o
 
 PROMPT_REQUIRED = "Write a prompt. Mode {mode} of this model needs one."
 
+PLACEHOLDER_UNCONNECTED = (
+    "The prompt uses {placeholder}, but {input} has {count} connected. Placeholders count from 1 within each input."
+)
+
+SINGLE_VALUE = "Connect one value to {name}, not a list."
+
 # How a refusal names a JSON value that is not text or a number, or not an object.
 JSON_SHAPES = {
     "array": "a JSON list",
@@ -20,4 +26,12 @@ JSON_SHAPES = {
     "object": "a JSON object",
 }
 
-__all__ = ["ARGUMENTS_INVALID", "ARGUMENTS_SHAPE", "JSON_SHAPES", "PROMPT_REQUIRED", "PROMPT_TWICE"]
+__all__ = [
+    "ARGUMENTS_INVALID",
+    "ARGUMENTS_SHAPE",
+    "JSON_SHAPES",
+    "PLACEHOLDER_UNCONNECTED",
+    "PROMPT_REQUIRED",
+    "PROMPT_TWICE",
+    "SINGLE_VALUE",
+]

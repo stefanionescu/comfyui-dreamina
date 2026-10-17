@@ -66,6 +66,39 @@ VALUE_TOO_SHORT = "The flag {flag} takes at least {minimum} characters, and it h
 
 VALUE_TOO_LONG = "The flag {flag} takes at most {maximum} characters, and it has {count}."
 
+REFERENCES_ANY_OF = "Mode {mode} of this model needs at least one reference of these kinds: {media}. Connect one."
+
+REFERENCES_ELEMENT_FRAME = (
+    "Mode {mode} takes only images as frames, and an Element cannot be one. Disconnect the Element, or set another "
+    "mode in arguments."
+)
+
+REFERENCES_EXCLUSIVE = (
+    "Mode {mode} of this model cannot take {media} references together. Keep one kind and disconnect the others."
+)
+
+REFERENCES_NONE = (
+    "Mode {mode} of this model takes no images, videos, audio, or references, but the run has {count}. Disconnect "
+    "them, or set another mode in arguments."
+)
+
+REFERENCES_TOTAL = (
+    "Mode {mode} of this model takes at least {minimum} and at most {maximum} references in all, but the run has "
+    "{count}."
+)
+
+REFERENCE_KIND_COUNT = (
+    "Mode {mode} of this model takes at least {minimum} and at most {maximum} {media} references, but the run has "
+    "{count}."
+)
+
+REFERENCE_KIND_REFUSED = (
+    "Mode {mode} of this model takes no {media} references, but the run has {count}. Disconnect them, or set another "
+    "mode in arguments."
+)
+
+VOICE_COUNTED = "The voice-name in arguments counts as one audio reference."
+
 # What each kind of model makes, as the refusals name it, and every kind together, for Model: Info.
 KIND_NAMES = {"image": "images", "video": "videos", "audio": "audio"}
 ANY_KIND = "images, videos, or audio"
@@ -103,7 +136,14 @@ __all__ = [
     "MODE_UNKNOWN",
     "NOTHING_CONNECTED",
     "NO_MEDIA",
+    "REFERENCES_ANY_OF",
+    "REFERENCES_ELEMENT_FRAME",
+    "REFERENCES_EXCLUSIVE",
+    "REFERENCES_NONE",
     "REFERENCES_NO_ENTRY",
+    "REFERENCES_TOTAL",
+    "REFERENCE_KIND_COUNT",
+    "REFERENCE_KIND_REFUSED",
     "REFERENCE_LIMITS",
     "SCENARIO_NOT_OFFERED",
     "SCENARIO_UNKNOWN",
@@ -116,4 +156,5 @@ __all__ = [
     "VALUE_TOO_LOW",
     "VALUE_TOO_SHORT",
     "VALUE_TYPE",
+    "VOICE_COUNTED",
 ]

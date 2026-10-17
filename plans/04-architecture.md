@@ -217,7 +217,7 @@ not ported: every route, the settings save among them, is in
 | `downloads.py`             | `download_resources(project_id, node, submit_id, settings, deadline)` → `OutputFile`s, with the byte-count and SHA256 checks                    | 07   |
 | `canvas.py`                | `find_canvas(store)` → the saved canvas while `canvas ls` lists it, else `None`, clearing a canvas the person deleted; `create_canvas(store)` → a new `ComfyUI` canvas, saved | 08 |
 | `operation.py`             | `Operation[Result]` protocol (F's), `Progress`; `wait_until_settled(task)`, which the run call and the upscale call share | 08 |
-| `generations/records.py`   | `GenerationStore`, `list_generation_labels`                                                                                                    | 08   |
+| `generations/records.py`   | `GenerationStore` (records are labeled by `GenerationRecord.label`)                                                                                                  | 08   |
 | `generations/operation.py` | `GenerationOperation` (check, upload, run, record, wait, show, download), `CollectOperation` (Generation: Download)                             | 08   |
 | `generations/waiting.py`   | `wait_for_operation(submit_id, project_id, deadline, progress)`: the `operation wait` loop; `validate_lost_run(submit_id, project_id)`: the read-only check of a lost run reply. Kept apart so `operation.py` stays under 300 lines | 08 |
 | `upscale.py`               | `parse_upscale_arguments(text, flags)`; `UpscaleOperation`: import, `node upscale image`, record, wait, download                               | 12   |
@@ -232,7 +232,7 @@ not ported: every route, the settings save among them, is in
 | `runtime.py`    | `Runtime` (configuration store, generation store, canvas store, sign-in state), `create_runtime`, `get_runtime`             | 05   |
 | `routes.py`     | `register_routes`: F's state folder check, then `SettingsRoutes`                                                           | 05   |
 | `settings.py`   | `SettingsRoutes`: `GET status`, `PATCH settings`, `POST` and `DELETE session`, `POST cli`                                  | 05   |
-| `execution.py`  | `send_run`, `wait_for_run`, `wait_for_thread` (F's `send_request`, `wait_for_request`, `wait_for_thread`, renamed to the vendor's word) | 08 |
+| `execution.py`  | `send_run`; `wait_for_run` and `wait_for_thread`, private until 13, 14, or 15 calls `wait_for_run` (F's `send_request`, `wait_for_request`, `wait_for_thread`, renamed to the vendor's word) | 08 |
 | `media.py`      | `list_local_media` (splits connected image and audio batches into items); `encode_local_file` (IMAGE to PNG, VIDEO to MP4, AUDIO to WAV, in a temporary folder); `decode_images`, `decode_video`, `decode_audio` | 07 |
 
 ### `src/nodes/`
