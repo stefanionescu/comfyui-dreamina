@@ -12,6 +12,13 @@ SHARED_TEXTS = {
     "brief": "Brief",
     "poster": "Poster",
     "enlarge": "Enlarge",
+    "script": "Script",
+    "voices": "Voices",
+    "info": "Info",
+    "voice": "Voice",
+    "line": "Line",
+    "cast": "Cast",
+    "speak": "Speak",
 }
 
 __all__ = ["SHARED_TEXTS"]

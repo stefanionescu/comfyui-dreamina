@@ -82,6 +82,8 @@ From the folder that holds `ComfyUI` and `python_embeded`, in PowerShell:
 | [Image: Design a Host](example_workflows/image-01-design-a-host.json)               | A host description           |
 | [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json) | A product photo and a change |
 | [Image: Upscale a Poster](example_workflows/image-03-upscale-a-poster.json)         | A brief                      |
+| [Audio: Voice a Script](example_workflows/audio-01-voice-a-script.json)             | A script                     |
+| [Audio: Give a Host a Voice](example_workflows/audio-02-give-a-host-a-voice.json)   | A host and a line            |
 
 They are in **Browse Templates → dreamina**. Start with each workflow's
 **Start Here** note. Most steps are subgraphs. Media inputs start empty, and
@@ -91,10 +93,12 @@ most workflows make their own inputs with Dreamina models.
 
 The nodes are under **Dreamina** in the node menu, and each has a help page.
 
-| Node                                                 | What it does                                             | Paid |
-| ---------------------------------------------------- | -------------------------------------------------------- | ---- |
-| [Image: Generate](web/docs/DreaminaImageGenerate.md) | Makes or edits images with any Dreamina image model.     | Yes  |
-| [Image: Upscale](web/docs/DreaminaImageUpscale.md)   | Makes images larger and sharper with Dreamina's upscale. | Yes  |
+| Node                                                 | What it does                                                                               | Paid |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---- |
+| [Image: Generate](web/docs/DreaminaImageGenerate.md) | Makes or edits images with any Dreamina image model.                                       | Yes  |
+| [Image: Upscale](web/docs/DreaminaImageUpscale.md)   | Makes images larger and sharper with Dreamina's upscale.                                   | Yes  |
+| [Audio: Generate](web/docs/DreaminaAudioGenerate.md) | Reads text in a chosen voice, or dubs speech for a picture, with any Dreamina audio model. | Yes  |
+| [Model: Info](web/docs/DreaminaModelInfo.md)         | Shows a model's modes, settings, reference and file limits, and voices, as JSON.           | No   |
 
 ## License
 

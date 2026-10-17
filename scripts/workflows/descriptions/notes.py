@@ -37,6 +37,31 @@ WORKFLOW_TEXTS = {
         + UPSCALE_RECOVER_NOTE,
         "enlarge_description": "Upscales the poster and saves it.",
     },
+    "audio-01-voice-a-script": {
+        "input": SIGN_IN_STEP
+        + "2. In **Script**, write what the host says.\n3. Press **Run**. The voice is saved under `audio/dreamina`.",
+        "voices": "**Model: Info** shows what a Dreamina model takes: its modes, its settings with their choices and "
+        "limits, and a speech model's voices. It is free. **Info** shows Seed Audio, the audio node's starting model, "
+        "with its 13 voices.\n\nTo change the voice, copy a name from **Info**, open **Voice**, and put it in "
+        "`arguments` as `voice-name`.",
+        "voice": "Seed Audio reads **Script** aloud in the voice that `voice-name` names: here `Good Guy`. `arguments` "
+        "holds the model's own settings, written by the names Dreamina gives them. With nothing connected, the node "
+        "uses text reading, Seed Audio's way to read a script in a chosen voice.\n\nConnect a picture instead, and "
+        "Seed Audio makes a voice that suits it, as **audio-02-give-a-host-a-voice** does.",
+        "voice_description": "Reads the script aloud and saves the voice.",
+    },
+    "audio-02-give-a-host-a-voice": {
+        "input": SIGN_IN_STEP + "2. Describe the host in **Host**.\n3. In **Line**, write what the host says.\n"
+        "4. Press **Run**. The voice is saved under `audio/dreamina`.",
+        "cast": "Seedream 5.0 Lite draws the host from the waist up. `references`, what an earlier Dreamina step made, "
+        "passes the portrait on to **Speak** with no download or upload.",
+        "cast_description": "Draws the host.",
+        "speak": "Seed Audio looks at the portrait and speaks **Line** in a voice that suits the host. A picture in "
+        "`references` makes the node use omni dubbing, Seed Audio's way to voice a picture. Omni dubbing takes no "
+        "`voice-name`, so `arguments` is empty (`{}`).\n\nTo choose the voice yourself, leave the portrait out and set "
+        "`voice-name`, as **audio-01-voice-a-script** does.",
+        "speak_description": "Speaks the line in a voice that suits the host and saves it.",
+    },
 }
 
 __all__ = ["WORKFLOW_TEXTS"]
