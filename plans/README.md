@@ -257,6 +257,9 @@ number and the reason, as F's, B's, and O's plans do.
 
 | Plan | Change | Why |
 | ---- | ------ | --- |
+| 03 | `[tool.ruff] exclude` lists `plans`. | Ruff formats Python blocks inside the tracked Markdown plans, so the first commit's format check refused two plans. |
+| 03 | `quality/repository/links.mjs` skips every prefix in `LINK_EXCLUDED_PREFIXES`, with `some((prefix) => relative.startsWith(prefix))`. F's `some(relative.startsWith.bind(relative))` passed each prefix's index as the start position, so only the first prefix worked, and the tracked `plans/` was link-checked. | Found by the first commit's hook. |
+| 03 | `repo:security:rules` refused the pinned rule `python.boto3.security.hardcoded-token.hardcoded-token` (registry drift, as F row 220). F's local packs were copied and `shasum -a 256 -c` printed OK for all five; the hooks were set up by hand. No pin changed. | Upstream drift. |
 | 01, 04, 05, 08, 16, 18, 19, 22 | The Dreamina Settings dialog has three parts: the CLI (Install or Update), the account (Sign in or Sign out), and the request limits. No canvas link, no Check again, no command to copy; the install commands are in the README. | Owner's instruction, 2026-10-17. |
 | README, 03, research | The plans are tracked in Git; `plans/research/docs/` and `plans/research/captures/` stay ignored. | Owner's instruction, 2026-10-17. |
 | 02, 21, catalog | Part 0 ran on 2026-10-17, free: the test canvas, four uploads, an imported image node, 45 price checks, and four upscale quotes. Results are in 02's results table and the catalog's Prices. | The owner allowed canvases and drafts to be created freely. |

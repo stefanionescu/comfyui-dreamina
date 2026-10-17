@@ -243,6 +243,8 @@ The other root files stay as copied:
 - `.prettierignore` gains one line, `plans/`, at the end. Prettier 3 skips
   only what `.gitignore` lists, and the plans are tracked here; the hook must
   not reformat them.
+- `pyproject.toml` `[tool.ruff]` `exclude` gains `"plans"`, with a comment:
+  Ruff formats Python blocks inside Markdown, and the plans quote planned code.
 - `quality/config/repository/links.js`: `LINK_EXCLUDED_PREFIXES` becomes
   `['.artifacts/', 'plans/']`. The link check copies every file Git shows,
   and the plans link into the ignored skill copy and captures, which the copy

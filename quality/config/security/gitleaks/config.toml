@@ -1,0 +1,4 @@
+title = "Dreamina node secret rules"
+
+[extend]
+useDefault = true

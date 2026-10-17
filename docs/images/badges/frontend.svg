@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="155" height="22" viewBox="0 0 155 22" role="img" aria-label="Frontend 1.52.7 or later">
+<title>Frontend 1.52.7 or later</title>
+<defs><linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7FE3F0"/><stop offset="0.5" stop-color="#2F80FF"/><stop offset="1" stop-color="#6366F1"/></linearGradient></defs>
+<rect x="0.5" y="0.5" width="154" height="21" rx="10.5" fill="#080A12" stroke="#252A3A"/>
+<rect x="81" y="3" width="71" height="16" rx="8" fill="url(#accent)"/>
+<text x="12" y="15" font-family="'SF Mono', SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="normal" letter-spacing="1.4" fill="#8C93A8" text-anchor="start">FRONTEND</text>
+<text x="91" y="15" font-family="'SF Mono', SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="10" font-weight="normal" letter-spacing="1.4" fill="#080A12" text-anchor="start">1.52.7+</text>
+</svg>

@@ -1,0 +1,61 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="260" viewBox="0 0 1200 260" role="img" aria-label="comfyui-dreamina: a ComfyUI extension that runs Dreamina models">
+<title>comfyui-dreamina: a ComfyUI extension that runs Dreamina models</title>
+<defs>
+<linearGradient id="accent" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#7FE3F0"/><stop offset="0.5" stop-color="#2F80FF"/><stop offset="1" stop-color="#6366F1"/></linearGradient>
+<linearGradient id="mark" gradientUnits="userSpaceOnUse" x1="73.8" y1="19.3" x2="138.8" y2="106"><stop offset="0" stop-color="#E57B21"/><stop offset="0.12" stop-color="#E1AB0F"/><stop offset="0.2" stop-color="#D4D615"/><stop offset="0.42" stop-color="#60D5E6"/><stop offset="0.7" stop-color="#149FF0"/><stop offset="1" stop-color="#1964FF"/></linearGradient>
+<linearGradient id="lower" gradientUnits="userSpaceOnUse" x1="115.5" y1="103.4" x2="120.2" y2="180.7"><stop offset="0" stop-color="#149FF0"/><stop offset="1" stop-color="#1964FF"/></linearGradient>
+<mask id="cut"><rect width="200" height="200" fill="#fff"/><circle cx="172" cy="78.5" r="19" fill="#000"/></mask>
+<radialGradient id="glow" cx="1010" cy="130" r="330" gradientUnits="userSpaceOnUse"><stop offset="0" stop-color="#1964FF" stop-opacity="0.34"/><stop offset="1" stop-color="#1964FF" stop-opacity="0"/></radialGradient>
+<clipPath id="frame"><rect width="1200" height="260" rx="24"/></clipPath>
+</defs>
+<g clip-path="url(#frame)">
+<rect width="1200" height="260" fill="#080A12"/>
+<rect width="1200" height="260" fill="url(#glow)"/>
+<path d="M660 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.06"/>
+<path d="M660 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.06"/>
+<path d="M694 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.086"/>
+<path d="M694 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.086"/>
+<path d="M728 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.112"/>
+<path d="M728 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.112"/>
+<path d="M762 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.138"/>
+<path d="M762 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.138"/>
+<path d="M796 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.164"/>
+<path d="M796 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.164"/>
+<path d="M830 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.19"/>
+<path d="M830 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.19"/>
+<path d="M864 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.216"/>
+<path d="M864 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.216"/>
+<path d="M898 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.242"/>
+<path d="M898 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.242"/>
+<path d="M932 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.268"/>
+<path d="M932 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.268"/>
+<path d="M966 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.294"/>
+<path d="M966 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.294"/>
+<path d="M1000 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.32"/>
+<path d="M1000 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.32"/>
+<path d="M1034 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.346"/>
+<path d="M1034 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.346"/>
+<path d="M1068 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="#F0FF41" opacity="0.7"/>
+<path d="M1068 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="#F0FF41" opacity="0.7"/>
+<path d="M1102 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.398"/>
+<path d="M1102 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.398"/>
+<path d="M1136 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.424"/>
+<path d="M1136 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.424"/>
+<path d="M1170 16.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.45"/>
+<path d="M1170 234.5q.7 3.8 4.5 4.5q-3.8.7-4.5 4.5q-.7-3.8-4.5-4.5q3.8-.7 4.5-4.5z" fill="url(#accent)" opacity="0.45"/>
+<rect x="640" y="40" width="560" height="1" fill="url(#accent)" opacity="0.25"/>
+<rect x="640" y="219" width="560" height="1" fill="url(#accent)" opacity="0.25"/>
+<g transform="translate(915 32) scale(0.98)">
+<g mask="url(#cut)">
+<path d="M80.1 130.5C64.1 121.7 44.2 120 16.3 123.2C67 99 80.2 75.1 73.8 19.3C98 70 121.9 83.2 177.7 76.8C130 87 100 104.4 80.1 130.5Z" fill="url(#mark)"/>
+<path d="M177.7 76.8C127 101 113.8 124.9 120.2 180.7C110.5 160.4 100.9 146.1 89.2 136.7C108.8 110.6 136.7 92.1 177.7 76.8Z" fill="url(#lower)"/>
+</g>
+<circle cx="172" cy="78.5" r="11.5" fill="#F0FF41"/>
+</g>
+</g>
+<rect x="0.5" y="0.5" width="1199" height="259" rx="24" fill="none" stroke="#252A3A"/>
+<text x="64" y="78" font-family="'SF Mono', SFMono-Regular, Menlo, Consolas, 'DejaVu Sans Mono', monospace" font-size="13" letter-spacing="2.34" fill="#60D5E6">COMFYUI EXTENSION · COMFYUI-DREAMINA</text>
+<rect x="64" y="94" width="40" height="2" fill="url(#accent)"/>
+<text x="62" y="158" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="64" font-weight="bold" letter-spacing="-1.6" fill="url(#accent)">Dreamina</text>
+<text x="64" y="200" font-family="'Helvetica Neue', Helvetica, Arial, sans-serif" font-size="21" letter-spacing="0.1" fill="#8C93A8">Image, video, and audio models, inside ComfyUI.</text>
+</svg>

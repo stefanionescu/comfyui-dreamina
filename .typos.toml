@@ -1,0 +1,19 @@
+[files]
+extend-exclude = [
+    "node_modules",
+    ".venv",
+    ".artifacts",
+    # Registry version identifiers are opaque, checksum-pinned upstream data.
+    "quality/config/security/semgrep/packs.json",
+    # The plans are tracked; their CLI flags, IDs, and quoted vendor text are not prose to correct.
+    "plans",
+]
+
+[default.extend-words]
+certifi = "certifi"
+
+# ComfyUI's Windows portable distribution uses this exact directory name.
+[default.extend-identifiers]
+python_embeded = "python_embeded"
+# ESLint uses this exact option for immediately invoked function expressions.
+IIFEs = "IIFEs"
