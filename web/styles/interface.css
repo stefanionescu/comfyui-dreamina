@@ -118,3 +118,15 @@
 .dreamina-dialog [role='status']:empty {
   display: none;
 }
+.dreamina-dialog [hidden] {
+  display: none;
+}
+.dreamina-dialog .dreamina-code {
+  font-size: 1.4rem;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+}
+.dreamina-dialog a {
+  color: inherit;
+  text-decoration: underline;
+}

@@ -474,7 +474,8 @@ Changes to F's class names:
 
 `CliSection` builds the **Dreamina CLI** form. Its constructor takes
 `CliActions`: `update(success, route, method, working)`, the dialog's
-request for a button, and `report(text)`, which sets the status line.
+request for its button. The part reports nothing else, so it takes no
+`report`.
 
 | Part | Content |
 | ---- | ------- |
@@ -569,7 +570,9 @@ Changes to F's `SettingsDialog`:
   In `finally`, the three fieldsets get `disabled = !mutationAllowed`, and
   `reload` is enabled.
 - **`pollStatus()`** queues a `GET` status on the chain without disabling
-  anything or changing the status line. On success it calls `display` and
+  anything or changing the status line. On success it calls `cli.display`
+  and `account.display`, not `display`, so limits typed while a sign-in
+  waits are kept and the revision stays the one the person read, and
   returns the configuration. On an error it shows the error on the status
   line and returns `undefined`. It is the account section's `poll`.
 - **`dispose()`** also calls `account.dispose()`.

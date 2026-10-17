@@ -394,7 +394,19 @@
         {
             "pathRegexes": ["^web/scripts/settings/schema\\.ts$"],
             "categories": ["properties"],
-            "names": ["setting_ranges", "mutation_allowed"],
+            "names": [
+                "setting_ranges",
+                "mutation_allowed",
+                "minimum_version",
+                "is_current",
+                "signed_in",
+                "is_vip",
+                "vip_level",
+                "sign_in",
+                "user_code",
+                "verification_url",
+                "expires_at"
+            ],
             "caseNames": ["snake"],
             "reason": "These fields are deserialized from the local settings API and must keep their wire names."
         },
