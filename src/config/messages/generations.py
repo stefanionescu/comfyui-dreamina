@@ -18,6 +18,8 @@ GENERATION_FAILED = (
     "The generation failed on Dreamina: {reason} Change the prompt or the connected inputs, then run again."
 )
 
+GENERATION_FAILED_CODE = "Dreamina could not finish this generation (error code {code}) and gave no reason. Run again."
+
 GENERATION_GONE = (
     "This generation's node is no longer on its Dreamina canvas, so its outputs cannot be collected, and its record "
     "was deleted. Run the node that made it again."
@@ -67,6 +69,7 @@ __all__ = [
     "GENERATION_EMPTY",
     "GENERATION_EXPIRED",
     "GENERATION_FAILED",
+    "GENERATION_FAILED_CODE",
     "GENERATION_GONE",
     "GENERATION_KEEPS_RUNNING",
     "GENERATION_UNCOLLECTED",

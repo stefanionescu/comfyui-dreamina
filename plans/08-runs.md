@@ -854,6 +854,7 @@ formatted with `**DREAMINA_URLS` where they hold a page placeholder:
 | `GENERATION_EMPTY`         | `INVALID_INPUT`  | `Dreamina finished this run without any output. Change the prompt or the connected inputs, then run again.` |
 | `GENERATION_EXPIRED`       | `UNAVAILABLE`    | `This generation was recorded too long ago for Dreamina to report it, so its record was deleted. If it finished, its output is on its canvas in your Dreamina projects at {home_page}.` |
 | `GENERATION_FAILED`        | `INVALID_INPUT`  | `The generation failed on Dreamina: {reason} Change the prompt or the connected inputs, then run again.` |
+| `GENERATION_FAILED_CODE`   | `UNAVAILABLE`    | `Dreamina could not finish this generation (error code {code}) and gave no reason. Run again.` |
 | `GENERATION_GONE`          | `UNAVAILABLE`    | `This generation's node is no longer on its Dreamina canvas, so its outputs cannot be collected, and its record was deleted. Run the node that made it again.` |
 | `GENERATION_KEEPS_RUNNING` | `INTERRUPTED`    | `Dreamina cannot stop a generation it accepted, so this one keeps running and is billed. It stays recorded. Collect its outputs with Generation: Download.` |
 | `GENERATION_UNCOLLECTED`   | the failure's    | `Dreamina accepted this run and bills it, but ComfyUI could not collect it. {reason} It stays recorded, so collect it with Generation: Download instead of running the paid node again.` |
@@ -864,11 +865,11 @@ formatted with `**DREAMINA_URLS` where they hold a page placeholder:
 
 - `GENERATION_UNCOLLECTED`'s `{reason}` is the whole message of the failure
   it wraps, and its code is that failure's code.
-- `GENERATION_FAILED` says nothing about billing. Whether a failed
-  generation is billed is unknown until run C-17, and the skill warns
-  against describing "net spend or refund status" without ledger facts
-  (`skill: references/credits-and-hitl.md`). C-17's result may add one
-  sentence, recorded in the changes table.
+- `GENERATION_FAILED` and `GENERATION_FAILED_CODE` say nothing about
+  billing. Whether a failed generation is billed is unknown until run C-17,
+  and the skill warns against describing "net spend or refund status"
+  without ledger facts (`skill: references/credits-and-hitl.md`). C-17's
+  result may add one sentence, recorded in the changes table.
 - `GENERATION_ABSENT` and `GENERATION_EXPIRED` name Dreamina's projects page,
   not the saved canvas, because the record's canvas may be one the pack has
   since replaced ([Step 10](#step-10-the-canvas)).
@@ -1268,10 +1269,13 @@ terminal reply with no successful resource:
 1. With `submission_error`: `GENERATION_FAILED` with `INVALID_INPUT`, its
    `{reason}` from `_choose_reason(submission_error.validation,
    submission_error.message)`, cleaned with `sanitize_reason`; when that is
-   empty and `status_code` is set, `STATUS_CODE_REASON.format(code=…)`.
+   empty and `status_code` is set, `GENERATION_FAILED_CODE` with
+   `UNAVAILABLE`.
 1. Otherwise, with a resource whose `state` is not
    `OPERATION_STATES["SUCCEEDED"]` and whose `status_code` is set:
-   `GENERATION_FAILED` with `STATUS_CODE_REASON.format(code=status_code)`.
+   `GENERATION_FAILED_CODE` with `UNAVAILABLE`. A code with no reason is not
+   traced to the inputs: error 20114 failed runs whose identical settings ran
+   on a later try ([02](02-dreamina-contract.md#reading-a-finished-node)).
 1. Otherwise: `GENERATION_EMPTY` with `INVALID_INPUT`. "An empty resource
    set is not 'all succeeded'" (`skill: references/recovery-and-idempotency.md#completion-rule`).
 
@@ -1949,7 +1953,7 @@ further, and the change is recorded in
 | C-14 | A video run whose wait is killed, then resumed by `operation wait` from a new process: the states and exit codes on the way | `wait_for_operation`, `OPERATION_STATES`, and `CollectOperation` |
 | C-15 | The error for a canvas that does not exist, the same for an upload, a run, and an Element | The message of a canvas deleted during a run; `find_canvas` itself relies on `canvas ls` |
 | C-16 | `operation status` of an unknown submit ID; every exit code met | `validate_lost_run`'s test, `OPERATION_STATES["ABSENT"]`, the rule that only exit 20 follows acceptance, and rows 7 and 9 |
-| C-17 | Whether a failed generation is billed | `GENERATION_FAILED`'s text |
+| C-17 | Whether a failed generation is billed | `GENERATION_FAILED` and `GENERATION_FAILED_CODE` |
 | V-4, D-1 | A cancel after acceptance through ComfyUI, then Generation: Download collecting the run | `GENERATION_KEEPS_RUNNING`, `wait_for_run`'s interrupt rule, and `CollectOperation` |
 
 C-2 to C-4 (uploads and downloads), C-6 (placeholders), C-10 to C-13, and

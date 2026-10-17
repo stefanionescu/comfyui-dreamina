@@ -13,7 +13,7 @@ from ..config.generations import OPERATION_STATES
 from ..config.messages.media import UPLOAD_INVALID
 from ..types.errors import ErrorCode, DreaminaError
 from ..config.dreamina import EXIT_CODES, DREAMINA_URLS, REASON_ENDINGS, MAX_REASON_CHARACTERS
-from ..config.messages.generations import GENERATION_EMPTY, GENERATION_FAILED, STATUS_CODE_REASON
+from ..config.messages.generations import GENERATION_EMPTY, GENERATION_FAILED, GENERATION_FAILED_CODE
 from ..config.messages.run import (
     NO_REASON,
     DNS_FAILED,
@@ -136,14 +136,15 @@ def build_failure(result: CliResult, context: str, *, credit_ceiling: int | None
 def build_generation_failure(reply: OperationReply) -> DreaminaError:
     """Build the error of a generation that ended with no successful output, from Dreamina's fields only.
 
-    An empty resource set is not a success, so a run that made nothing says so.
+    An empty resource set is not a success, so a run that made nothing says so. A failure Dreamina gives only a code
+    for is not traced to the inputs: the same settings have run on a later try.
     """
     error = reply.submission_error
     if error is not None:
         text = _choose_reason(error.validation, error.message).strip()
-        if not text and error.status_code is not None:
-            text = STATUS_CODE_REASON.format(code=error.status_code)
-        return DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_FAILED.format(reason=sanitize_reason(text)))
+        if text or error.status_code is None:
+            return DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_FAILED.format(reason=sanitize_reason(text)))
+        return DreaminaError(ErrorCode.UNAVAILABLE, GENERATION_FAILED_CODE.format(code=error.status_code))
     code = next(
         (
             resource.status_code
@@ -153,9 +154,7 @@ def build_generation_failure(reply: OperationReply) -> DreaminaError:
         None,
     )
     if code is not None:
-        return DreaminaError(
-            ErrorCode.INVALID_INPUT, GENERATION_FAILED.format(reason=STATUS_CODE_REASON.format(code=code))
-        )
+        return DreaminaError(ErrorCode.UNAVAILABLE, GENERATION_FAILED_CODE.format(code=code))
     return DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_EMPTY)
 
 
