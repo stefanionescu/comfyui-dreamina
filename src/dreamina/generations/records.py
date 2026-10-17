@@ -9,9 +9,10 @@ from __future__ import annotations
 import threading
 from typing import TYPE_CHECKING
 from pydantic import ValidationError
-from ...types.errors import DreaminaError
 from ...storage.files import save_file, read_file
 from ...types.generations import GenerationRecord
+from ...types.errors import ErrorCode, DreaminaError
+from ...config.messages.generations import GENERATION_UNKNOWN
 from ...config.storage import MAX_FILE_BYTES, GENERATION_SUFFIX
 
 if TYPE_CHECKING:
@@ -58,6 +59,13 @@ class GenerationStore:
         with self._lock:
             records = self._read_all()
         return sorted(records, key=lambda record: record.submitted_at, reverse=True)
+
+    def find_record(self, label: str) -> GenerationRecord:
+        """Return the newest record with this label; whole labels are compared, so two alike IDs stay apart."""
+        record = next((record for record in self.list_records() if record.label == label), None)
+        if record is None:
+            raise DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_UNKNOWN)
+        return record
 
 
 __all__ = ["GenerationStore"]

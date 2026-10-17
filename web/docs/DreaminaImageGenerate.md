@@ -36,7 +36,7 @@ order. Set `"mode"` in `arguments` to choose.
 
 The node makes one image unless `arguments` sets `count`. Once Dreamina
 accepts a run, a cancel stops only the wait: the images are still made and
-billed.
+billed. Collect them with **Generation: Download**.
 
 Examples: **image-01-design-a-host**, **image-02-edit-a-product-photo**, and
 **image-03-upscale-a-poster**.

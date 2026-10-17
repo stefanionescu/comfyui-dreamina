@@ -99,7 +99,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "**Image: Upscale** redraws the poster at `2K` in its `pro` mode, which adds fine detail. For a larger print, set `resolution` in `arguments` to `4K` or `8K`. `detail`, from 1 to 100, sets how much detail it adds. For a plain enlargement to twice the size, set `mode` to `normal` and leave out `resolution`.\n\nA cancel does not stop an upscale Dreamina has accepted. It keeps running and is billed."
+        "**Image: Upscale** redraws the poster at `2K` in its `pro` mode, which adds fine detail. For a larger print, set `resolution` in `arguments` to `4K` or `8K`. `detail`, from 1 to 100, sets how much detail it adds. For a plain enlargement to twice the size, set `mode` to `normal` and leave out `resolution`.\n\nA cancel does not stop an upscale Dreamina has accepted. It keeps running and is billed. Collect it with **Generation: Download**."
       ],
       "title": "Note"
     },

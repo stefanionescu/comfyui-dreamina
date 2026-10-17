@@ -77,13 +77,16 @@ From the folder that holds `ComfyUI` and `python_embeded`, in PowerShell:
 
 ## Example workflows
 
-| Workflow                                                                            | Input                        |
-| ----------------------------------------------------------------------------------- | ---------------------------- |
-| [Image: Design a Host](example_workflows/image-01-design-a-host.json)               | A host description           |
-| [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json) | A product photo and a change |
-| [Image: Upscale a Poster](example_workflows/image-03-upscale-a-poster.json)         | A brief                      |
-| [Audio: Voice a Script](example_workflows/audio-01-voice-a-script.json)             | A script                     |
-| [Audio: Give a Host a Voice](example_workflows/audio-02-give-a-host-a-voice.json)   | A host and a line            |
+| Workflow                                                                            | Input                          |
+| ----------------------------------------------------------------------------------- | ------------------------------ |
+| [Image: Design a Host](example_workflows/image-01-design-a-host.json)               | A host description             |
+| [Image: Edit a Product Photo](example_workflows/image-02-edit-a-product-photo.json) | A product photo and a change   |
+| [Image: Upscale a Poster](example_workflows/image-03-upscale-a-poster.json)         | A brief                        |
+| [Audio: Voice a Script](example_workflows/audio-01-voice-a-script.json)             | A script                       |
+| [Audio: Give a Host a Voice](example_workflows/audio-02-give-a-host-a-voice.json)   | A host and a line              |
+| [Video: Animate a Host](example_workflows/video-01-animate-a-host.json)             | A host and a scene             |
+| [Video: Film a Product Ad](example_workflows/video-02-film-a-product-ad.json)       | A host, a product, and a scene |
+| [Video: Recover a Video](example_workflows/video-04-recover-a-video.json)           | A video left running           |
 
 They are in **Browse Templates → dreamina**. Start with each workflow's
 **Start Here** note. Most steps are subgraphs. Media inputs start empty, and
@@ -93,12 +96,14 @@ most workflows make their own inputs with Dreamina models.
 
 The nodes are under **Dreamina** in the node menu, and each has a help page.
 
-| Node                                                 | What it does                                                                               | Paid |
-| ---------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---- |
-| [Image: Generate](web/docs/DreaminaImageGenerate.md) | Makes or edits images with any Dreamina image model.                                       | Yes  |
-| [Image: Upscale](web/docs/DreaminaImageUpscale.md)   | Makes images larger and sharper with Dreamina's upscale.                                   | Yes  |
-| [Audio: Generate](web/docs/DreaminaAudioGenerate.md) | Reads text in a chosen voice, or dubs speech for a picture, with any Dreamina audio model. | Yes  |
-| [Model: Info](web/docs/DreaminaModelInfo.md)         | Shows a model's modes, settings, reference and file limits, and voices, as JSON.           | No   |
+| Node                                                           | What it does                                                                               | Paid |
+| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---- |
+| [Image: Generate](web/docs/DreaminaImageGenerate.md)           | Makes or edits images with any Dreamina image model.                                       | Yes  |
+| [Image: Upscale](web/docs/DreaminaImageUpscale.md)             | Makes images larger and sharper with Dreamina's upscale.                                   | Yes  |
+| [Video: Generate](web/docs/DreaminaVideoGenerate.md)           | Makes video from a prompt, frames, or references with any Dreamina video model.            | Yes  |
+| [Audio: Generate](web/docs/DreaminaAudioGenerate.md)           | Reads text in a chosen voice, or dubs speech for a picture, with any Dreamina audio model. | Yes  |
+| [Generation: Download](web/docs/DreaminaGenerationDownload.md) | Downloads what Dreamina made for a run after the run stopped.                              | No   |
+| [Model: Info](web/docs/DreaminaModelInfo.md)                   | Shows a model's modes, settings, reference and file limits, and voices, as JSON.           | No   |
 
 ## License
 

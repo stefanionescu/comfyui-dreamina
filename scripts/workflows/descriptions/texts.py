@@ -19,6 +19,14 @@ SHARED_TEXTS = {
     "line": "Line",
     "cast": "Cast",
     "speak": "Speak",
+    "scene": "Scene",
+    "portrait": "Portrait",
+    "animate": "Animate",
+    "product": "Product",
+    "packshot": "Packshot",
+    "film": "Film",
+    "collect": "Collect",
+    "shot": "Shot",
 }
 
 __all__ = ["SHARED_TEXTS"]

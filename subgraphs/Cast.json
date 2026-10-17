@@ -6,7 +6,7 @@
   "nodes": [
     {
       "id": 1,
-      "type": "de6e1536-eed9-5e11-a247-e1a1d763768b",
+      "type": "4b817c37-8d20-51f3-a001-15631d504b39",
       "pos": [
         0,
         0
@@ -58,7 +58,7 @@
   "definitions": {
     "subgraphs": [
       {
-        "id": "de6e1536-eed9-5e11-a247-e1a1d763768b",
+        "id": "4b817c37-8d20-51f3-a001-15631d504b39",
         "version": 1,
         "state": {
           "lastGroupId": 0,
@@ -89,7 +89,7 @@
         },
         "inputs": [
           {
-            "id": "fc1a6f6e-1d3e-5866-8827-6a0b14a4b5ef",
+            "id": "34b2151a-e499-5290-9aed-30fda08fa760",
             "name": "host",
             "type": "STRING",
             "linkIds": [
@@ -103,7 +103,7 @@
         ],
         "outputs": [
           {
-            "id": "9f99fc56-d9f7-5376-970a-ed91b017b036",
+            "id": "bae6f416-0e5d-59ba-b388-48fe9feaa97c",
             "name": "references",
             "type": "DREAMINA_REFERENCES",
             "linkIds": [
@@ -284,7 +284,7 @@
         "extra": {
           "description": "Draws the host."
         },
-        "category": "Dreamina/Audio",
+        "category": "Dreamina/Video",
         "description": "Draws the host."
       }
     ]

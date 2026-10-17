@@ -39,7 +39,7 @@ audio, or a reference, it uses omni dubbing, which takes no voice, so set
    select **Run**.
 
 Once Dreamina accepts a run, a cancel stops only the wait: the clip is still
-made and billed.
+made and billed. Collect it with **Generation: Download**.
 
 Examples: **audio-01-voice-a-script** and **audio-02-give-a-host-a-voice**.
 

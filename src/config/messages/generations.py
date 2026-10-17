@@ -28,6 +28,16 @@ GENERATION_KEEPS_RUNNING = (
     "Collect its outputs with Generation: Download."
 )
 
+GENERATION_UNKNOWN = (
+    "This generation is not recorded on this server, or it was already collected. Press R to list the generations "
+    "recorded here, then choose one."
+)
+
+GENERATIONS_EMPTY = (
+    "No generation is recorded on this server. A paid Dreamina node records each run Dreamina accepts, and it stays "
+    "listed here until its outputs are collected."
+)
+
 GENERATION_UNCOLLECTED = (
     "Dreamina accepted this run and bills it, but ComfyUI could not collect it. {reason} It stays recorded, so "
     "collect it with Generation: Download instead of running the paid node again."
@@ -52,6 +62,7 @@ WAIT_LIMIT = (
 )
 
 __all__ = [
+    "GENERATIONS_EMPTY",
     "GENERATION_ABSENT",
     "GENERATION_EMPTY",
     "GENERATION_EXPIRED",
@@ -59,6 +70,7 @@ __all__ = [
     "GENERATION_GONE",
     "GENERATION_KEEPS_RUNNING",
     "GENERATION_UNCOLLECTED",
+    "GENERATION_UNKNOWN",
     "RUN_UNCERTAIN",
     "RUN_UNRECORDED",
     "STATUS_CODE_REASON",

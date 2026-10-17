@@ -23,6 +23,7 @@ CREDIT_CEILING_RANGE = {"MIN": 0, "MAX": 2**31 - 1}
 # to the next 10, from Part 0's price sweep.
 DEFAULT_CEILINGS = {
     "image": 10,
+    "video": 20,
     "audio": 20,
 }
 

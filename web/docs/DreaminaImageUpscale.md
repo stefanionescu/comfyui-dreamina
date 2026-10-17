@@ -36,7 +36,8 @@ The node checks every setting before it uploads anything.
 If the upscale costs more than `credit_ceiling`, Dreamina runs nothing and
 bills nothing, and the node shows the price. Dreamina decides whether a
 target size fits each image. Once it accepts the upscale, a cancel stops only
-the wait: the upscale is still made and billed.
+the wait: the upscale is still made and billed. Collect it with **Generation:
+Download**.
 
 Example: **image-03-upscale-a-poster**.
 

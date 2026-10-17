@@ -1,7 +1,12 @@
 """The group notes and subgraph descriptions of the shipped workflows, in plain language."""
 
 SIGN_IN_STEP = "1. Sign in to Dreamina in **ComfyUI menu → Extensions → Dreamina → Dreamina Settings**.\n"
-UPSCALE_RECOVER_NOTE = "A cancel does not stop an upscale Dreamina has accepted. It keeps running and is billed."
+CANCEL_NOTE = "A cancel does not stop a video Dreamina has accepted. It keeps running and is billed."
+RECOVER_NOTE = CANCEL_NOTE + " Collect it with **Generation: Download** in **video-04-recover-a-video**."
+UPSCALE_RECOVER_NOTE = (
+    "A cancel does not stop an upscale Dreamina has accepted. It keeps running and is billed. Collect it with "
+    "**Generation: Download**."
+)
 
 WORKFLOW_TEXTS = {
     "image-01-design-a-host": {
@@ -61,6 +66,47 @@ WORKFLOW_TEXTS = {
         "`voice-name`, so `arguments` is empty (`{}`).\n\nTo choose the voice yourself, leave the portrait out and set "
         "`voice-name`, as **audio-01-voice-a-script** does.",
         "speak_description": "Speaks the line in a voice that suits the host and saves it.",
+    },
+    "video-01-animate-a-host": {
+        "input": SIGN_IN_STEP + "2. Describe your host in **Host**, and what they do in **Scene**.\n"
+        "3. Press **Run**. The video is saved under `video/dreamina`.",
+        "portrait": "Seedream 5.0 Lite draws the host in a `9:16` frame. This picture becomes the video's first frame. "
+        "`references`, what an earlier Dreamina step made, passes it on to **Animate** with no download or upload.",
+        "portrait_description": "Draws the host.",
+        "animate": "Seedance 2.0 Mini, the video node's starting model, starts on the host and makes a four-second "
+        "`720p` video. With one picture connected, the node uses `first_last_frame`, the mode that starts the video on "
+        "that picture. A second picture would set the last frame. Raise `duration` in `arguments` for up to 15 "
+        "seconds.\n\n" + RECOVER_NOTE,
+        "animate_description": "Turns the host into a video and saves it.",
+    },
+    "video-02-film-a-product-ad": {
+        "input": SIGN_IN_STEP + "2. Describe the host in **Host** and the product in **Product**.\n"
+        "3. In **Scene**, say what happens. `{{reference1}}` stands for the host and `{{image1}}` for the product.\n"
+        "4. Press **Run**. The video is saved under `video/dreamina`.",
+        "cast": "Seedream 5.0 Lite draws the host from the waist up. `references`, what an earlier Dreamina step made, "
+        "passes the portrait on to **Film** with no download or upload.",
+        "packshot": "Seedream 5.0 Lite draws the product on a plain background. **Film** takes it from `images`, and "
+        "the pack uploads it to your Dreamina canvas again, because `references` takes one connection.",
+        "packshot_description": "Draws the product.",
+        "film": "Seedance 2.5 films the host holding the product, four seconds at `480p`, its smallest size, in a "
+        "`9:16` frame. `model`, the model's name on Dreamina, is `seedance_2.5`. Two pictures alone would become the "
+        "first and last frames, so `arguments` sets `mode` to `m2v`, the mode that uses them as references. **Scene** "
+        "names them `{{reference1}}` and `{{image1}}`.\n\n" + RECOVER_NOTE,
+        "film_description": "Films the host with the product and saves the video.",
+    },
+    "video-04-recover-a-video": {
+        "collect": "Use this after you cancel a video Dreamina has already accepted, after a run times out, or after "
+        "ComfyUI restarts while a video is being made. Dreamina keeps making it and bills it, and the pack keeps a "
+        "record of it.\n\n" + SIGN_IN_STEP + "2. In **Collect**, choose the video in `generation`. Each entry shows "
+        "the start of its ID, its model, and when it started, in UTC. Press R to list videos started after the page "
+        "loaded.\n3. Press **Run**. The video is saved under `video/dreamina`.\n\nA video leaves the list once it is "
+        "saved. If Dreamina no longer has its record, the node says so, and you can look for the video on your "
+        "Dreamina canvas.",
+        "shot": "Seedance 2.0 Mini makes a four-second `720p` clip from the prompt inside **Shot**. **Shot** ships "
+        "turned off, so a run here makes nothing new and bills nothing. To make a video to recover, select **Shot**, "
+        "press Ctrl+B to turn it on, press **Run**, and cancel once **Shot** has started. Then turn it off again, "
+        "choose the video in **Collect**, and run.\n\n" + CANCEL_NOTE + " **Collect** downloads it.",
+        "shot_description": "Makes a four-second clip and saves it.",
     },
 }
 
