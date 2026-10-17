@@ -410,7 +410,7 @@ How the parts are filled:
 
 - `{example}` is `DEFAULT_MODELS[kind]`, or `DEFAULT_MODELS["image"]` when
   Model: Info passes no kind.
-- `{mode}` is `describe_mode(entry)` ([Step 4](#step-4-choose-the-mode)): the
+- `{mode}` is `entry.label` ([Step 2](#step-2-records)): the
   name, or `MODE_LABEL` for an entry with a scenario. 07's messages use the
   same function.
 - `{names}`, `{modes}`, `{scenarios}`, `{values}`, and `{flags}` join their
@@ -424,8 +424,8 @@ How the parts are filled:
   `NOTHING_CONNECTED`.
 - Numbers are written as `build_flags` writes values: a whole number without
   `.0`.
-- `{made}` is `KIND_NAMES[kind]`, or the three joined as "images, videos, or
-  audio" when Model: Info passes no kind.
+- `{made}` is `KIND_NAMES[kind]`, or `ANY_KIND` ("images, videos, or
+  audio") when Model: Info passes no kind.
 
 Filled examples:
 
@@ -673,7 +673,6 @@ chooses a mode.
 def choose_mode(
     model: ListedModel, kind: Kind, connected: Sequence[MediaKind], arguments: Mapping[str, Json]
 ) -> ModelMode: ...
-def describe_mode(mode: ModelMode) -> str: ...
 ```
 
 `connected` is the `MediaKind` of every item the run will send, in `--ref`
@@ -685,9 +684,11 @@ mode rules count it; its order matters only to 07. The result is one
 `ModelMode` entry of the model. Its `name` is sent as `--mode`, and its
 `scenario`, when set, as `--scenario`.
 
-`describe_mode` returns `mode.name`, or `MODE_LABEL` filled with the name
-and scenario. `src/dreamina/arguments.py` and 07's
-`src/dreamina/references.py` use it in their refusals, so it is public.
+`ModelMode.label`, a property in `src/types/models.py`, returns `mode.name`,
+or `MODE_LABEL` filled with the name and scenario. `src/dreamina/arguments.py`
+and 07's `src/dreamina/references.py` use it in their refusals. A one-line
+`describe_mode` function would be refused by `python.trivial-function`;
+properties are exempt.
 
 ### The mode name
 
@@ -767,7 +768,7 @@ Private helpers keep `choose_mode` under the complexity limit:
 `_choose_name`, `_choose_scenario`, `_list_candidates`, `_is_fitting`, and
 `_describe_limits`.
 
-`__all__ = ["choose_mode", "describe_mode"]`.
+`__all__ = ["choose_mode"]`.
 
 ## Step 5: Check and build the arguments
 
@@ -819,11 +820,12 @@ So `{"duration": 4}` on `seedream_5.0_lite`, whose flags are `prompt`,
 `ratio`, `resolution`, and `count`, is refused when the workflow is queued,
 for free.
 
-The flag names are listed by one private function, `_list_flags(mode) ->
+The flag names are listed by one property, `ModelMode.named_flags ->
 dict[str, ModelFlag]`, keyed by the flag name with `FLAG_PREFIX` removed
 (`str.removeprefix`). It is the only place the dashes are removed, and
 `build_flags` uses it too. A later release that writes names without dashes
-needs no change.
+needs no change. It is a property because a one-line private function would
+be refused by `python.trivial-function`.
 
 ### `choose_prompt`
 
@@ -850,7 +852,7 @@ read against. In order:
    `mode.scenario` when it is set.
 1. **The prompt.** When the entry lists `--prompt`: an empty prompt with the
    flag required raises `PROMPT_REQUIRED` with `{mode}` from
-   `describe_mode`. A prompt with text is checked against the flag's
+   `mode.label`. A prompt with text is checked against the flag's
    `min_length` and `max_length` as any value is (below), under the name
    `prompt`. The prompt itself is not added here.
 1. **Each key**, in the person's order, skipping `SELECTION_KEYS` values and
@@ -1125,8 +1127,7 @@ change first calls a name removes it:
 }
 ```
 
-`describe_mode` needs no entry: `src/dreamina/arguments.py` calls it in the
-same change. `_read_model_list` needs none either: it is private.
+`_read_model_list` needs no entry: it is private.
 
 Commit Steps 1 to 7 with `feat(nodes): add the live model check`, the
 subject the [build order](README.md#build-order) gives this milestone.
@@ -1143,7 +1144,7 @@ Generate** node at its starting values unless the step says otherwise.
 | ---- | ----- | -------- | ------------- |
 | 1 | `model` `no_such_model`, queued twice with different `run_number` values | At queue time, both times: `The model no_such_model is not in your Dreamina model list. The closest names are …` with three image models. The first queue reads the image list for the first time; the second reads it again because the name missed a list kept in memory. | Fix `find_model`'s second read or the ranking |
 | 2 | `model` `seedance_2.0_fast` | `The model seedance_2.0_fast makes videos, so it runs in Video: Generate, not in Image: Generate.` | Fix the other-kind lookup |
-| 3 | `arguments` `{"ratio": "1:1", "resolution": "2K", "duration": 4}` | `The model seedream_5.0_lite has no flag named duration. Its flags are prompt, ratio, resolution, count.` | Fix `validate_argument_names` or `_list_flags` |
+| 3 | `arguments` `{"ratio": "1:1", "resolution": "2K", "duration": 4}` | `The model seedream_5.0_lite has no flag named duration. Its flags are prompt, ratio, resolution, count.` | Fix `validate_argument_names` or `ModelMode.named_flags` |
 | 4 | `arguments` `{"ratio": "5:4", "resolution": "2K"}`, then `{"ratio": "1:1", "resolution": "2K", "count": 9}` | `The flag ratio does not take 5:4. Write one of: 21:9, 16:9, 3:2, 4:3, 1:1, 3:4, 2:3, 9:16.`, then `The flag count takes at most 8, and it has 9.` | Fix the value checks |
 | 5 | `arguments` `{"resolution": "2K"}` | `Set "ratio" in arguments. Mode t2i of this model needs it, and Model: Info lists its allowed values.` | Fix the required check |
 | 6 | The starting values with `credit_ceiling` one below IMG-D, Part 0's quote | Dreamina stops the run at the quote with 08's ceiling message, and a draft stays on the canvas | 08's exit 10 map |
@@ -1186,7 +1187,7 @@ happens:
    entries of one mode by another field, `_is_fitting` reads that field too.
 1. **A new media type in `references`.** 07's `MEDIA_TYPES` gains an entry
    only when the pack connects such media.
-1. **Flag names written without dashes.** `_list_flags` uses
+1. **Flag names written without dashes.** `ModelMode.named_flags` uses
    `removeprefix`, so nothing changes.
 1. **`--voice-name` listed for omni dubbing.** The skill says omni dubbing
    can take one voice, but the owner's list leaves the flag out. Once the

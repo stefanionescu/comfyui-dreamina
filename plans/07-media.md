@@ -57,7 +57,7 @@ calls what is built earlier:
 - 08 Part A (Foundation milestone): `send_command`, `build_failure`, and the
   CLI records;
 - [06-model-check.md](06-model-check.md) (Model check milestone): the model
-  list records, the chosen mode, `describe_mode`, and `src/config/media.py`
+  list records, the chosen mode, `ModelMode.label`, and `src/config/media.py`
   with `MEDIA_TYPES`;
 - [05-foundation.md](05-foundation.md): settings, errors, and the shared
   constants.
@@ -333,7 +333,7 @@ Add to `src/config/messages/models.py`, all raised with `INVALID_INPUT`:
 | `REFERENCE_KIND_REFUSED`    | `Mode {mode} of this model takes no {media} references, but the run has {count}. Disconnect them, or set another mode in arguments.` |
 | `VOICE_COUNTED`             | `The voice-name in arguments counts as one audio reference.` |
 
-- `{mode}` is 06's `describe_mode(mode)`: the mode's name, followed by its
+- `{mode}` is 06's `mode.label`: the mode's name, followed by its
   scenario in parentheses when it has one, such as `tts (omni-dubbing)`
   ([06-model-check.md](06-model-check.md#step-4-choose-the-mode)). 06's own
   refusals fill `{mode}` the same way.
@@ -1010,7 +1010,7 @@ F did (`F/plans/README.md:237`). Add to `python.allowlist`:
 
 | Plan | Uses |
 | ---- | ---- |
-| [06-model-check.md](06-model-check.md) | `choose_mode` picks the mode entry, including which `first_last_frame` entry, from what is connected. It counts items the same way, an Element as an image. `validate_references` then checks every count against that entry. `build_flags` refuses a `voice-name` the chosen entry does not list, before it can be counted as a voice. `describe_mode` writes `{mode}` in this plan's messages. |
+| [06-model-check.md](06-model-check.md) | `choose_mode` picks the mode entry, including which `first_last_frame` entry, from what is connected. It counts items the same way, an Element as an image. `validate_references` then checks every count against that entry. `build_flags` refuses a `voice-name` the chosen entry does not list, before it can be counted as a voice. `ModelMode.label` writes `{mode}` in this plan's messages. |
 | [08-runs.md](08-runs.md) | `GenerateNode` calls `list_local_media(images, videos, audio)` and passes `encode_local_file` to `GenerationOperation`. `GenerationOperation.send` calls `validate_references(mode, (*references, *local), values)` after 06's `choose_mode`, `choose_prompt`, and `build_flags`, and before `find_canvas`; `send_media` after the canvas; `plan_references`; `format_prompt` on the text 06's `choose_prompt` returned, sent as `--prompt`; one `("--ref", reference.typed_value)` pair per ordered reference; and `download_resources` after `node show`. `CollectOperation` calls `download_resources` too. |
 | [08-runs.md](08-runs.md), `build_node_outputs` | Runs through `wait_for_thread`, as F's does (`F/src/comfy/execution.py:35-41`). It passes the contents of the `OutputFile`s of kind `image`, in order, to `decode_images` for `images`, each of kind `video` to `decode_video` for `video`, and each of kind `audio` to `decode_audio` for `audio`. It decodes only the outputs the node shows, as F's does (`F/src/nodes/outputs.py:24-43`). It builds `references` from `Reference`: `Reference(origin="node", value=<node ID>, media=<kind>, title=<node title>)` for one output, and one `Reference(origin="resource", …)` per resource for several ([01-decisions.md](01-decisions.md#outputs)). An empty list becomes `ExecutionBlocker(None)`. |
 | [09-node-image.md](09-node-image.md) to [11-node-audio.md](11-node-audio.md) | Declare their outputs. Their help pages describe the placeholders, the `--ref` order, and three-channel images. 11's page says a `voice-name` counts as one audio reference. |
@@ -1053,7 +1053,7 @@ and an Element from an upload ([13-node-element.md](13-node-element.md)).
 | `BYTES_PER_MEGABYTE` (`src/config/units.py`) | [05-foundation.md](05-foundation.md) fixes it; Step 1 adds it | Sizes in decimal megabytes |
 | `src/config/patterns.py`, the text of `PLACEHOLDER_PATTERN` | [05-foundation.md](05-foundation.md) | The module and the pattern Step 4 adds |
 | `ModelMode` (`name`, `scenario`, `references`), `ModelReferences`, `ReferenceLimit` | [06-model-check.md](06-model-check.md) | `validate_references` |
-| `choose_mode`, `parse_arguments`, `describe_mode` | [06-model-check.md](06-model-check.md) | The mode entry, the `arguments` mapping `validate_references` takes, and `{mode}` in the messages |
+| `choose_mode`, `parse_arguments`, `ModelMode.label` | [06-model-check.md](06-model-check.md) | The mode entry, the `arguments` mapping `validate_references` takes, and `{mode}` in the messages |
 | `src/config/media.py` with `MEDIA_TYPES` | [06-model-check.md](06-model-check.md) | The module Step 1 adds to |
 | `src/config/messages/models.py`, `src/config/messages/inputs.py` | [06-model-check.md](06-model-check.md) | The modules Step 3 adds to |
 | `send_command`, `CliResult` (exit code and reply), `CliFailure` (`code`, `retryable`) | [08-runs.md](08-runs.md) Part A | Every CLI call and the second-try decision |

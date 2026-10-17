@@ -210,7 +210,7 @@ not ported: every route, the settings save among them, is in
 | `installer.py`             | `read_cli_version()`; `download_installer()`: the OS's official installer from its fixed address and ByteDance's CDN, into a private temporary file; `save_cli(installer_path)`: run it, which saves the CLI to disk | 05 |
 | `account.py`               | `is_signed_in()`, `read_account()`, `delete_sign_in()`, `SignInState`, whose `create_challenge` runs the private `_create_sign_in` (`auth login`) and `_wait_for_sign_in` (`auth wait`) | 05 |
 | `models.py`                | `find_model(name, kind)`, which Model: Info calls with `kind=None`; the private `_read_model_list(kind)`, with F's per-process cache and shared reads per event loop | 06 |
-| `modes.py`                 | `choose_mode(model, kind, connected, arguments)` → the mode entry, with its scenario; `describe_mode(mode)`, the mode as refusals name it | 06 |
+| `modes.py`                 | `choose_mode(model, kind, connected, arguments)` → the mode entry, with its scenario; the mode as refusals name it is `ModelMode.label` | 06 |
 | `arguments.py`             | `parse_arguments(text)`; `validate_argument_names(model, arguments)`, also run at queue time; `choose_prompt(prompt, arguments)` → the one prompt; `build_flags(mode, prompt, arguments)` → the `--mode` and `--flag value` list | 06 |
 | `references.py`            | `validate_references(mode, items, arguments)`; `plan_references(references, local, uploaded)` → the `--ref` order and the placeholder table; `format_prompt(prompt, placed)` | 07 |
 | `uploads.py`               | `send_media(project_id, items, encode, settings, deadline)` → `tuple[Reference, ...]`                                                         | 07   |
