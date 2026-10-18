@@ -10,6 +10,13 @@ PROMPT_TWICE = "The prompt input and arguments both set prompt. Remove it from o
 
 PROMPT_REQUIRED = "Write a prompt. Mode {mode} of this model needs one."
 
+PROMPT_TOO_LONG = (
+    "The prompt has {count:,} characters, and {model} takes at most {maximum:,}. Shorten it by {excess:,} characters, "
+    "or choose another model."
+)
+
+PROMPT_TOO_SHORT = "The prompt has {count:,} characters, and {model} needs at least {minimum:,}. Write a longer one."
+
 PLACEHOLDER_UNCONNECTED = (
     "The prompt uses {placeholder}, but {input} has {count} connected. Placeholders count from 1 within each input."
 )
@@ -81,6 +88,8 @@ __all__ = [
     "JSON_SHAPES",
     "PLACEHOLDER_UNCONNECTED",
     "PROMPT_REQUIRED",
+    "PROMPT_TOO_LONG",
+    "PROMPT_TOO_SHORT",
     "PROMPT_TWICE",
     "SINGLE_VALUE",
     "UPSCALE_ARGUMENT_CHOICE",

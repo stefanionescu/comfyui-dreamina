@@ -11,7 +11,15 @@ from ..types.parsing import parse_json
 from ..config.messages.requests import JSON_SYNTAX
 from ..types.errors import ErrorCode, DreaminaError
 from ..config.models import COUNT_FLAG, COUNT_VALUE, FLAG_PREFIX, PROMPT_FLAG, SELECTION_KEYS
-from ..config.messages.inputs import JSON_SHAPES, PROMPT_TWICE, ARGUMENTS_SHAPE, PROMPT_REQUIRED, ARGUMENTS_INVALID
+from ..config.messages.inputs import (
+    JSON_SHAPES,
+    PROMPT_TWICE,
+    ARGUMENTS_SHAPE,
+    PROMPT_REQUIRED,
+    PROMPT_TOO_LONG,
+    PROMPT_TOO_SHORT,
+    ARGUMENTS_INVALID,
+)
 from ..config.messages.models import (
     VALUE_STEP,
     VALUE_TYPE,
@@ -104,7 +112,19 @@ def _validate_value(name: str, flag: ModelFlag, value: Json) -> str:
     return text
 
 
-def _build_mode_flags(mode: ModelMode, prompt: str) -> list[str]:
+def _validate_prompt(model: str, flag: ModelFlag, prompt: str) -> None:
+    """Check the prompt's length against the entry's prompt flag, naming the model and how much is over."""
+    count = len(prompt)
+    if flag.min_length is not None and count < flag.min_length:
+        message = PROMPT_TOO_SHORT.format(count=count, model=model, minimum=flag.min_length)
+        raise DreaminaError(ErrorCode.INVALID_INPUT, message)
+    if flag.max_length is not None and count > flag.max_length:
+        excess = count - flag.max_length
+        message = PROMPT_TOO_LONG.format(count=count, model=model, maximum=flag.max_length, excess=excess)
+        raise DreaminaError(ErrorCode.INVALID_INPUT, message)
+
+
+def _build_mode_flags(model: str, mode: ModelMode, prompt: str) -> list[str]:
     """Start the call with the entry's mode and scenario, and check the prompt against the entry's prompt flag."""
     built = [FLAG_PREFIX + SELECTION_KEYS["MODE"], mode.name]
     if mode.scenario:
@@ -113,7 +133,7 @@ def _build_mode_flags(mode: ModelMode, prompt: str) -> list[str]:
     if flag is not None and flag.required and not prompt:
         raise DreaminaError(ErrorCode.INVALID_INPUT, PROMPT_REQUIRED.format(mode=mode.label))
     if flag is not None and prompt:
-        _validate_value(PROMPT_FLAG, flag, prompt)
+        _validate_prompt(model, flag, prompt)
     return built
 
 
@@ -163,13 +183,14 @@ def choose_prompt(prompt: str, arguments: Mapping[str, Json]) -> str:
     return value
 
 
-def build_flags(mode: ModelMode, prompt: str, arguments: Mapping[str, Json]) -> tuple[str, ...]:
+def build_flags(model: str, mode: ModelMode, prompt: str, arguments: Mapping[str, Json]) -> tuple[str, ...]:
     """Build --mode, --scenario, and each flag of arguments, checked against the chosen entry, with --count 1.
 
-    The prompt is checked here and sent by the run call. The person's keys keep their order.
+    The prompt is checked here, its refusals naming the model, and sent by the run call. The person's keys keep their
+    order.
     """
     flags = mode.named_flags
-    built = _build_mode_flags(mode, prompt)
+    built = _build_mode_flags(model, mode, prompt)
     for key, value in arguments.items():
         if key in SELECTION_KEYS.values() or key == PROMPT_FLAG:
             continue

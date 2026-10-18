@@ -196,7 +196,7 @@ class GenerationOperation:
         items = (*plan.references, *plan.local)
         mode = choose_mode(listed, plan.kind, tuple(item.media for item in items), values)
         prompt = choose_prompt(plan.prompt, values)
-        flags = build_flags(mode, prompt, values)
+        flags = build_flags(listed.name, mode, prompt, values)
         validate_references(mode, items, values)
         return listed, mode, prompt, flags
 
