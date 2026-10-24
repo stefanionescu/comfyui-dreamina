@@ -20,7 +20,7 @@ from .waiting import validate_lost_run, wait_for_operation
 from ..uploads import send_media
 from ..contract import validate_cli
 from ..failures import build_failure, build_generation_failure
-from ..arguments import build_flags, choose_prompt, parse_arguments, validate_argument_names
+from ..arguments import add_flags, build_flags, choose_prompt, parse_arguments, validate_argument_names
 from ..downloads import download_resources
 from ..operation import wait_until_settled
 from ..references import format_prompt, plan_references, validate_references
@@ -189,7 +189,7 @@ class GenerationOperation:
         """Refuse locally everything that the live model list says Dreamina refuses, and build the flags."""
         plan = self.plan
         await validate_cli()
-        values = parse_arguments(plan.arguments)
+        values = add_flags(plan.flags, parse_arguments(plan.arguments))
         listed = await find_model(plan.model, plan.kind)
         validate_argument_names(listed, values)
         items = (*plan.references, *plan.local)

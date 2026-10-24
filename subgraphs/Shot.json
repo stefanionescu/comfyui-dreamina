@@ -75,7 +75,7 @@
             ],
             "size": [
               340,
-              274
+              370
             ],
             "flags": {},
             "order": 100,
@@ -119,6 +119,38 @@
                 "link": null,
                 "widget": {
                   "name": "credit_ceiling"
+                }
+              },
+              {
+                "name": "ratio",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "ratio"
+                }
+              },
+              {
+                "name": "resolution",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "resolution"
+                }
+              },
+              {
+                "name": "duration",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "duration"
+                }
+              },
+              {
+                "name": "count",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "count"
                 }
               },
               {
@@ -172,9 +204,13 @@
             "widgets_values": [
               "seedance_2.0_mini",
               20,
+              "16:9",
+              "720p",
+              4,
+              1,
               0,
               "A white canvas sneaker with red laces turns slowly on a plain white turntable. Soft studio light, slow push-in.",
-              "{\"ratio\": \"16:9\", \"resolution\": \"720p\", \"duration\": 4}"
+              ""
             ],
             "color": "#432",
             "bgcolor": "#653"

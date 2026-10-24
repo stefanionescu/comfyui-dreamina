@@ -11,9 +11,10 @@ from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
 from scripts.workflows.descriptions.texts import SHARED_TEXTS
 
 FILM_MODEL = 'seedance_2.5'
-PORTRAIT_ARGUMENTS = json.dumps({'ratio': '9:16', 'resolution': '2K'}, indent=2)
-ANIMATE_ARGUMENTS = json.dumps({'ratio': '9:16', 'resolution': '720p', 'duration': 4}, indent=2)
-FILM_ARGUMENTS = json.dumps({'mode': 'm2v', 'ratio': '9:16', 'resolution': '480p', 'duration': 4}, indent=2)
+PORTRAIT_FLAGS = {'ratio': '9:16'}
+ANIMATE_FLAGS = {'ratio': '9:16'}
+FILM_FLAGS = {'ratio': '9:16', 'resolution': '480p'}
+FILM_ARGUMENTS = json.dumps({'mode': 'm2v'}, indent=2)
 # Part 0's quote of Film's settings, 48 credits, rounded up to the next 10.
 FILM_CEILING = 50
 PORTRAIT_HOST = (
@@ -48,7 +49,7 @@ MOVE_TEXTS = WORKFLOW_TEXTS['video-05-animate-a-saved-image']
 PORTRAIT = Subgraph(
     name=SHARED_TEXTS['portrait'],
     nodes=(
-        Node('draw', IMAGE_GENERATE, {'arguments': PORTRAIT_ARGUMENTS}, is_paid=True),
+        Node('draw', IMAGE_GENERATE, PORTRAIT_FLAGS, is_paid=True),
         Node('look', HostNode.PREVIEW_IMAGE),
     ),
     links=(('draw.images', 'look.images'),),
@@ -62,7 +63,7 @@ PORTRAIT = Subgraph(
 ANIMATE = Subgraph(
     name=SHARED_TEXTS['animate'],
     nodes=(
-        Node('video', VIDEO_GENERATE, {'arguments': ANIMATE_ARGUMENTS}, is_paid=True),
+        Node('video', VIDEO_GENERATE, ANIMATE_FLAGS, is_paid=True),
         Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/host'}),
     ),
     links=(('video.video', 'save.video'),),
@@ -112,7 +113,7 @@ FILM = Subgraph(
         Node(
             'video',
             VIDEO_GENERATE,
-            {'model': FILM_MODEL, 'arguments': FILM_ARGUMENTS, 'credit_ceiling': FILM_CEILING},
+            {'model': FILM_MODEL, **FILM_FLAGS, 'arguments': FILM_ARGUMENTS, 'credit_ceiling': FILM_CEILING},
             is_paid=True,
         ),
         Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/product-ad'}),
@@ -178,7 +179,7 @@ RECOVER_VIDEO = Workflow(
 MOVE = Subgraph(
     name=SHARED_TEXTS['move'],
     nodes=(
-        Node('video', VIDEO_GENERATE, {'arguments': ANIMATE_ARGUMENTS}, is_paid=True),
+        Node('video', VIDEO_GENERATE, ANIMATE_FLAGS, is_paid=True),
         Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/host-in-kitchen'}),
     ),
     links=(('video.video', 'save.video'),),

@@ -148,11 +148,12 @@ when it runs, the node checks the name and your settings against your own
 model list from Dreamina, before Dreamina bills anything. **Model: Info**
 shows any model's modes, settings, and voices, and bills nothing.
 
-![Video: Generate on the canvas: the images, videos, audio, and references inputs; model set to seedance_2.0_mini; credit_ceiling; run_number; a prompt about a host holding up a green bottle; and arguments holding ratio 16:9, resolution 720p, and duration 4.](docs/images/screenshots/video-generate-node.png)
+![Video: Generate on the canvas: the images, videos, audio, and references inputs; model set to seedance_2.0_mini; credit_ceiling 20; ratio 9:16; resolution 720p; duration 4; count 1; run_number; a prompt about a host holding up a green bottle; and an empty arguments box.](docs/images/screenshots/video-generate-node.png)
 
-Write the model's settings in `arguments` as JSON, under Dreamina's names,
-such as `{"ratio": "9:16", "resolution": "720p", "duration": 5}`. The node
-stops if the model makes another kind of output, or does not take a setting
+Each node has its own inputs for the settings every model of its kind
+takes, under Dreamina's names: `ratio`, `resolution`, and `count`, plus
+`duration` for video and `voice-name` for speech. Write any other flag in
+`arguments` as JSON, such as `{"mode": "m2v"}`. The node stops if the model makes another kind of output, or does not take a setting
 or value you sent. The [advanced guide](ADVANCED.md#models) says how the
 node chooses the mode.
 

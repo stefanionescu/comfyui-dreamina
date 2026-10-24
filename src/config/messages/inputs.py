@@ -1,10 +1,12 @@
 """Refusals of the prompt, arguments, placeholders, and connected values of a node, made before any payment."""
 
-ARGUMENTS_INVALID = 'The arguments input is not valid JSON. Write a JSON object, such as {{"ratio": "16:9"}}.'
+ARGUMENTS_INVALID = 'The arguments input is not valid JSON. Write a JSON object, such as {{"mode": "m2v"}}.'
 
 ARGUMENTS_SHAPE = (
-    'The arguments input holds {shape}. Write a JSON object of flag names and values, such as {{"ratio": "16:9"}}.'
+    'The arguments input holds {shape}. Write a JSON object of flag names and values, such as {{"mode": "m2v"}}.'
 )
+
+FLAG_TWICE = 'The {flag} flag is set twice, in arguments and by the {flag} input. Remove it from arguments.'
 
 PROMPT_TWICE = 'The prompt input and arguments both set prompt. Remove it from one of them.'
 
@@ -85,6 +87,7 @@ __all__ = [
     'ELEMENT_TITLE_LENGTH',
     'ELEMENT_VOICE_COUNT',
     'ELEMENT_VOICE_MEDIA',
+    'FLAG_TWICE',
     'JSON_SHAPES',
     'PLACEHOLDER_UNCONNECTED',
     'PROMPT_REQUIRED',

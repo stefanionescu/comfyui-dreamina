@@ -99,7 +99,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "Seed Audio looks at the portrait and speaks **Line** in a voice that suits the host. A picture in `references` makes the node use omni dubbing, Seed Audio's way to voice a picture. Omni dubbing takes no `voice-name`, so `arguments` is empty (`{}`).\n\nTo choose the voice yourself, leave the portrait out and set `voice-name`, as **audio-01-voice-a-script** does."
+        "Seed Audio looks at the portrait and speaks **Line** in a voice that suits the host. A picture in `references` makes the node use omni dubbing, Seed Audio's way to voice a picture. Omni dubbing takes no voice, so `voice-name` is empty.\n\nTo choose the voice yourself, leave the portrait out and set `voice-name`, as **audio-01-voice-a-script** does."
       ],
       "title": "Note"
     },
@@ -418,7 +418,7 @@
             ],
             "size": [
               340,
-              254
+              326
             ],
             "flags": {},
             "order": 100,
@@ -450,6 +450,30 @@
                 "link": null,
                 "widget": {
                   "name": "credit_ceiling"
+                }
+              },
+              {
+                "name": "ratio",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "ratio"
+                }
+              },
+              {
+                "name": "resolution",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "resolution"
+                }
+              },
+              {
+                "name": "count",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "count"
                 }
               },
               {
@@ -505,9 +529,12 @@
             "widgets_values": [
               "seedream_5.0_lite",
               10,
+              "3:4",
+              "2K",
+              1,
               0,
               "",
-              "{\n  \"ratio\": \"3:4\",\n  \"resolution\": \"2K\"\n}"
+              ""
             ],
             "color": "#432",
             "bgcolor": "#653"
@@ -561,7 +588,7 @@
             "origin_id": -10,
             "origin_slot": 0,
             "target_id": 101,
-            "target_slot": 5,
+            "target_slot": 8,
             "type": "STRING"
           },
           {
@@ -645,7 +672,7 @@
             ],
             "size": [
               340,
-              254
+              278
             ],
             "flags": {},
             "order": 200,
@@ -694,6 +721,14 @@
                 }
               },
               {
+                "name": "voice-name",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "voice-name"
+                }
+              },
+              {
                 "name": "prompt",
                 "type": "STRING",
                 "link": 3,
@@ -738,7 +773,8 @@
               20,
               0,
               "",
-              "{}"
+              "",
+              ""
             ],
             "color": "#432",
             "bgcolor": "#653"
@@ -819,7 +855,7 @@
             "origin_id": -10,
             "origin_slot": 1,
             "target_id": 201,
-            "target_slot": 6,
+            "target_slot": 7,
             "type": "STRING"
           }
         ],

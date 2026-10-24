@@ -99,7 +99,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "Seedance 2.0 Mini, the video node's starting model, starts on the host and makes a four-second `720p` video. With one picture connected, the node uses `first_last_frame`, the mode that starts the video on that picture. A second picture would set the last frame. Raise `duration` in `arguments` for up to 15 seconds.\n\nA cancel does not stop a video Dreamina has accepted. It keeps running and is billed. Collect it with **Generation: Download** in **video-04-recover-a-video**."
+        "Seedance 2.0 Mini, the video node's starting model, starts on the host and makes a four-second `720p` video. With one picture connected, the node uses `first_last_frame`, the mode that starts the video on that picture. A second picture would set the last frame. Raise `duration` for up to 15 seconds.\n\nA cancel does not stop a video Dreamina has accepted. It keeps running and is billed. Collect it with **Generation: Download** in **video-04-recover-a-video**."
       ],
       "title": "Note"
     },
@@ -418,7 +418,7 @@
             ],
             "size": [
               340,
-              254
+              326
             ],
             "flags": {},
             "order": 100,
@@ -450,6 +450,30 @@
                 "link": null,
                 "widget": {
                   "name": "credit_ceiling"
+                }
+              },
+              {
+                "name": "ratio",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "ratio"
+                }
+              },
+              {
+                "name": "resolution",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "resolution"
+                }
+              },
+              {
+                "name": "count",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "count"
                 }
               },
               {
@@ -505,9 +529,12 @@
             "widgets_values": [
               "seedream_5.0_lite",
               10,
+              "9:16",
+              "2K",
+              1,
               0,
               "",
-              "{\n  \"ratio\": \"9:16\",\n  \"resolution\": \"2K\"\n}"
+              ""
             ],
             "color": "#432",
             "bgcolor": "#653"
@@ -561,7 +588,7 @@
             "origin_id": -10,
             "origin_slot": 0,
             "target_id": 101,
-            "target_slot": 5,
+            "target_slot": 8,
             "type": "STRING"
           },
           {
@@ -645,7 +672,7 @@
             ],
             "size": [
               340,
-              274
+              370
             ],
             "flags": {},
             "order": 200,
@@ -689,6 +716,38 @@
                 "link": null,
                 "widget": {
                   "name": "credit_ceiling"
+                }
+              },
+              {
+                "name": "ratio",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "ratio"
+                }
+              },
+              {
+                "name": "resolution",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "resolution"
+                }
+              },
+              {
+                "name": "duration",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "duration"
+                }
+              },
+              {
+                "name": "count",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "count"
                 }
               },
               {
@@ -742,9 +801,13 @@
             "widgets_values": [
               "seedance_2.0_mini",
               20,
+              "9:16",
+              "720p",
+              4,
+              1,
               0,
               "",
-              "{\n  \"ratio\": \"9:16\",\n  \"resolution\": \"720p\",\n  \"duration\": 4\n}"
+              ""
             ],
             "color": "#432",
             "bgcolor": "#653"
@@ -834,7 +897,7 @@
             "origin_id": -10,
             "origin_slot": 1,
             "target_id": 201,
-            "target_slot": 7,
+            "target_slot": 11,
             "type": "STRING"
           }
         ],

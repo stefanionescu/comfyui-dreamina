@@ -1,7 +1,5 @@
 """The audio workflows: voice a script in a chosen voice, and give a drawn host a voice."""
 
-import json
-
 from scripts.nodes.host import HostNode
 from scripts.workflows.page.graph import Node, Group, Subgraph, Workflow
 from scripts.workflows.page.config import STAGE_COLOUR, IMAGE_PREVIEW
@@ -10,9 +8,9 @@ from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
 from scripts.workflows.descriptions.texts import SHARED_TEXTS
 
 SEED_AUDIO = 'seed_audio_v1'
-VOICE_ARGUMENTS = json.dumps({'voice-name': 'Good Guy'}, indent=2)
-CAST_ARGUMENTS = json.dumps({'ratio': '3:4', 'resolution': '2K'}, indent=2)
-SPEAK_ARGUMENTS = json.dumps({}, indent=2)
+VOICE_FLAGS = {'voice-name': 'Good Guy'}
+CAST_FLAGS = {'ratio': '3:4'}
+SPEAK_FLAGS = {'voice-name': ''}
 SCRIPT_PROMPT = (
     'Welcome back to the show. Today we have three new sneakers, and the first pair is already selling fast.'
 )
@@ -27,7 +25,7 @@ HOST_TEXTS = WORKFLOW_TEXTS['audio-02-give-a-host-a-voice']
 VOICE = Subgraph(
     name=SHARED_TEXTS['voice'],
     nodes=(
-        Node('speak', AUDIO_GENERATE, {'arguments': VOICE_ARGUMENTS}, is_paid=True),
+        Node('speak', AUDIO_GENERATE, VOICE_FLAGS, is_paid=True),
         Node('save', HostNode.SAVE_AUDIO, {'filename_prefix': 'audio/dreamina/script-voice'}),
     ),
     links=(('speak.audio', 'save.audio'),),
@@ -58,7 +56,7 @@ VOICE_SCRIPT = Workflow(
 CAST = Subgraph(
     name=SHARED_TEXTS['cast'],
     nodes=(
-        Node('draw', IMAGE_GENERATE, {'arguments': CAST_ARGUMENTS}, is_paid=True),
+        Node('draw', IMAGE_GENERATE, CAST_FLAGS, is_paid=True),
         Node('look', HostNode.PREVIEW_IMAGE),
     ),
     links=(('draw.images', 'look.images'),),
@@ -72,7 +70,7 @@ CAST = Subgraph(
 SPEAK = Subgraph(
     name=SHARED_TEXTS['speak'],
     nodes=(
-        Node('speak', AUDIO_GENERATE, {'arguments': SPEAK_ARGUMENTS}, is_paid=True),
+        Node('speak', AUDIO_GENERATE, SPEAK_FLAGS, is_paid=True),
         Node('save', HostNode.SAVE_AUDIO, {'filename_prefix': 'audio/dreamina/host-voice'}),
     ),
     links=(('speak.audio', 'save.audio'),),

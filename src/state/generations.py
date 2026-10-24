@@ -59,6 +59,8 @@ class GenerationPlan:
         title: The display name of the node, sent as the title of the canvas node when the prompt is empty.
         model: The model name as typed, stripped.
         prompt: The prompt box.
+
+        flags: The flag inputs of the node by flag name, without an empty line input.
         arguments: The arguments box, as JSON text.
         credit_ceiling: The most credits the run may cost.
 
@@ -71,6 +73,7 @@ class GenerationPlan:
     title: str
     model: str
     prompt: str
+    flags: Mapping[str, Json]
     arguments: str
     credit_ceiling: int
     references: tuple[Reference, ...]

@@ -9,9 +9,10 @@ import math
 from typing import TYPE_CHECKING
 
 from ..state.errors import ErrorCode, DreaminaError
-from ..config.models import COUNT_FLAG, COUNT_VALUE, FLAG_PREFIX, PROMPT_FLAG, SELECTION_KEYS
+from ..config.models import FLAG_PREFIX, PROMPT_FLAG, SELECTION_KEYS
 from ..state.parsing import parse_json
 from ..config.messages.inputs import (
+    FLAG_TWICE,
     JSON_SHAPES,
     PROMPT_TWICE,
     ARGUMENTS_SHAPE,
@@ -154,6 +155,14 @@ def parse_arguments(text: str) -> dict[str, Json]:
     return value
 
 
+def add_flags(flags: Mapping[str, Json], arguments: Mapping[str, Json]) -> dict[str, Json]:
+    """Join the flag inputs of the node and the arguments box into one set of flags, refusing a flag set in both."""
+    twice = next((name for name in flags if name in arguments), None)
+    if twice is not None:
+        raise DreaminaError(ErrorCode.INVALID_INPUT, FLAG_TWICE.format(flag=twice))
+    return {**flags, **arguments}
+
+
 def validate_argument_names(model: ListedModel, arguments: Mapping[str, Json]) -> None:
     """Refuse a key no entry of the model lists, or one written with dashes; it needs nothing connected."""
     flags = list(dict.fromkeys(flag.name.removeprefix(FLAG_PREFIX) for mode in model.modes for flag in mode.flags))
@@ -185,7 +194,7 @@ def choose_prompt(prompt: str, arguments: Mapping[str, Json]) -> str:
 
 
 def build_flags(model: str, mode: ModelMode, label: str, prompt: str, arguments: Mapping[str, Json]) -> tuple[str, ...]:
-    """Build --mode, --scenario, and each flag of arguments, checked against the chosen entry, with --count 1.
+    """Build --mode, --scenario, and each flag of arguments, checked against the chosen entry.
 
     This function checks the prompt, and its refusals name the model; the run call sends the prompt. The person's keys
     keep their order. The key of each flag is its name without the leading dashes, and label names the entry in
@@ -201,13 +210,11 @@ def build_flags(model: str, mode: ModelMode, label: str, prompt: str, arguments:
             message = FLAG_NOT_IN_MODE.format(mode=label, flag=key, flags=', '.join(flags))
             raise DreaminaError(ErrorCode.INVALID_INPUT, message)
         built += [FLAG_PREFIX + key, _validate_value(key, flag, value)]
-    if COUNT_FLAG in flags and COUNT_FLAG not in arguments:
-        built += [FLAG_PREFIX + COUNT_FLAG, COUNT_VALUE]
-    present = {*arguments, PROMPT_FLAG, COUNT_FLAG, *([SELECTION_KEYS['SCENARIO']] if mode.scenario else [])}
+    present = {*arguments, PROMPT_FLAG, *([SELECTION_KEYS['SCENARIO']] if mode.scenario else [])}
     missing = next((name for name, flag in flags.items() if flag.required and name not in present), None)
     if missing is not None:
         raise DreaminaError(ErrorCode.INVALID_INPUT, FLAG_REQUIRED.format(flag=missing, mode=label))
     return tuple(built)
 
 
-__all__ = ['build_flags', 'choose_prompt', 'parse_arguments', 'validate_argument_names']
+__all__ = ['add_flags', 'build_flags', 'choose_prompt', 'parse_arguments', 'validate_argument_names']

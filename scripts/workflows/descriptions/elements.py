@@ -1,7 +1,5 @@
 """The Element workflows: keep one host the same across two shots, and cast a saved host from files."""
 
-import json
-
 from scripts.nodes.host import HostNode
 from scripts.workflows.page.graph import Node, Group, Subgraph, Workflow
 from scripts.workflows.page.config import STAGE_COLOUR
@@ -10,7 +8,7 @@ from scripts.workflows.descriptions.nodes import ELEMENT_ADD, VIDEO_GENERATE
 from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
 from scripts.workflows.descriptions.texts import SHARED_TEXTS
 
-SHOT_ARGUMENTS = json.dumps({'ratio': '9:16', 'resolution': '720p', 'duration': 4}, indent=2)
+SHOT_FLAGS = {'ratio': '9:16'}
 KEEP_HOST = (
     'A friendly man in his thirties with short curly hair and a denim jacket. Waist up, facing the camera, plain light '
     'gray background, photorealistic.'
@@ -33,7 +31,7 @@ TAKE_TEXTS = WORKFLOW_TEXTS['video-06-cast-a-saved-host']
 FIRST_SHOT = Subgraph(
     name=SHARED_TEXTS['shot_1'],
     nodes=(
-        Node('video', VIDEO_GENERATE, {'arguments': SHOT_ARGUMENTS}, is_paid=True),
+        Node('video', VIDEO_GENERATE, SHOT_FLAGS, is_paid=True),
         Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/host-shot-1'}),
     ),
     links=(('video.video', 'save.video'),),
@@ -45,7 +43,7 @@ FIRST_SHOT = Subgraph(
 SECOND_SHOT = Subgraph(
     name=SHARED_TEXTS['shot_2'],
     nodes=(
-        Node('video', VIDEO_GENERATE, {'arguments': SHOT_ARGUMENTS}, is_paid=True),
+        Node('video', VIDEO_GENERATE, SHOT_FLAGS, is_paid=True),
         Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/host-shot-2'}),
     ),
     links=(('video.video', 'save.video'),),
@@ -86,7 +84,7 @@ KEEP_HOST_ACROSS_SHOTS = Workflow(
 TAKE = Subgraph(
     name=SHARED_TEXTS['take'],
     nodes=(
-        Node('video', VIDEO_GENERATE, {'arguments': SHOT_ARGUMENTS}, is_paid=True),
+        Node('video', VIDEO_GENERATE, SHOT_FLAGS, is_paid=True),
         Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/host-walks-in'}),
     ),
     links=(('video.video', 'save.video'),),

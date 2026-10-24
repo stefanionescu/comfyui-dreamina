@@ -9,7 +9,6 @@ from __future__ import annotations
 import os
 import sys
 import json
-import typing
 from typing import cast
 import asyncio
 import inspect
@@ -77,35 +76,21 @@ def _build_host_schema(name: str) -> dict[str, object]:
     return {'inputs': inputs, 'outputs': outputs}
 
 
-class _TypedDictKeys(typing.Protocol):
-    """The key sets a TypedDict class holds."""
-
-    __required_keys__: frozenset[str]
-    __optional_keys__: frozenset[str]
-
-
-def _read_parameters(function: object) -> tuple[set[str], set[str]]:
-    """Return the input names a node function accepts and those it requires.
-
-    A keyword parameter typed with a TypedDict, such as the sources of a generation send, accepts each of its keys.
-    """
+def _read_parameters(function: object) -> tuple[set[str], set[str]] | None:
+    """Return the input names a node function accepts and those it requires; None when it takes every input by name."""
     parameters = inspect.signature(function).parameters  # pyright: ignore[reportArgumentType] # reason: The host leaves execute untyped.
-    named = {name: parameter for name, parameter in parameters.items() if parameter.kind is not parameter.VAR_KEYWORD}
-    accepted = set(named)
-    required = {name for name, parameter in named.items() if parameter.default is inspect.Parameter.empty}
-    for name in parameters.keys() - named.keys():
-        keys: _TypedDictKeys = typing.get_args(typing.get_type_hints(function)[name])[0]
-        accepted |= keys.__required_keys__ | keys.__optional_keys__
-        required |= keys.__required_keys__
-    return accepted, required
+    if any(parameter.kind is parameter.VAR_KEYWORD for parameter in parameters.values()):
+        return None
+    required = {name for name, parameter in parameters.items() if parameter.default is inspect.Parameter.empty}
+    return set(parameters), required
 
 
 def _build_registered_schemas() -> dict[str, dict[str, object]]:
     """Describe every registered node, refusing a mismatched schema.
 
     A paid node receives its inputs through send, and the run number through its base class. Every required parameter
-    must be an input, and every input a parameter. The shared generation send also takes the media sockets that a
-    kind node does not show and leaves out of its inputs.
+    must be an input, and every input a parameter. The shared generation send reads its inputs by the names the config
+    lists, so it has no parameters to compare.
     """
     schemas: dict[str, dict[str, object]] = {}
     for node_type in NODE_TYPES:
@@ -114,12 +99,14 @@ def _build_registered_schemas() -> dict[str, dict[str, object]]:
             message = f'Register {schema.node_id} once.'
             raise ValueError(message)
         is_paid = issubclass(node_type, PaidNode)
-        accepted, required = _read_parameters(node_type.send if is_paid else node_type.execute)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType] # reason: The host leaves execute untyped.
-        if is_paid:
-            accepted.add(INPUT_NAMES['RUN_NUMBER'])
-        if not required <= {item.id for item in schema.inputs} <= accepted:
-            message = f'Match the execute parameters of {schema.node_id} to its inputs.'
-            raise ValueError(message)
+        parameters = _read_parameters(node_type.send if is_paid else node_type.execute)  # pyright: ignore[reportUnknownMemberType, reportUnknownArgumentType] # reason: The host leaves execute untyped.
+        if parameters is not None:
+            accepted, required = parameters
+            if is_paid:
+                accepted.add(INPUT_NAMES['RUN_NUMBER'])
+            if not required <= {item.id for item in schema.inputs} <= accepted:
+                message = f'Match the execute parameters of {schema.node_id} to its inputs.'
+                raise ValueError(message)
         schemas[schema.node_id] = _build_node_schema(schema)
     return schemas
 

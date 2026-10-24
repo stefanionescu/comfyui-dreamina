@@ -42,13 +42,10 @@ ARGUMENT_UNKNOWN = 'The model {model} has no flag named {flag}. Its flags are {f
 ARGUMENT_DASHES = 'Write the flag {flag} without its leading dashes, as "{name}".'
 
 FLAG_NOT_IN_MODE = (
-    'Mode {mode} of this model has no flag named {flag}. Its flags are {flags}. Remove it from arguments, or set '
-    'another mode.'
+    'Mode {mode} of this model has no flag named {flag}. Its flags are {flags}. Remove {flag}, or set another mode.'
 )
 
-FLAG_REQUIRED = (
-    'Set "{flag}" in arguments. Mode {mode} of this model needs it, and Model: Info lists its allowed values.'
-)
+FLAG_REQUIRED = 'Set {flag}. Mode {mode} of this model needs it, and Model: Info lists its allowed values.'
 
 VALUE_TYPE = 'Write {flag} as text or a number, not {shape}.'
 

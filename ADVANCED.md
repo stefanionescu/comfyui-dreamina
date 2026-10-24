@@ -25,8 +25,7 @@
 **Image: Generate**, **Video: Generate**, and **Audio: Generate** first read
 your model list of their kind from the Dreamina CLI, which bills nothing. They
 upload your images as PNG, your video as MP4, and your audio as WAV to your
-Dreamina canvas. They send `prompt`, the settings in `arguments`, and every
-reference, with `credit_ceiling`. They send one run, record it as soon as
+Dreamina canvas. They send `prompt`, the settings, and every reference, with `credit_ceiling`. They send one run, record it as soon as
 Dreamina accepts it, and wait. Then they download each output and return it,
 with `references` to what the run made, and `result`: JSON with the canvas
 link, the request ID, and Dreamina's record of the run.
@@ -105,20 +104,23 @@ Type any model name from your Dreamina model list in `model`, such as
 sends the model's own name. Nothing in the extension lists or limits models.
 Each node starts with a model and settings that run as they are:
 
-| Node            | Runs models of kind | `model` starts at   | `arguments` starts at                                    |
-| --------------- | ------------------- | ------------------- | -------------------------------------------------------- |
-| Image: Generate | `image`             | `seedream_5.0_lite` | `{"ratio": "1:1", "resolution": "2K"}`                   |
-| Video: Generate | `video`             | `seedance_2.0_mini` | `{"ratio": "16:9", "resolution": "720p", "duration": 4}` |
-| Audio: Generate | `audio`             | `seed_audio_v1`     | `{"voice-name": "Jessie"}`                               |
-| Image: Upscale  | none                | none                | `{"resolution": "2K"}`                                   |
+| Node            | Runs models of kind | `model` starts at   | Settings start at                                            |
+| --------------- | ------------------- | ------------------- | ------------------------------------------------------------ |
+| Image: Generate | `image`             | `seedream_5.0_lite` | `ratio` `1:1`, `resolution` `2K`, `count` 1                  |
+| Video: Generate | `video`             | `seedance_2.0_mini` | `ratio` `16:9`, `resolution` `720p`, `duration` 4, `count` 1 |
+| Audio: Generate | `audio`             | `seed_audio_v1`     | `voice-name` `Jessie`                                        |
+| Image: Upscale  | none                | none                | `arguments` `{"resolution": "2K"}`                           |
 
 The node reads your model list once while ComfyUI runs, and again when a name
 is not found.
 
-`arguments` is a JSON object of the model's settings by the CLI's names,
-without dashes, such as `ratio`, `resolution`, `duration`, `count`,
-`voice-name`, and `scenario`, with values the list gives, such as `720p`.
-**Model: Info** lists every setting with its choices and limits.
+Every model of a kind takes `ratio`, `resolution`, and `count`, and every
+video model `duration`. The list gives none of them a default, and each node
+has its own input for each, under the CLI's name, which it always sends.
+Speech takes `voice-name`, which sends nothing when empty. `arguments` is a
+JSON object of any other flag, without dashes, such as `mode` and `scenario`.
+It starts empty, and a flag set in both refuses the run. **Model: Info**
+lists every setting with its choices and limits.
 
 Each run has a mode. Set it in `arguments` as `"mode"`, and `"scenario"` for
 speech, or let the node choose. A model with one mode uses it. Otherwise:
@@ -130,7 +132,7 @@ speech, or let the node choose. A model with one mode uses it. Otherwise:
   `"mode": "m2v"` to use one or two images as references instead.
 - **Audio: Generate** reads the prompt aloud (`text-reading`) with nothing
   connected, and dubs what you connect (`omni-dubbing`). `voice-name` fits
-  text reading only: for dubbing, set `arguments` to `{}`.
+  text reading only: for dubbing, leave it empty.
 
 ## Credit ceiling
 
@@ -144,8 +146,8 @@ starting settings, so a larger size, a longer video, or another model may need
 more.
 
 A stopped run leaves an unrun draft on your canvas, which bills nothing and
-which the extension never deletes. Unless `arguments` sets `count`, each run
-asks for one output, so a model never makes and bills several by default.
+which the extension never deletes. `count` starts at
+1, so a model never makes and bills several by default.
 
 ## References and uploads
 
@@ -206,8 +208,9 @@ Video: Generate, and Audio: Generate stop when:
   another kind of output.
 - The mode or scenario is not one the model has, or what you connect fits
   none of its entries.
-- `arguments` is not a JSON object, names a setting the mode does not take,
-  leaves out a required one, or gives a value outside its choices or limits.
+- `arguments` is not a JSON object, or sets a flag that has its own input.
+- A setting is one the mode does not take, a required one is missing, or a
+  value is outside its choices or limits.
 - `prompt` and `arguments` both set the prompt, or `prompt` is empty where
   the mode needs one.
 - References are too few, too many, or of kinds the mode does not take, an
@@ -237,6 +240,7 @@ model = json.loads(output.args[0])
 - Call a node on a class clone with an empty hidden holder, as above.
 - A paid node takes `model`, `prompt`, and `arguments` as text, the last a
   JSON object of Dreamina's setting names, and `credit_ceiling` as a number.
+  Each setting input goes by its own name, such as `ratio` or `voice-name`.
   `images`, `videos`, and `audio` are lists of ComfyUI media, and
   `references` is what another Dreamina node returned.
 - Set `credit_ceiling` on every call: the starting value fits only the

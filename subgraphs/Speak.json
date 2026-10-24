@@ -116,7 +116,7 @@
             ],
             "size": [
               340,
-              254
+              278
             ],
             "flags": {},
             "order": 100,
@@ -165,6 +165,14 @@
                 }
               },
               {
+                "name": "voice-name",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "voice-name"
+                }
+              },
+              {
                 "name": "prompt",
                 "type": "STRING",
                 "link": 3,
@@ -209,7 +217,8 @@
               20,
               0,
               "",
-              "{}"
+              "",
+              ""
             ],
             "color": "#432",
             "bgcolor": "#653"
@@ -290,7 +299,7 @@
             "origin_id": -10,
             "origin_slot": 1,
             "target_id": 101,
-            "target_slot": 6,
+            "target_slot": 7,
             "type": "STRING"
           }
         ],

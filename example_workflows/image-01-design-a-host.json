@@ -13,7 +13,7 @@
       ],
       "size": [
         400,
-        120
+        108
       ],
       "flags": {},
       "order": 0,
@@ -46,7 +46,7 @@
       ],
       "size": [
         400,
-        120
+        108
       ],
       "flags": {},
       "order": 1,
@@ -66,7 +66,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "Seedream 5.0 Lite, the image node's starting model, draws the host from the waist up. `arguments` holds the model's own settings, written by the names Dreamina gives them: `ratio` `3:4` and `resolution` `2K`, its smallest size. To draw with another model, open **Design** and type another `model`, the model's name on Dreamina.\n\n`credit_ceiling` is the most credits one run may cost. A run that would cost more stops before anything is billed."
+        "Seedream 5.0 Lite, the image node's starting model, draws the host from the waist up, at `ratio` `3:4` and `resolution` `2K`, its smallest size. Each setting keeps the name Dreamina gives it. To draw with another model, open **Design** and type another `model`, the model's name on Dreamina.\n\n`credit_ceiling` is the most credits one run may cost. A run that would cost more stops before anything is billed."
       ],
       "title": "Note"
     },
@@ -75,7 +75,7 @@
       "type": "PrimitiveStringMultiline",
       "pos": [
         30,
-        320
+        308
       ],
       "size": [
         340,
@@ -116,7 +116,7 @@
       "type": "bf647187-e071-5b00-9ddf-b760c72bbb20",
       "pos": [
         460,
-        320
+        308
       ],
       "size": [
         340,
@@ -167,7 +167,7 @@
       "title": "Input",
       "bounding": [
         0,
-        210,
+        198,
         400,
         228
       ],
@@ -180,7 +180,7 @@
       "title": "Design",
       "bounding": [
         430,
-        210,
+        198,
         400,
         228
       ],
@@ -258,7 +258,7 @@
             ],
             "size": [
               340,
-              254
+              326
             ],
             "flags": {},
             "order": 100,
@@ -290,6 +290,30 @@
                 "link": null,
                 "widget": {
                   "name": "credit_ceiling"
+                }
+              },
+              {
+                "name": "ratio",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "ratio"
+                }
+              },
+              {
+                "name": "resolution",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "resolution"
+                }
+              },
+              {
+                "name": "count",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "count"
                 }
               },
               {
@@ -343,9 +367,12 @@
             "widgets_values": [
               "seedream_5.0_lite",
               10,
+              "3:4",
+              "2K",
+              1,
               0,
               "",
-              "{\n  \"ratio\": \"3:4\",\n  \"resolution\": \"2K\"\n}"
+              ""
             ],
             "color": "#432",
             "bgcolor": "#653"
@@ -409,7 +436,7 @@
             "origin_id": -10,
             "origin_slot": 0,
             "target_id": 101,
-            "target_slot": 5,
+            "target_slot": 8,
             "type": "STRING"
           }
         ],

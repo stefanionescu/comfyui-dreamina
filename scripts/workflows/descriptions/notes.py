@@ -13,11 +13,10 @@ WORKFLOW_TEXTS = {
         'input': SIGN_IN_STEP
         + '2. Describe your host in **Host**: how they look, what they wear, and the background.\n'
         '3. Press **Run**. The image is saved under `image/dreamina`.',
-        'design': "Seedream 5.0 Lite, the image node's starting model, draws the host from the waist up. `arguments` "
-        "holds the model's own settings, written by the names Dreamina gives them: `ratio` `3:4` and `resolution` "
-        "`2K`, its smallest size. To draw with another model, open **Design** and type another `model`, the model's "
-        'name on Dreamina.\n\n`credit_ceiling` is the most credits one run may cost. A run that would cost more '
-        'stops before anything is billed.',
+        'design': "Seedream 5.0 Lite, the image node's starting model, draws the host from the waist up, at `ratio` "
+        '`3:4` and `resolution` `2K`, its smallest size. Each setting keeps the name Dreamina gives it. To draw with '
+        "another model, open **Design** and type another `model`, the model's name on Dreamina.\n\n`credit_ceiling` "
+        'is the most credits one run may cost. A run that would cost more stops before anything is billed.',
         'design_description': 'Draws the host and saves the image.',
     },
     'image-02-edit-a-product-photo': {
@@ -72,11 +71,11 @@ WORKFLOW_TEXTS = {
         'voices': '**Model: Info** shows what a Dreamina model takes: its modes, its settings with their choices and '
         "limits, and a speech model's voices. It is free. **Info** shows Seed Audio, the audio node's starting model, "
         'with its 13 voices.\n\nTo change the voice, copy a name from **Info**, open **Voice**, and put it in '
-        '`arguments` as `voice-name`.',
-        'voice': 'Seed Audio reads **Script** aloud in the voice that `voice-name` names: here `Good Guy`. `arguments` '
-        "holds the model's own settings, written by the names Dreamina gives them. With nothing connected, the node "
-        "uses text reading, Seed Audio's way to read a script in a chosen voice.\n\nConnect a picture instead, and "
-        'Seed Audio makes a voice that suits it, as **audio-02-give-a-host-a-voice** does.',
+        '`voice-name`.',
+        'voice': 'Seed Audio reads **Script** aloud in the voice that `voice-name` names: here `Good Guy`. With '
+        "nothing connected, the node uses text reading, Seed Audio's way to read a script in a chosen voice.\n\n"
+        'Connect a picture instead, and Seed Audio makes a voice that suits it, as **audio-02-give-a-host-a-voice** '
+        'does.',
         'voice_description': 'Reads the script aloud and saves the voice.',
     },
     'audio-02-give-a-host-a-voice': {
@@ -87,7 +86,7 @@ WORKFLOW_TEXTS = {
         'cast_description': 'Draws the host.',
         'speak': 'Seed Audio looks at the portrait and speaks **Line** in a voice that suits the host. A picture in '
         "`references` makes the node use omni dubbing, Seed Audio's way to voice a picture. Omni dubbing takes no "
-        '`voice-name`, so `arguments` is empty (`{}`).\n\nTo choose the voice yourself, leave the portrait out and set '
+        'voice, so `voice-name` is empty.\n\nTo choose the voice yourself, leave the portrait out and set '
         '`voice-name`, as **audio-01-voice-a-script** does.',
         'speak_description': 'Speaks the line in a voice that suits the host and saves it.',
     },
@@ -99,8 +98,8 @@ WORKFLOW_TEXTS = {
         'portrait_description': 'Draws the host.',
         'animate': "Seedance 2.0 Mini, the video node's starting model, starts on the host and makes a four-second "
         '`720p` video. With one picture connected, the node uses `first_last_frame`, the mode that starts the video on '
-        'that picture. A second picture would set the last frame. Raise `duration` in `arguments` for up to 15 '
-        'seconds.\n\n' + RECOVER_NOTE,
+        'that picture. A second picture would set the last frame. Raise `duration` for up to 15 seconds.'
+        '\n\n' + RECOVER_NOTE,
         'animate_description': 'Turns the host into a video and saves it.',
     },
     'video-02-film-a-product-ad': {

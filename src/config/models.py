@@ -18,13 +18,6 @@ DEFAULT_MODELS = {
     'audio': 'seed_audio_v1',
 }
 
-# The starting value in the arguments box of each node: the required flags of the default model's first mode.
-DEFAULT_ARGUMENTS = {
-    'image': '{"ratio": "1:1", "resolution": "2K"}',
-    'video': '{"ratio": "16:9", "resolution": "720p", "duration": 4}',
-    'audio': '{"voice-name": "Jessie"}',
-}
-
 # The modes a node chooses by itself for each kind and role. Any other mode a model lists runs when arguments sets it.
 MODES = {
     'image': {'TEXT': 't2i', 'IMAGES': 'i2i'},
@@ -41,10 +34,6 @@ SELECTION_KEYS = {'MODE': 'mode', 'SCENARIO': 'scenario'}
 
 # The flag the prompt box fills.
 PROMPT_FLAG = 'prompt'
-
-# The flag that sets how many outputs a run makes, and the value sent when arguments does not set it.
-COUNT_FLAG = 'count'
-COUNT_VALUE = '1'
 
 # The dashes model list writes before each flag name, and the pack writes back when it builds the call.
 FLAG_PREFIX = '--'
@@ -65,9 +54,6 @@ VOICE_PAGE_COUNT = 100
 LIST_TIMEOUT_SECONDS = 60
 
 __all__ = [
-    'COUNT_FLAG',
-    'COUNT_VALUE',
-    'DEFAULT_ARGUMENTS',
     'DEFAULT_MODELS',
     'FLAG_PREFIX',
     'FRAME_IMAGES',

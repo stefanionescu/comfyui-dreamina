@@ -322,7 +322,7 @@
             ],
             "size": [
               340,
-              274
+              370
             ],
             "flags": {},
             "order": 100,
@@ -366,6 +366,38 @@
                 "link": null,
                 "widget": {
                   "name": "credit_ceiling"
+                }
+              },
+              {
+                "name": "ratio",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "ratio"
+                }
+              },
+              {
+                "name": "resolution",
+                "type": "STRING",
+                "link": null,
+                "widget": {
+                  "name": "resolution"
+                }
+              },
+              {
+                "name": "duration",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "duration"
+                }
+              },
+              {
+                "name": "count",
+                "type": "INT",
+                "link": null,
+                "widget": {
+                  "name": "count"
                 }
               },
               {
@@ -419,9 +451,13 @@
             "widgets_values": [
               "seedance_2.0_mini",
               20,
+              "9:16",
+              "720p",
+              4,
+              1,
               0,
               "",
-              "{\n  \"ratio\": \"9:16\",\n  \"resolution\": \"720p\",\n  \"duration\": 4\n}"
+              ""
             ],
             "color": "#432",
             "bgcolor": "#653"
@@ -511,7 +547,7 @@
             "origin_id": -10,
             "origin_slot": 1,
             "target_id": 101,
-            "target_slot": 7,
+            "target_slot": 11,
             "type": "STRING"
           }
         ],
