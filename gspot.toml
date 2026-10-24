@@ -18,6 +18,9 @@ quotes = "single"
 allowed_names = ["ModelInfo"]
 reason = "The node class is named after its display name, Model: Info, as in the OpenRouter, BytePlus, fal, and KIE packs; its node ID DreaminaModelInfo comes from the class name and is fixed once released."
 
+[docs]
+allowed_urls = { value = ["^https://dreamina\\.capcut\\.com/canvas-cli$"], reason = "The Dreamina Canvas CLI page answers 502 to requests from CI runners twice in a row; it loads from a normal connection." }
+
 [spelling.allowed_words]
 PNG = "PNG is the image file format's name, which readers know."
 WAV = "WAV is the audio file format's name, which readers know."
