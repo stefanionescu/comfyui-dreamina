@@ -148,11 +148,11 @@
                 }
               },
               {
-                "name": "voice-name",
+                "name": "voice_name",
                 "type": "STRING",
                 "link": null,
                 "widget": {
-                  "name": "voice-name"
+                  "name": "voice_name"
                 }
               },
               {

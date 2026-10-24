@@ -108,8 +108,8 @@ Each node starts with a model and settings that run as they are:
 | --------------- | ------------------- | ------------------- | ------------------------------------------------------------ |
 | Image: Generate | `image`             | `seedream_5.0_lite` | `ratio` `1:1`, `resolution` `2K`, `count` 1                  |
 | Video: Generate | `video`             | `seedance_2.0_mini` | `ratio` `16:9`, `resolution` `720p`, `duration` 4, `count` 1 |
-| Audio: Generate | `audio`             | `seed_audio_v1`     | `voice-name` `Jessie`                                        |
-| Image: Upscale  | none                | none                | `arguments` `{"resolution": "2K"}`                           |
+| Audio: Generate | `audio`             | `seed_audio_v1`     | `voice_name` `Jessie`                                        |
+| Image: Upscale  | none                | none                | `mode` `pro`, `resolution` `2K`, `detail` 50                 |
 
 The node reads your model list once while ComfyUI runs, and again when a name
 is not found.
@@ -117,10 +117,13 @@ is not found.
 Every model of a kind takes `ratio`, `resolution`, and `count`, and every
 video model `duration`. The list gives none of them a default, and each node
 has its own input for each, under the CLI's name, which it always sends.
-Speech takes `voice-name`, which sends nothing when empty. `arguments` is a
-JSON object of any other flag, without dashes, such as `mode` and `scenario`.
-It starts empty, and a flag set in both refuses the run. **Model: Info**
-lists every setting with its choices and limits.
+Speech takes `voice_name`, for the `voice-name` flag, which sends nothing
+when empty. An input writes a flag's dashes as underscores, as
+`credit_ceiling` does for `--credit-ceiling`.
+
+`arguments` is a JSON object of any other flag, without dashes, such as
+`mode` and `scenario`. It starts empty, and a flag set in both refuses the
+run. **Model: Info** lists every setting with its choices and limits.
 
 Each run has a mode. Set it in `arguments` as `"mode"`, and `"scenario"` for
 speech, or let the node choose. A model with one mode uses it. Otherwise:
@@ -131,7 +134,7 @@ speech, or let the node choose. A model with one mode uses it. Otherwise:
   with one or two images and nothing else, and `m2v` with anything else. Set
   `"mode": "m2v"` to use one or two images as references instead.
 - **Audio: Generate** reads the prompt aloud (`text-reading`) with nothing
-  connected, and dubs what you connect (`omni-dubbing`). `voice-name` fits
+  connected, and dubs what you connect (`omni-dubbing`). `voice_name` fits
   text reading only: for dubbing, leave it empty.
 
 ## Credit ceiling
@@ -240,7 +243,7 @@ model = json.loads(output.args[0])
 - Call a node on a class clone with an empty hidden holder, as above.
 - A paid node takes `model`, `prompt`, and `arguments` as text, the last a
   JSON object of Dreamina's setting names, and `credit_ceiling` as a number.
-  Each setting input goes by its own name, such as `ratio` or `voice-name`.
+  Each setting input goes by its own name, such as `ratio` or `voice_name`.
   `images`, `videos`, and `audio` are lists of ComfyUI media, and
   `references` is what another Dreamina node returned.
 - Set `credit_ceiling` on every call: the starting value fits only the

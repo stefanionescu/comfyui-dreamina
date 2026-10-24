@@ -6,17 +6,17 @@ canvas first. It outputs each upscaled image.
 
 ## Inputs
 
-| Input            | What it takes                                                                         |
-| ---------------- | ------------------------------------------------------------------------------------- |
-| `images`         | ComfyUI images, each uploaded to your Dreamina canvas.                                |
-| `references`     | Images from **Image: Generate** or **Image: Upscale**, with no upload. They go first. |
-| `credit_ceiling` | The most credits the whole upscale may cost.                                          |
-| `run_number`     | Change it to send the same upscale again.                                             |
-| `arguments`      | The upscale's settings as JSON: `mode`, `resolution`, and `detail`.                   |
+| Input            | What it takes                                                                           |
+| ---------------- | --------------------------------------------------------------------------------------- |
+| `images`         | ComfyUI images, each uploaded to your Dreamina canvas.                                  |
+| `references`     | Images from **Image: Generate** or **Image: Upscale**, with no upload. They go first.   |
+| `credit_ceiling` | The most credits the whole upscale may cost.                                            |
+| `mode`           | `pro`, which redraws each image larger with fine detail, or `normal`, which doubles it. |
+| `resolution`     | With `pro`: the target size, `2K`, `4K`, or `8K`.                                       |
+| `detail`         | With `pro`: how much fine detail it adds, from 1 to 100.                                |
+| `run_number`     | Change this number to send the same upscale again.                                      |
 
-`mode` is `pro`, the default, or `normal`. `pro` needs `resolution`, the
-target size: `2K`, `4K`, or `8K`. `detail`, from 1 to 100, sets how much
-detail `pro` adds. `normal` takes neither. One upscale takes up to 20 images.
+`pro` shows `resolution` and `detail`, and `normal` takes neither. One upscale takes up to 20 images.
 The node checks every setting before it uploads anything.
 
 ## Outputs
@@ -30,7 +30,7 @@ The node checks every setting before it uploads anything.
 ## Use
 
 1. Connect **Image: Generate**'s `references`, or ComfyUI `images`.
-2. Set the target size in `arguments`, such as `{"resolution": "4K"}`.
+2. Choose the target size in `resolution`, such as `4K`.
 3. Connect `images` to **Save Image**, and select **Run**.
 
 If the upscale costs more than `credit_ceiling`, Dreamina runs nothing and

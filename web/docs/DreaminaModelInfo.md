@@ -54,8 +54,10 @@ For example, one flag of `seedance_2.0_fast`:
 1. Type or connect the model name.
 2. Connect `info` to **Preview as Text** to read it.
 
-Write each setting in `arguments` under its `flag` name, such as
-`{"duration": 4}`. The flags are exactly what the paid node accepts, so the
+A paid node takes `ratio`, `resolution`, `duration`, `count`, and the voice
+in their own inputs, with underscores for dashes, as `voice_name` for the
+`voice-name` flag. Write any other setting in `arguments` under its `flag`
+name, such as `{"mode": "m2v"}`. The flags are exactly what the paid node accepts, so the
 paid node cannot send a voice listed for a model with no `voice-name` flag. A value
 Dreamina does not give is null. Example: **audio-01-voice-a-script**.
 

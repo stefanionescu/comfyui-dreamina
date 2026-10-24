@@ -28,9 +28,9 @@ DEFAULT_CEILINGS = {
     'audio': 20,
 }
 
-# The flags each generation node shows as inputs, in node order, by Dreamina's flag name, with the value each starts
-# at. Every model of the kind lists them, and the list gives no defaults, so the node always sends them; the starting
-# values suit the default model.
+# The flags each generation node shows as inputs, in node order, by input name, with the value each starts at. An input
+# names its CLI flag with underscores for dashes, as credit_ceiling names --credit-ceiling. Every model of the kind
+# lists them, and the list gives no defaults, so the node always sends them; the starting values suit the default model.
 FLAGS: dict[str, dict[str, str | int]] = {
     'image': {'ratio': '1:1', 'resolution': '2K', 'count': 1},
     'video': {'ratio': '16:9', 'resolution': '720p', 'duration': 4, 'count': 1},
@@ -41,12 +41,12 @@ FLAGS: dict[str, dict[str, str | int]] = {
 # paying.
 FLAG_MINIMUMS = {'duration': 1, 'count': 1}
 
-# The one-line flag inputs of each generation node, by Dreamina's flag name, with the text each starts with. An empty
-# one sends nothing.
+# The one-line flag inputs of each generation node, by input name, with the text each starts with. An empty one sends
+# nothing.
 LINES: dict[str, dict[str, str]] = {
     'image': {},
     'video': {},
-    'audio': {'voice-name': 'Jessie'},
+    'audio': {'voice_name': 'Jessie'},
 }
 
 # Tooltips of the inputs every generation node shares, in plain words.
@@ -78,7 +78,7 @@ TOOLTIPS = {
     'resolution': 'The size of the result, such as 2K or 720p. Model: Info lists the sizes each model takes.',
     'duration': 'The length in seconds. Model: Info lists the lengths each model takes.',
     'count': 'How many results to make. Each one costs credits.',
-    'voice-name': (
+    'voice_name': (
         'The voice for text reading, by the name Model: Info lists. Leave it empty for omni dubbing, when something '
         'is connected.'
     ),

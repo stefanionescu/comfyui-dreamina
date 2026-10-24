@@ -114,7 +114,7 @@ class UpscaleRequest:
         images: The ComfyUI images to upload and import, one per frame, in order.
         references: The connected references, in socket order.
         credit_ceiling: The most credits the whole batch may cost.
-        arguments: The arguments input's JSON text.
+        settings: The mode and the settings it takes, by flag name.
         title: The display name of the node, the title of each imported image node.
 
     """
@@ -122,7 +122,7 @@ class UpscaleRequest:
     images: tuple[LocalMedia, ...]
     references: tuple[Reference, ...]
     credit_ceiling: int
-    arguments: str
+    settings: Mapping[str, Json]
     title: str
 
 

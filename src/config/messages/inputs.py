@@ -6,7 +6,7 @@ ARGUMENTS_SHAPE = (
     'The arguments input holds {shape}. Write a JSON object of flag names and values, such as {{"mode": "m2v"}}.'
 )
 
-FLAG_TWICE = 'The {flag} flag is set twice, in arguments and by the {flag} input. Remove it from arguments.'
+FLAG_TWICE = 'The {flag} flag is set twice, in arguments and in its own input. Remove it from arguments.'
 
 PROMPT_TWICE = 'The prompt input and arguments both set prompt. Remove it from one of them.'
 
@@ -41,15 +41,9 @@ UPSCALE_REFERENCE_RESOURCE = (
     "only. Connect that node's images output to images instead."
 )
 
-UPSCALE_ARGUMENT_KEY = 'Image: Upscale takes only {keys} in arguments, not {key}.'
+UPSCALE_CHOICE = 'Set {key} to one of {values}.'
 
-UPSCALE_ARGUMENT_CHOICE = 'Set {key} in arguments to one of {values}.'
-
-UPSCALE_ARGUMENT_RANGE = 'Set {key} in arguments to a whole number from {minimum} to {maximum}.'
-
-UPSCALE_FLAG_NEEDED = 'Add {key} to arguments: the {mode} mode needs it. Choose one of {values}.'
-
-UPSCALE_MODE_FLAG = 'Leave {key} out of arguments when mode is {mode}: that mode does not take it.'
+UPSCALE_RANGE = 'Set {key} to a whole number from {minimum} to {maximum}.'
 
 ELEMENT_MAIN_COUNT = 'Connect one image to main: the clearest image of the subject. Connect other angles to auxiliary.'
 
@@ -95,11 +89,8 @@ __all__ = [
     'PROMPT_TOO_SHORT',
     'PROMPT_TWICE',
     'SINGLE_VALUE',
-    'UPSCALE_ARGUMENT_CHOICE',
-    'UPSCALE_ARGUMENT_KEY',
-    'UPSCALE_ARGUMENT_RANGE',
-    'UPSCALE_FLAG_NEEDED',
-    'UPSCALE_MODE_FLAG',
+    'UPSCALE_CHOICE',
+    'UPSCALE_RANGE',
     'UPSCALE_REFERENCE_MEDIA',
     'UPSCALE_REFERENCE_RESOURCE',
     'UPSCALE_SOURCE_EMPTY',

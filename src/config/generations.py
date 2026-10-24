@@ -25,16 +25,17 @@ OPERATION_STATES = {
 # C-16. It never means the run is still going.
 SUBMISSION_ABSENT = 'cli.operation_submission_absent'
 
-# The arguments keys Image: Upscale takes: node upscale image's own flags. Each process reads their allowed values,
-# ranges, and defaults from the CLI's schema.
-UPSCALE_FLAGS = ('mode', 'resolution', 'detail')
+# The inputs of Image: Upscale's settings, named as the CLI's flags.
+UPSCALE_SETTINGS = {'MODE': 'mode', 'RESOLUTION': 'resolution', 'DETAIL': 'detail'}
 
-# What each upscale mode needs and takes besides mode, as the schema's constraints state it: pro needs resolution and
-# takes detail; normal takes neither.
-UPSCALE_MODES = {
-    'pro': {'REQUIRED': ('resolution',), 'TAKEN': ('resolution', 'detail')},
-    'normal': {'REQUIRED': (), 'TAKEN': ()},
-}
+# The upscale modes, in node order: pro, the CLI's default, redraws the image larger with fine detail, and normal
+# enlarges it to twice its size.
+UPSCALE_MODES = ('pro', 'normal')
+
+# The settings the pro mode takes, as the CLI's schema lists them: its resolutions, and its detail range and default.
+# Normal takes neither. The operation checks each value against the live schema again before paying.
+UPSCALE_RESOLUTIONS = ('2K', '4K', '8K')
+UPSCALE_DETAIL = {'DEFAULT': 50, 'MIN': 1, 'MAX': 100}
 
 # The model name an upscale's record carries, so Generation: Download labels it.
 UPSCALE_MODEL = 'upscale'
@@ -47,9 +48,6 @@ UPSCALE_COMMAND = 'node upscale image'
 
 # Image: Upscale's starting credit_ceiling: Part 0's quote for one 2K pro upscale, rounded up to the next 10.
 UPSCALE_CEILING = 10
-
-# Image: Upscale's starting arguments: the pro mode, the CLI's default, needs a resolution, and 2K is the smallest.
-UPSCALE_ARGUMENTS = '{"resolution": "2K"}'
 
 # How the schema writes a flag's rule. The text before the first `;` of constraints lists the allowed values split by
 # `|`, or gives a whole-number range such as `1..100`.
@@ -66,12 +64,13 @@ __all__ = [
     'RECORD_VERSION',
     'SCHEMA_CONSTRAINTS',
     'SUBMISSION_ABSENT',
-    'UPSCALE_ARGUMENTS',
     'UPSCALE_CEILING',
     'UPSCALE_COMMAND',
-    'UPSCALE_FLAGS',
+    'UPSCALE_DETAIL',
     'UPSCALE_IMPORT_KIND',
     'UPSCALE_MODEL',
     'UPSCALE_MODES',
+    'UPSCALE_RESOLUTIONS',
+    'UPSCALE_SETTINGS',
     'WAIT_REREAD_SECONDS',
 ]

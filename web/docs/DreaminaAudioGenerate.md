@@ -13,15 +13,15 @@ speech for a connected picture or audio clip, called omni dubbing.
 | `model`          | The model's Dreamina name. The default is `seed_audio_v1`.                             |
 | `credit_ceiling` | The most credits the run may cost. A run that costs more stops, and nothing is billed. |
 | `run_number`     | Change this number to send the same run again.                                         |
-| `voice-name`     | The voice for text reading, such as `Jessie`. Leave it empty for omni dubbing.         |
+| `voice_name`     | The voice for text reading, such as `Jessie`. Leave it empty for omni dubbing.         |
 | `prompt`         | The words to speak.                                                                    |
 | `arguments`      | Any other flag of the model as JSON, under its Dreamina name. Starts empty.            |
 
 **Model: Info** shows the modes, flags, and voices of a model. The node checks
 every setting against your Dreamina model list before it pays. With nothing
-connected, it reads the prompt in the `voice-name` voice. With a picture,
+connected, it reads the prompt in the `voice_name` voice. With a picture,
 audio, or a reference, it uses omni dubbing, which takes no voice, so leave
-`voice-name` empty. Do the same for a model that lists no `voice-name`.
+`voice_name` empty. Do the same for a model that lists no `voice-name` flag.
 
 ## Outputs
 
@@ -34,8 +34,8 @@ audio, or a reference, it uses omni dubbing, which takes no voice, so leave
 ## Use
 
 1. Write the words in `prompt`.
-2. Copy a voice from **Model: Info**, and set it as `voice-name`.
-3. To dub instead, connect a picture or audio, and leave `voice-name` empty.
+2. Copy a voice from **Model: Info**, and set it as `voice_name`.
+3. To dub instead, connect a picture or audio, and leave `voice_name` empty.
 4. Connect `audio` to **Preview Audio**, or to the core node
    `SaveAudioAdvanced` to save the clip, and select **Run**.
 

@@ -48,12 +48,15 @@ def _build_flag(name: str, *, start: str | int) -> io.Input:
 
 
 def _read_flags(kind: Kind, inputs: Mapping[str, object]) -> dict[str, Json]:
-    """Read the flag inputs of a node; a linked value, or a line left empty, sends nothing."""
+    """Read the flag inputs of a node by CLI flag name; a linked value, or a line left empty, sends nothing.
+
+    An input names its flag with underscores for dashes, so voice_name sends --voice-name.
+    """
     flags: dict[str, Json] = {}
     for name in (*FLAGS[kind], *LINES[kind]):
         value = _read_queued(inputs.get(name))
         if value is not None and value != '':
-            flags[name] = cast('Json', value)
+            flags[name.replace('_', '-')] = cast('Json', value)
     return flags
 
 
@@ -121,9 +124,9 @@ class GenerateNode(PaidNode):
     async def validate_inputs(cls, **inputs: object) -> bool | str:  # pyright: ignore[reportIncompatibleMethodOverride] # reason: ComfyUI passes every input by name, the flags with dashes included.
         """Make the free checks a typed model allows when the person queues the workflow, before anything bills.
 
-        A linked value is unknown until the workflow runs, and send makes its checks then. A flag such as voice-name
-        has a dash, so this validator takes every input by name. ComfyUI then skips its own range checks, and the
-        operation checks each value against the model before paying.
+        A linked value is unknown until the workflow runs, and send makes its checks then. The flag inputs differ by
+        kind, so this validator takes every input by name. ComfyUI then skips its own range checks, and the operation
+        checks each value against the model before paying.
         """
         name, text, typed = (_read_queued(inputs.get(INPUT_NAMES[key])) for key in ('MODEL', 'ARGUMENTS', 'PROMPT'))
         if not isinstance(name, str):

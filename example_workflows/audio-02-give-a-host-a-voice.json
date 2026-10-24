@@ -99,7 +99,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "Seed Audio looks at the portrait and speaks **Line** in a voice that suits the host. A picture in `references` makes the node use omni dubbing, Seed Audio's way to voice a picture. Omni dubbing takes no voice, so `voice-name` is empty.\n\nTo choose the voice yourself, leave the portrait out and set `voice-name`, as **audio-01-voice-a-script** does."
+        "Seed Audio looks at the portrait and speaks **Line** in a voice that suits the host. A picture in `references` makes the node use omni dubbing, Seed Audio's way to voice a picture. Omni dubbing takes no voice, so `voice_name` is empty.\n\nTo choose the voice yourself, leave the portrait out and set `voice_name`, as **audio-01-voice-a-script** does."
       ],
       "title": "Note"
     },
@@ -721,11 +721,11 @@
                 }
               },
               {
-                "name": "voice-name",
+                "name": "voice_name",
                 "type": "STRING",
                 "link": null,
                 "widget": {
-                  "name": "voice-name"
+                  "name": "voice_name"
                 }
               },
               {

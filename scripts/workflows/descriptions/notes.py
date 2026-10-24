@@ -36,9 +36,8 @@ WORKFLOW_TEXTS = {
         'an earlier Dreamina step made, passes the poster on to **Enlarge** with no download or upload.',
         'poster_description': 'Draws the poster and saves it.',
         'enlarge': '**Image: Upscale** redraws the poster at `2K` in its `pro` mode, which adds fine detail. For a '
-        'larger print, set `resolution` in `arguments` to `4K` or `8K`. `detail`, from 1 to 100, sets how much detail '
-        'it adds. For a plain enlargement to twice the size, set `mode` to `normal` and leave out `resolution`.\n\n'
-        + UPSCALE_RECOVER_NOTE,
+        'larger print, set `resolution` to `4K` or `8K`. `detail`, from 1 to 100, sets how much detail it adds. For a '
+        'plain enlargement to twice the size, set `mode` to `normal`.\n\n' + UPSCALE_RECOVER_NOTE,
         'enlarge_description': 'Upscales the poster and saves it.',
     },
     'image-04-redraw-a-saved-host': {
@@ -71,8 +70,8 @@ WORKFLOW_TEXTS = {
         'voices': '**Model: Info** shows what a Dreamina model takes: its modes, its settings with their choices and '
         "limits, and a speech model's voices. It is free. **Info** shows Seed Audio, the audio node's starting model, "
         'with its 13 voices.\n\nTo change the voice, copy a name from **Info**, open **Voice**, and put it in '
-        '`voice-name`.',
-        'voice': 'Seed Audio reads **Script** aloud in the voice that `voice-name` names: here `Good Guy`. With '
+        '`voice_name`.',
+        'voice': 'Seed Audio reads **Script** aloud in the voice that `voice_name` names: here `Good Guy`. With '
         "nothing connected, the node uses text reading, Seed Audio's way to read a script in a chosen voice.\n\n"
         'Connect a picture instead, and Seed Audio makes a voice that suits it, as **audio-02-give-a-host-a-voice** '
         'does.',
@@ -86,8 +85,8 @@ WORKFLOW_TEXTS = {
         'cast_description': 'Draws the host.',
         'speak': 'Seed Audio looks at the portrait and speaks **Line** in a voice that suits the host. A picture in '
         "`references` makes the node use omni dubbing, Seed Audio's way to voice a picture. Omni dubbing takes no "
-        'voice, so `voice-name` is empty.\n\nTo choose the voice yourself, leave the portrait out and set '
-        '`voice-name`, as **audio-01-voice-a-script** does.',
+        'voice, so `voice_name` is empty.\n\nTo choose the voice yourself, leave the portrait out and set '
+        '`voice_name`, as **audio-01-voice-a-script** does.',
         'speak_description': 'Speaks the line in a voice that suits the host and saves it.',
     },
     'video-01-animate-a-host': {

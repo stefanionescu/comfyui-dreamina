@@ -18,7 +18,13 @@ if TYPE_CHECKING:
 
 
 def _read_single(name: str, value: object) -> object:
-    """Take the one value an input list holds; a plain value, from a call in Python, passes as it is."""
+    """Take the one value an input list holds, and each value of a dropdown's settings; a plain value passes as it is.
+
+    A plain value comes from a call in Python.
+    """
+    if isinstance(value, dict):
+        settings = cast('dict[str, object]', value)
+        return {key: _read_single(name, item) for key, item in settings.items()}
     if not isinstance(value, list):
         return value
     values = cast('list[object]', value)

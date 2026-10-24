@@ -152,7 +152,7 @@ shows any model's modes, settings, and voices, and bills nothing.
 
 Each node has its own inputs for the settings every model of its kind
 takes, under Dreamina's names: `ratio`, `resolution`, and `count`, plus
-`duration` for video and `voice-name` for speech. Write any other flag in
+`duration` for video and `voice_name` for speech. Write any other flag in
 `arguments` as JSON, such as `{"mode": "m2v"}`. The node stops if the model makes another kind of output, or does not take a setting
 or value you sent. The [advanced guide](ADVANCED.md#models) says how the
 node chooses the mode.

@@ -8,9 +8,9 @@ from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
 from scripts.workflows.descriptions.texts import SHARED_TEXTS
 
 SEED_AUDIO = 'seed_audio_v1'
-VOICE_FLAGS = {'voice-name': 'Good Guy'}
+VOICE_FLAGS = {'voice_name': 'Good Guy'}
 CAST_FLAGS = {'ratio': '3:4'}
-SPEAK_FLAGS = {'voice-name': ''}
+SPEAK_FLAGS = {'voice_name': ''}
 SCRIPT_PROMPT = (
     'Welcome back to the show. Today we have three new sneakers, and the first pair is already selling fast.'
 )

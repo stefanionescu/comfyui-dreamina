@@ -94,7 +94,7 @@ REFERENCE_KIND_REFUSED = (
     'mode in arguments.'
 )
 
-VOICE_COUNTED = 'The voice-name in arguments counts as one audio reference.'
+VOICE_COUNTED = 'The voice in voice_name counts as one audio reference.'
 
 # What each kind of model makes, as the refusals name it, and every kind together, for Model: Info.
 KIND_NAMES = {'image': 'images', 'video': 'videos', 'audio': 'audio'}

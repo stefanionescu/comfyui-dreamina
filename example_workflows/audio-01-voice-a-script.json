@@ -66,7 +66,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "**Model: Info** shows what a Dreamina model takes: its modes, its settings with their choices and limits, and a speech model's voices. It is free. **Info** shows Seed Audio, the audio node's starting model, with its 13 voices.\n\nTo change the voice, copy a name from **Info**, open **Voice**, and put it in `voice-name`."
+        "**Model: Info** shows what a Dreamina model takes: its modes, its settings with their choices and limits, and a speech model's voices. It is free. **Info** shows Seed Audio, the audio node's starting model, with its 13 voices.\n\nTo change the voice, copy a name from **Info**, open **Voice**, and put it in `voice_name`."
       ],
       "title": "Note"
     },
@@ -99,7 +99,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "Seed Audio reads **Script** aloud in the voice that `voice-name` names: here `Good Guy`. With nothing connected, the node uses text reading, Seed Audio's way to read a script in a chosen voice.\n\nConnect a picture instead, and Seed Audio makes a voice that suits it, as **audio-02-give-a-host-a-voice** does."
+        "Seed Audio reads **Script** aloud in the voice that `voice_name` names: here `Good Guy`. With nothing connected, the node uses text reading, Seed Audio's way to read a script in a chosen voice.\n\nConnect a picture instead, and Seed Audio makes a voice that suits it, as **audio-02-give-a-host-a-voice** does."
       ],
       "title": "Note"
     },
@@ -427,11 +427,11 @@
                 }
               },
               {
-                "name": "voice-name",
+                "name": "voice_name",
                 "type": "STRING",
                 "link": null,
                 "widget": {
-                  "name": "voice-name"
+                  "name": "voice_name"
                 }
               },
               {

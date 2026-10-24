@@ -99,7 +99,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "**Image: Upscale** redraws the poster at `2K` in its `pro` mode, which adds fine detail. For a larger print, set `resolution` in `arguments` to `4K` or `8K`. `detail`, from 1 to 100, sets how much detail it adds. For a plain enlargement to twice the size, set `mode` to `normal` and leave out `resolution`.\n\nA cancel does not stop an upscale Dreamina has accepted. It keeps running and is billed. Collect it with **Generation: Download**."
+        "**Image: Upscale** redraws the poster at `2K` in its `pro` mode, which adds fine detail. For a larger print, set `resolution` to `4K` or `8K`. `detail`, from 1 to 100, sets how much detail it adds. For a plain enlargement to twice the size, set `mode` to `normal`.\n\nA cancel does not stop an upscale Dreamina has accepted. It keeps running and is billed. Collect it with **Generation: Download**."
       ],
       "title": "Note"
     },
@@ -619,7 +619,7 @@
             ],
             "size": [
               340,
-              176
+              194
             ],
             "flags": {},
             "order": 200,
@@ -646,19 +646,19 @@
                 }
               },
               {
+                "name": "mode",
+                "type": "COMFY_DYNAMICCOMBO_V3",
+                "link": null,
+                "widget": {
+                  "name": "mode"
+                }
+              },
+              {
                 "name": "run_number",
                 "type": "INT",
                 "link": null,
                 "widget": {
                   "name": "run_number"
-                }
-              },
-              {
-                "name": "arguments",
-                "type": "STRING",
-                "link": null,
-                "widget": {
-                  "name": "arguments"
                 }
               }
             ],
@@ -687,8 +687,10 @@
             },
             "widgets_values": [
               10,
-              0,
-              "{\"resolution\": \"2K\"}"
+              "pro",
+              "2K",
+              50,
+              0
             ],
             "color": "#432",
             "bgcolor": "#653"

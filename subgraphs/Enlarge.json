@@ -102,7 +102,7 @@
             ],
             "size": [
               340,
-              176
+              194
             ],
             "flags": {},
             "order": 100,
@@ -129,19 +129,19 @@
                 }
               },
               {
+                "name": "mode",
+                "type": "COMFY_DYNAMICCOMBO_V3",
+                "link": null,
+                "widget": {
+                  "name": "mode"
+                }
+              },
+              {
                 "name": "run_number",
                 "type": "INT",
                 "link": null,
                 "widget": {
                   "name": "run_number"
-                }
-              },
-              {
-                "name": "arguments",
-                "type": "STRING",
-                "link": null,
-                "widget": {
-                  "name": "arguments"
                 }
               }
             ],
@@ -170,8 +170,10 @@
             },
             "widgets_values": [
               10,
-              0,
-              "{\"resolution\": \"2K\"}"
+              "pro",
+              "2K",
+              50,
+              0
             ],
             "color": "#432",
             "bgcolor": "#653"
