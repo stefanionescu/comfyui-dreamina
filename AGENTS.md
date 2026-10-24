@@ -70,3 +70,31 @@ Do not edit these files. Change `gspot.toml`, then run `bun run --no-install gsp
 - `ruff.toml`
 
 <!-- <<< gspot managed <<< -->
+
+## This project
+
+This repository is a ComfyUI extension that runs Dreamina's image, video, and audio models through the Dreamina CLI
+that the person installs. Its Python code in `src/` runs inside ComfyUI, and its browser code in `web/scripts/` ships as
+the built `web/extension.js` and `web/extension.css`.
+
+- After a change in `web/scripts/`, run `mise run comfy:frontend:build` and commit both built files.
+- The example workflows and the subgraph blueprints come from `scripts/workflows/descriptions/`. Change a description,
+  run `mise run comfy:workflows:build`, and commit the files it writes. Never edit the JSON by hand.
+- After a change to the runtime dependencies in `pyproject.toml`, run `mise run comfy:requirements:export`.
+- Sockets come first in every node, and text boxes come last. Subgraphs promote their inputs in the same order.
+- A registered node ID never changes, and neither do input names, output names, socket types, or the names of the
+  files the extension stores. A display label can change, but it changes no saved key.
+- The help page of a node is `web/docs/<node ID>.md`, named with the exact registered ID.
+- The comfyui-live-shopping extension calls `DreaminaImageGenerate`, `DreaminaVideoGenerate`, and `DreaminaModelInfo`
+  by their input names, so those names never change.
+- Example workflows are `example_workflows/<family>-<two-digit number>-<task>.json`, and `README.md` links each one.
+- The extension talks to Dreamina only through the installed `dreamina-canvas` CLI, with `--format json` and
+  `--non-interactive`. It never passes `--yes`, never calls an undocumented endpoint, and never ships or patches the CLI
+  or its skill.
+- Every CLI call passes `--project-id` with the extension's own `ComfyUI` canvas. The extension never deletes a canvas
+  node, and it keeps no access token, signed link, credit token, or device code.
+- Send no paid request without the owner's approval, and state its cost in Dreamina credits first.
+- The type checker reads the ComfyUI install that `.mise.local.toml` names in `COMFYUI_PATH` and `COMFYUI_PYTHON`.
+  `mise run deps` puts that install on the path of the project environment.
+- `plans/` holds the owner's plans and research. It stays in Git at the owner's request, gspot leaves it out, and it
+  does not ship. Change it only when the owner asks.
