@@ -1,7 +1,7 @@
 """Upscale image nodes with Dreamina's own command: import ComfyUI images, send one paid call, and collect each image.
 
-Every source gets its own submit ID and record, saved before the first wait, so an upscale that keeps running can be
-collected with Generation: Download.
+Every source gets its own submit ID and record, saved before the first wait, so Generation: Download can collect an
+upscale that keeps running.
 """
 
 from __future__ import annotations
@@ -9,26 +9,24 @@ from __future__ import annotations
 import re
 import time
 import uuid
-import asyncio
-from .uploads import send_media
 from typing import TYPE_CHECKING
-from .contract import validate_cli
+import asyncio
 from datetime import UTC, datetime
-from .arguments import parse_arguments
-from ..config.models import FLAG_PREFIX
-from .operation import wait_until_settled
+
 from .cli import parse_reply, send_command
-from ..config.execution import PROGRESS_STEPS
 from .canvas import find_canvas, create_canvas
-from ..config.patterns import SCHEMA_RANGE_PATTERN
-from ..types.errors import ErrorCode, DreaminaError
-from .generations.operation import CollectOperation
+from .uploads import send_media
+from .contract import validate_cli
 from .failures import build_failure, sanitize_reason
-from ..types.replies import ElementReply, UpscaleReply
-from ..types.generations import UpscaleCall, GenerationRecord
+from .arguments import parse_arguments
+from .operation import wait_until_settled
+from ..state.runs import ElementReply, UpscaleReply
+from ..state.errors import ErrorCode, DreaminaError
+from ..config.models import FLAG_PREFIX
 from ..config.dreamina import EXIT_CODES, CALL_SECONDS, DREAMINA_URLS, ACCEPTED_PHASE
-from ..config.messages.run import CLI_FAILED, RUN_REFUSED, UPSCALE_REFUSED, UPSCALE_PARTLY_REFUSED
-from ..config.messages.generations import RUN_UNCERTAIN, RUN_UNRECORDED, STATUS_CODE_REASON, GENERATION_KEEPS_RUNNING
+from ..config.patterns import SCHEMA_RANGE_PATTERN
+from ..config.execution import PROGRESS_STEPS
+from ..state.generations import UpscaleCall, GenerationRecord
 from ..config.generations import (
     UPSCALE_FLAGS,
     UPSCALE_MODEL,
@@ -38,6 +36,8 @@ from ..config.generations import (
     SCHEMA_CONSTRAINTS,
     UPSCALE_IMPORT_KIND,
 )
+from ..config.messages.run import CLI_FAILED, RUN_REFUSED, UPSCALE_REFUSED, UPSCALE_PARTLY_REFUSED
+from .generations.operation import CollectOperation
 from ..config.messages.inputs import (
     UPSCALE_MODE_FLAG,
     UPSCALE_FLAG_NEEDED,
@@ -49,31 +49,33 @@ from ..config.messages.inputs import (
     UPSCALE_REFERENCE_MEDIA,
     UPSCALE_REFERENCE_RESOURCE,
 )
+from ..config.messages.generations import RUN_UNCERTAIN, RUN_UNRECORDED, STATUS_CODE_REASON, GENERATION_KEEPS_RUNNING
 
 if TYPE_CHECKING:
-    from ..types import Json
     from pathlib import Path
-    from .operation import Progress
-    from ..types.cli import CliResult
-    from ..types.replies import SchemaFlag
-    from ..storage.canvas import CanvasStore
-    from ..types.references import LocalMedia
     from collections.abc import Mapping, Callable
+
+    from ..state import Json
+    from .operation import Progress
+    from ..state.cli import CliResult
+    from ..state.replies import SchemaFlag
+    from ..state.settings import Settings, Configuration
+    from ..storage.canvas import CanvasStore
+    from ..state.references import LocalMedia
+    from ..state.generations import UpscaleRequest, GenerationResult
     from .generations.records import GenerationStore
-    from ..types.settings import Settings, Configuration
-    from ..types.generations import UpscaleRequest, GenerationResult
 
 _RANGE = re.compile(SCHEMA_RANGE_PATTERN)
 
 
 def _read_rule(flag: SchemaFlag) -> range | tuple[str, ...] | None:
     """Read a flag's rule from the schema: a whole-number range, the allowed values, or None when it gives neither."""
-    head = flag.constraints.split(SCHEMA_CONSTRAINTS["PART"], 1)[0].strip()
+    head = flag.constraints.split(SCHEMA_CONSTRAINTS['PART'], 1)[0].strip()
     match = _RANGE.match(head)
     if match is not None:
         return range(int(match.group(1)), int(match.group(2)) + 1)
-    if SCHEMA_CONSTRAINTS["CHOICE"] in head:
-        return tuple(part.strip() for part in head.split(SCHEMA_CONSTRAINTS["CHOICE"]))
+    if SCHEMA_CONSTRAINTS['CHOICE'] in head:
+        return tuple(part.strip() for part in head.split(SCHEMA_CONSTRAINTS['CHOICE']))
     return None
 
 
@@ -85,7 +87,7 @@ def _validate_value(key: str, value: Json, flag: SchemaFlag) -> str:
             message = UPSCALE_ARGUMENT_RANGE.format(key=key, minimum=rule.start, maximum=rule.stop - 1)
             raise DreaminaError(ErrorCode.INVALID_INPUT, message)
     elif rule is not None and value not in rule:
-        raise DreaminaError(ErrorCode.INVALID_INPUT, UPSCALE_ARGUMENT_CHOICE.format(key=key, values=", ".join(rule)))
+        raise DreaminaError(ErrorCode.INVALID_INPUT, UPSCALE_ARGUMENT_CHOICE.format(key=key, values=', '.join(rule)))
     return str(value)
 
 
@@ -94,12 +96,12 @@ def _validate_mode(mode: str, keys: set[str], flags: Mapping[str, SchemaFlag]) -
     rules = UPSCALE_MODES.get(mode)
     if rules is None:
         return
-    missing = next((key for key in rules["REQUIRED"] if key not in keys), None)
+    missing = next((key for key in rules['REQUIRED'] if key not in keys), None)
     if missing is not None:
         rule = _read_rule(flags[missing])
-        values = ", ".join(rule) if isinstance(rule, tuple) else ""
+        values = ', '.join(rule) if isinstance(rule, tuple) else ''
         raise DreaminaError(ErrorCode.INVALID_INPUT, UPSCALE_FLAG_NEEDED.format(key=missing, mode=mode, values=values))
-    extra = next((key for key in sorted(keys) if key != UPSCALE_FLAGS[0] and key not in rules["TAKEN"]), None)
+    extra = next((key for key in sorted(keys) if key != UPSCALE_FLAGS[0] and key not in rules['TAKEN']), None)
     if extra is not None:
         raise DreaminaError(ErrorCode.INVALID_INPUT, UPSCALE_MODE_FLAG.format(key=extra, mode=mode))
 
@@ -108,16 +110,16 @@ def _read_outcomes(result: CliResult, call: UpscaleCall) -> dict[str, tuple[str 
     """Map each source to its new node ID, or to None and Dreamina's reason for refusing it.
 
     Exit 0 and exit 20 follow acceptance, and so does a failure of the CLI's own records after the submit; every
-    other failure means nothing was accepted.
+    other failure means Dreamina accepted nothing.
     """
     reply = result.reply
     storage = reply.error.local_storage if reply.error is not None else None
-    if result.exit_code == EXIT_CODES["INCOMPLETE"] or (
+    if result.exit_code == EXIT_CODES['INCOMPLETE'] or (
         storage is not None and storage.submission_phase == ACCEPTED_PHASE
     ):
         items = reply.partial.items if reply.partial is not None else ()
-        return {item.source_node_id: (item.node_id, "") for item in items if item.source_node_id and item.node_id}
-    if result.exit_code != EXIT_CODES["OK"]:
+        return {item.source_node_id: (item.node_id, '') for item in items if item.source_node_id and item.node_id}
+    if result.exit_code != EXIT_CODES['OK']:
         raise build_failure(result, RUN_REFUSED, credit_ceiling=call.credit_ceiling)
     try:
         upscale = parse_reply(reply.payload, UpscaleReply)
@@ -128,7 +130,7 @@ def _read_outcomes(result: CliResult, call: UpscaleCall) -> dict[str, tuple[str 
             item.node_id if item.error is None else None,
             sanitize_reason(item.error.message or STATUS_CODE_REASON.format(code=item.error.status_code))
             if item.error is not None
-            else "",
+            else '',
         )
         for item in upscale.items
     }
@@ -137,12 +139,12 @@ def _read_outcomes(result: CliResult, call: UpscaleCall) -> dict[str, tuple[str 
 def parse_upscale_arguments(text: str, flags: Mapping[str, SchemaFlag]) -> dict[str, str]:
     """Check the arguments box against the upscale command's own flags, and return each value to send by flag name.
 
-    A flag left out sends nothing, so the CLI's default applies; the mode is read from its schema default then.
+    A flag left out sends nothing, so the CLI's default applies; the mode then comes from its schema default.
     """
     values = parse_arguments(text)
     unknown = next((key for key in values if key not in UPSCALE_FLAGS), None)
     if unknown is not None:
-        message = UPSCALE_ARGUMENT_KEY.format(keys=", ".join(UPSCALE_FLAGS), key=unknown)
+        message = UPSCALE_ARGUMENT_KEY.format(keys=', '.join(UPSCALE_FLAGS), key=unknown)
         raise DreaminaError(ErrorCode.INVALID_INPUT, message)
     sent = {key: _validate_value(key, values[key], flags[key]) for key in UPSCALE_FLAGS if key in values}
     _validate_mode(sent.get(UPSCALE_FLAGS[0], str(flags[UPSCALE_FLAGS[0]].default)), set(values), flags)
@@ -159,7 +161,7 @@ class UpscaleOperation:
         canvas: CanvasStore,
         encode: Callable[[LocalMedia, Path], Path],
     ) -> None:
-        """Keep the node's request, the stores, and ComfyUI's encoder, which the node passes in."""
+        """Keep the request of the node, the stores, and ComfyUI's encoder, which the node passes in."""
         self.request = request
         self.generations = generations
         self.canvas = canvas
@@ -170,12 +172,12 @@ class UpscaleOperation:
         flags = (await validate_cli())[UPSCALE_COMMAND]
         values = parse_upscale_arguments(self.request.arguments, flags)
         references = self.request.references
-        if any(reference.media != "image" for reference in references):
+        if any(reference.media != 'image' for reference in references):
             raise DreaminaError(ErrorCode.INVALID_INPUT, UPSCALE_REFERENCE_MEDIA)
-        if any(reference.origin != "node" for reference in references):
+        if any(reference.origin != 'node' for reference in references):
             raise DreaminaError(ErrorCode.INVALID_INPUT, UPSCALE_REFERENCE_RESOURCE)
         count = len(references) + len(self.request.images)
-        limit = _read_rule(flags["node-id"])
+        limit = _read_rule(flags['node-id'])
         maximum = limit.stop - 1 if isinstance(limit, range) else count
         if not count:
             raise DreaminaError(ErrorCode.INVALID_INPUT, UPSCALE_SOURCE_EMPTY)
@@ -184,7 +186,7 @@ class UpscaleOperation:
         return values, values.get(UPSCALE_FLAGS[0], str(flags[UPSCALE_FLAGS[0]].default))
 
     async def _create_sources(self, project_id: str, settings: Settings, deadline: float) -> tuple[str, ...]:
-        """Upload the ComfyUI images and import each as an image node, for free; return the new node IDs in order."""
+        """Upload the ComfyUI images and import each as an image node at no cost; return the new node IDs in order."""
         uploaded = await send_media(project_id, self.request.images, self.encode, settings, deadline)
         nodes: list[str] = []
         for reference in uploaded:
@@ -204,11 +206,11 @@ class UpscaleOperation:
         """Check, find the canvas, import the images, and build the upscale call; nothing here bills."""
         values, mode = await self._plan_upscale()
         if progress is not None:
-            await progress(PROGRESS_STEPS["CHECKED"])
+            await progress(PROGRESS_STEPS['CHECKED'])
         canvas = await find_canvas(self.canvas) or await create_canvas(self.canvas)
         imported = await self._create_sources(canvas.project_id, configuration.settings, deadline)
         if progress is not None:
-            await progress(PROGRESS_STEPS["UPLOADED"])
+            await progress(PROGRESS_STEPS['UPLOADED'])
         sources = (*(reference.value for reference in self.request.references), *imported)
         return UpscaleCall(
             project_id=canvas.project_id,
@@ -225,8 +227,15 @@ class UpscaleOperation:
         It returns the records in source order, and the refusal to raise for a source Dreamina refused.
         """
         submitted_at = datetime.now(UTC).isoformat()
+        # The node sends the upscale call once and never again.
+        arguments = (
+            'node', 'upscale', 'image', '--project-id', call.project_id,
+            *(item for source in call.sources for item in ('--node-id', source)),
+            *(item for submit_id in call.submit_ids for item in ('--submit-id', submit_id)),
+            *call.flags, '--credit-ceiling', str(call.credit_ceiling),
+        )  # fmt: skip
         try:
-            result = await send_command(call.arguments, CALL_SECONDS["RUN"])
+            result = await send_command(arguments, CALL_SECONDS['RUN'])
         except DreaminaError as error:
             if error.code is ErrorCode.TRANSPORT:
                 raise DreaminaError(ErrorCode.UNCERTAIN, RUN_UNCERTAIN.format(**DREAMINA_URLS)) from None
@@ -238,14 +247,14 @@ class UpscaleOperation:
                 submit_id=submit_id,
                 project_id=call.project_id,
                 node_id=node_id,
-                kind="image",
+                kind='image',
                 model=UPSCALE_MODEL,
                 mode=call.mode,
                 submitted_at=submitted_at,
                 source_node_id=source,
             )
             for source, submit_id in zip(call.sources, call.submit_ids, strict=True)
-            if (node_id := outcomes.get(source, (None, ""))[0]) is not None
+            if (node_id := outcomes.get(source, (None, ''))[0]) is not None
         )
         for record in records:
             await asyncio.to_thread(self.generations.save, record)
@@ -255,7 +264,7 @@ class UpscaleOperation:
             (
                 (number, reason)
                 for number, source in enumerate(call.sources, 1)
-                if (reason := outcomes.get(source, (None, ""))[1])
+                if (reason := outcomes.get(source, (None, ''))[1])
             ),
             None,
         )
@@ -263,9 +272,6 @@ class UpscaleOperation:
             return records, None
         template = UPSCALE_PARTLY_REFUSED if records else UPSCALE_REFUSED
         return records, template.format(number=refused[0], reason=refused[1])
-
-    def validate(self, settings: Settings) -> None:
-        """Accept every request; each check needs the CLI's schema, which send reads."""
 
     async def send(self, configuration: Configuration, progress: Progress | None) -> tuple[GenerationResult, ...]:
         """Check, import, send the upscale once, record each accepted source, then collect each in source order.
@@ -278,20 +284,20 @@ class UpscaleOperation:
         is_cancelled = await wait_until_settled(running)
         records, refusal = running.result()
         if progress is not None:
-            await progress(PROGRESS_STEPS["ACCEPTED"])
+            await progress(PROGRESS_STEPS['ACCEPTED'])
         if is_cancelled:
             raise DreaminaError(ErrorCode.INTERRUPTED, GENERATION_KEEPS_RUNNING)
         if refusal is not None:
             raise DreaminaError(ErrorCode.INVALID_INPUT, refusal)
         if progress is not None:
-            await progress(PROGRESS_STEPS["RUNNING"])
+            await progress(PROGRESS_STEPS['RUNNING'])
         results = [
             await CollectOperation(record, self.generations, self.canvas, deadline).send(configuration, None)
             for record in records
         ]
         if progress is not None:
-            await progress(PROGRESS_STEPS["DOWNLOADED"])
+            await progress(PROGRESS_STEPS['DOWNLOADED'])
         return tuple(results)
 
 
-__all__ = ["UpscaleOperation", "parse_upscale_arguments"]
+__all__ = ['UpscaleOperation', 'parse_upscale_arguments']

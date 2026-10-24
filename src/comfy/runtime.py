@@ -1,12 +1,12 @@
 """Create the shared stores when ComfyUI loads the extension."""
 
+from ..state.errors import ErrorCode, DreaminaError
+from ..storage.files import choose_state_directory
+from ..config.storage import FILE_NAMES, GENERATION_FOLDER
+from ..settings.store import ConfigurationStore
 from ..storage.canvas import CanvasStore
 from ..dreamina.account import SignInState
-from ..settings.store import ConfigurationStore
-from ..storage.files import choose_state_directory
-from ..types.errors import ErrorCode, DreaminaError
 from ..config.messages.settings import RUNTIME_NOT_READY
-from ..config.storage import FILE_NAMES, GENERATION_FOLDER
 from ..dreamina.generations.records import GenerationStore
 
 
@@ -21,7 +21,7 @@ class Runtime:
 
     """
 
-    __slots__ = ("canvas", "configuration", "generations", "sign_in")
+    __slots__ = ('canvas', 'configuration', 'generations', 'sign_in')
 
     configuration: ConfigurationStore
     sign_in: SignInState
@@ -32,7 +32,7 @@ class Runtime:
         """Create the shared stores and place their state under one private directory."""
         self.configuration = ConfigurationStore(choose_state_directory())
         self.sign_in = SignInState(self.configuration.reset_account_token)
-        self.canvas = CanvasStore(self.configuration.directory / FILE_NAMES["CANVAS"])
+        self.canvas = CanvasStore(self.configuration.directory / FILE_NAMES['CANVAS'])
         self.generations = GenerationStore(self.configuration.directory / GENERATION_FOLDER)
 
 
@@ -41,7 +41,7 @@ _runtime: Runtime | None = None
 
 def create_runtime() -> None:
     """Initialize once through the host's extension lifecycle, without network calls."""
-    global _runtime  # noqa: PLW0603 -- reason: ComfyUI initializes one shared runtime during loading.
+    global _runtime  # noqa: PLW0603 # reason: ComfyUI initializes one shared runtime during loading.
     if _runtime is None:
         _runtime = Runtime()
 
@@ -53,4 +53,4 @@ def get_runtime() -> Runtime:
     return _runtime
 
 
-__all__ = ["Runtime", "create_runtime", "get_runtime"]
+__all__ = ['Runtime', 'create_runtime', 'get_runtime']

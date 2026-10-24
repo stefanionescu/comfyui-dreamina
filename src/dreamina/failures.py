@@ -1,19 +1,18 @@
 """Turn the Dreamina CLI's failure replies into reviewed messages, reading structured fields only.
 
-The CLI's message text is never matched; it is shown, cleaned, only where no field names the cause.
+This module never matches the CLI's message text; it shows that text, cleaned, only where no field names the cause.
 """
 
 from __future__ import annotations
 
 import re
 from typing import TYPE_CHECKING
-from ..types.cli import CliFailure
+
+from ..state.cli import CliFailure
+from ..state.errors import ErrorCode, DreaminaError
+from ..config.dreamina import EXIT_CODES, DREAMINA_URLS, REASON_ENDINGS, MAX_REASON_CHARACTERS
 from ..config.patterns import REASON_PATTERNS
 from ..config.generations import OPERATION_STATES
-from ..config.messages.media import UPLOAD_INVALID
-from ..types.errors import ErrorCode, DreaminaError
-from ..config.dreamina import EXIT_CODES, DREAMINA_URLS, REASON_ENDINGS, MAX_REASON_CHARACTERS
-from ..config.messages.generations import GENERATION_EMPTY, GENERATION_FAILED, GENERATION_FAILED_CODE
 from ..config.messages.run import (
     NO_REASON,
     DNS_FAILED,
@@ -36,62 +35,64 @@ from ..config.messages.run import (
     REFERENCE_UNAVAILABLE,
     CREDENTIALS_UNREADABLE,
 )
+from ..config.messages.media import UPLOAD_INVALID
+from ..config.messages.generations import GENERATION_EMPTY, GENERATION_FAILED, GENERATION_FAILED_CODE
 
 if TYPE_CHECKING:
-    from ..types.replies import OperationReply
-    from ..types.cli import CliResult, Validation
+    from ..state.cli import CliResult, Validation
+    from ..state.runs import OperationReply
 
-_URL = re.compile(REASON_PATTERNS["URL"])
-_PATH = re.compile(REASON_PATTERNS["PATH"])
-_IDENTIFIER = re.compile(REASON_PATTERNS["IDENTIFIER"])
+_URL = re.compile(REASON_PATTERNS['URL'])
+_PATH = re.compile(REASON_PATTERNS['PATH'])
+_IDENTIFIER = re.compile(REASON_PATTERNS['IDENTIFIER'])
 
 # The causes the CLI names in error.reason, each a finer cause than the class it comes with.
 _REASON_FAILURES: dict[str, tuple[ErrorCode, str]] = {
-    "dns_resolution_failed": (ErrorCode.TRANSPORT, DNS_FAILED),
-    "network_permission_denied": (ErrorCode.TRANSPORT, NETWORK_DENIED),
-    "network_timeout": (ErrorCode.TRANSPORT, NETWORK_TIMEOUT),
-    "credential_store_permission_denied": (ErrorCode.AUTHENTICATION, CREDENTIALS_DENIED),
-    "credential_store_unavailable": (ErrorCode.AUTHENTICATION, CREDENTIALS_UNREADABLE),
-    "credential_store_corrupt": (ErrorCode.AUTHENTICATION, CREDENTIALS_UNREADABLE),
+    'dns_resolution_failed': (ErrorCode.TRANSPORT, DNS_FAILED),
+    'network_permission_denied': (ErrorCode.TRANSPORT, NETWORK_DENIED),
+    'network_timeout': (ErrorCode.TRANSPORT, NETWORK_TIMEOUT),
+    'credential_store_permission_denied': (ErrorCode.AUTHENTICATION, CREDENTIALS_DENIED),
+    'credential_store_unavailable': (ErrorCode.AUTHENTICATION, CREDENTIALS_UNREADABLE),
+    'credential_store_corrupt': (ErrorCode.AUTHENTICATION, CREDENTIALS_UNREADABLE),
 }
 
 # The error codes with a fix of their own, each a finer cause than its exit code.
 _CODE_FAILURES: dict[str, tuple[ErrorCode, str]] = {
-    "cli.generation_mode_required": (ErrorCode.INVALID_INPUT, MODE_REQUIRED),
-    "cli.generation_title_required": (ErrorCode.INVALID_INPUT, TITLE_REQUIRED),
-    "cli.invalid_flag": (ErrorCode.INVALID_INPUT, FLAG_REFUSED),
-    "cli.invalid_resource_reference": (ErrorCode.INVALID_INPUT, REFERENCE_REFUSED),
-    "cli.resource_unavailable": (ErrorCode.UNAVAILABLE, REFERENCE_UNAVAILABLE),
-    "cli.region_not_available": (ErrorCode.UNAVAILABLE, REGION_UNAVAILABLE),
-    "cli.passport_rate_limited": (ErrorCode.RATE_LIMITED, SIGN_IN_LIMITED),
-    "cli.invalid_upload_file": (ErrorCode.INVALID_INPUT, UPLOAD_INVALID),
-    "service.20009": (ErrorCode.UNAVAILABLE, CANVAS_MISSING),
+    'cli.generation_mode_required': (ErrorCode.INVALID_INPUT, MODE_REQUIRED),
+    'cli.generation_title_required': (ErrorCode.INVALID_INPUT, TITLE_REQUIRED),
+    'cli.invalid_flag': (ErrorCode.INVALID_INPUT, FLAG_REFUSED),
+    'cli.invalid_resource_reference': (ErrorCode.INVALID_INPUT, REFERENCE_REFUSED),
+    'cli.resource_unavailable': (ErrorCode.UNAVAILABLE, REFERENCE_UNAVAILABLE),
+    'cli.region_not_available': (ErrorCode.UNAVAILABLE, REGION_UNAVAILABLE),
+    'cli.passport_rate_limited': (ErrorCode.RATE_LIMITED, SIGN_IN_LIMITED),
+    'cli.invalid_upload_file': (ErrorCode.INVALID_INPUT, UPLOAD_INVALID),
+    'service.20009': (ErrorCode.UNAVAILABLE, CANVAS_MISSING),
 }
 
 
 def _choose_reason(validation: Validation | None, message: str) -> str:
-    """Name the refused field with the CLI's detail for it, or give the CLI's message when no value was refused."""
+    """Name the refused field with the CLI's detail for it, or give the CLI's message when the CLI refused no value."""
     if validation is None:
         return message
-    return f"{validation.field_path}: {validation.detail}" if validation.field_path else validation.detail
+    return f'{validation.field_path}: {validation.detail}' if validation.field_path else validation.detail
 
 
 def _choose_failure(exit_code: int, failure: CliFailure, context: str) -> tuple[ErrorCode, str]:
     """Pick the code and message after the quote's row; the first row that matches decides, and context is the last.
 
-    An upgrade comes before sign-in, because neither is retried and the upgrade is what the person can fix. The CLI's
-    own records and the credential store come before sign-in too, since signing in again would not help.
+    An upgrade comes before sign-in, because the extension retries neither and the upgrade is what the person can fix.
+    The CLI's own records and the credential store come before sign-in too, because signing in again does not help.
     """
     action, failure_class = failure.required_action, failure.failure_class
-    is_sign_in = exit_code == EXIT_CODES["SIGN_IN"] or action == "login" or failure_class == "auth_required"
+    is_sign_in = exit_code == EXIT_CODES['SIGN_IN'] or action == 'login' or failure_class == 'auth_required'
     is_incomplete = (
-        exit_code == EXIT_CODES["INCOMPLETE"] or action == "resume" or failure_class == "operation_incomplete"
+        exit_code == EXIT_CODES['INCOMPLETE'] or action == 'resume' or failure_class == 'operation_incomplete'
     )
-    is_invalid = exit_code == EXIT_CODES["INVALID"] or failure_class == "invalid_input"
+    is_invalid = exit_code == EXIT_CODES['INVALID'] or failure_class == 'invalid_input'
     rows = (
-        (ErrorCode.CONFIGURATION, UPGRADE_REQUIRED) if action == "upgrade" else None,
+        (ErrorCode.CONFIGURATION, UPGRADE_REQUIRED) if action == 'upgrade' else None,
         (ErrorCode.CONFIGURATION, LOCAL_STATE_FAILED) if failure.local_storage is not None else None,
-        _REASON_FAILURES.get(failure.reason or ""),
+        _REASON_FAILURES.get(failure.reason or ''),
         (ErrorCode.AUTHENTICATION, SIGN_IN_REQUIRED) if is_sign_in else None,
         _CODE_FAILURES.get(failure.code),
         (ErrorCode.TRANSPORT, OPERATION_INCOMPLETE) if is_incomplete else None,
@@ -106,12 +107,12 @@ def sanitize_reason(text: str) -> str:
     Links go first, so the path pattern never meets one. The reason ends as a sentence, because a message adds its
     next step after it.
     """
-    text = _PATH.sub("", _URL.sub("", text))
-    text = " ".join(_IDENTIFIER.sub("", text).split())
+    text = _PATH.sub('', _URL.sub('', text))
+    text = ' '.join(_IDENTIFIER.sub('', text).split())
     if len(text) > MAX_REASON_CHARACTERS:
-        text = text[: MAX_REASON_CHARACTERS - 1].rstrip() + "…"
+        text = text[: MAX_REASON_CHARACTERS - 1].rstrip() + '…'
     if text and not text.endswith(REASON_ENDINGS):
-        text += "."
+        text += '.'
     return text or NO_REASON
 
 
@@ -123,7 +124,7 @@ def build_failure(result: CliResult, context: str, *, credit_ceiling: int | None
     reads as one whose fields are all empty.
     """
     failure = result.reply.error or CliFailure()
-    if result.exit_code == EXIT_CODES["CONFIRM"] or failure.required_action == "confirm":
+    if result.exit_code == EXIT_CODES['CONFIRM'] or failure.required_action == 'confirm':
         confirmation = result.reply.credit_confirmation
         minimum = confirmation.minimum_credit_ceiling if confirmation is not None else None
         template = PRICE_UNKNOWN if minimum is None else CEILING_TOO_LOW
@@ -149,7 +150,7 @@ def build_generation_failure(reply: OperationReply) -> DreaminaError:
         (
             resource.status_code
             for resource in reply.resources
-            if resource.state != OPERATION_STATES["SUCCEEDED"] and resource.status_code is not None
+            if resource.state != OPERATION_STATES['SUCCEEDED'] and resource.status_code is not None
         ),
         None,
     )
@@ -158,4 +159,4 @@ def build_generation_failure(reply: OperationReply) -> DreaminaError:
     return DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_EMPTY)
 
 
-__all__ = ["build_failure", "build_generation_failure", "sanitize_reason"]
+__all__ = ['build_failure', 'build_generation_failure', 'sanitize_reason']

@@ -1,23 +1,25 @@
-"""Download a finished node's outputs through the CLI, checking each file's size and SHA-256 before reading it."""
+"""Download the outputs of a finished node through the CLI, checking each file's size and SHA-256 before reading it."""
 
 from __future__ import annotations
 
 import math
 import time
+from typing import TYPE_CHECKING, cast
 import asyncio
 import hashlib
-import tempfile
 from pathlib import Path
+import tempfile
+
+from pydantic import ValidationError
+
 from .cli import send_command
 from .failures import build_failure
-from pydantic import ValidationError
-from typing import TYPE_CHECKING, cast
-from ..types.replies import DownloadReply
-from ..types.generations import OutputFile
-from ..config.storage import TEMPORARY_PREFIX
-from ..config.units import BYTES_PER_MEGABYTE
-from ..types.errors import ErrorCode, DreaminaError
 from ..config.media import FREE_ATTEMPTS, RESOURCE_KINDS, RESOURCE_SUCCESS
+from ..config.units import BYTES_PER_MEGABYTE
+from ..state.errors import ErrorCode, DreaminaError
+from ..state.replies import DownloadReply
+from ..config.storage import TEMPORARY_PREFIX
+from ..state.generations import OutputFile
 from ..config.messages.media import (
     RESOURCE_TYPE,
     DOWNLOAD_EMPTY,
@@ -28,16 +30,16 @@ from ..config.messages.media import (
 )
 
 if TYPE_CHECKING:
-    from ..types import Kind
-    from ..types.cli import CliResult
-    from ..types.replies import NodeView
-    from ..types.settings import Settings
+    from ..state import Kind
+    from ..state.cli import CliResult
+    from ..state.runs import NodeView
+    from ..state.settings import Settings
 
 
 def _read_download(path: Path, size: int, sha256: str) -> bytes | None:
     """Read the pack's own copy of a download and delete it; None when it is missing or does not match the reply."""
     try:
-        with path.open("rb") as file:
+        with path.open('rb') as file:
             content = file.read(size + 1)
     except OSError:
         return None
@@ -47,7 +49,7 @@ def _read_download(path: Path, size: int, sha256: str) -> bytes | None:
 
 
 async def _read_checked(result: CliResult, resource_id: str, path: Path, settings: Settings) -> bytes | None:
-    """Read one successful download's reply and file; None when the outcome is unknown and the file is sent again."""
+    """Read a successful download's reply and file; None when the outcome is unknown and the caller downloads again."""
     try:
         reply = DownloadReply.model_validate(result.reply.payload)
     except ValidationError:
@@ -65,7 +67,7 @@ async def _read_checked(result: CliResult, resource_id: str, path: Path, setting
 
 async def _download_file(project_id: str, resource_id: str, path: Path, settings: Settings, deadline: float) -> bytes:
     """Download one resource, a second time only when the first outcome is unknown, and return its checked bytes."""
-    arguments = ("resource", "download", resource_id, "--project-id", project_id, "--output", str(path))
+    arguments = ('resource', 'download', resource_id, '--project-id', project_id, '--output', str(path))
     for attempt in range(1, FREE_ATTEMPTS + 1):
         try:
             result = await send_command(arguments, max(deadline - time.monotonic(), 1.0))
@@ -85,7 +87,7 @@ async def _download_file(project_id: str, resource_id: str, path: Path, settings
 async def download_resources(
     project_id: str, node: NodeView, submit_id: str, settings: Settings, deadline: float
 ) -> tuple[OutputFile, ...]:
-    """Download the finished resources of one submit ID, in the node's order, and return their bytes.
+    """Download the finished resources of one submit ID, in the order of the node, and return their bytes.
 
     At most one output file is on disk at a time, in a private temporary folder, under a name the pack makes.
     """
@@ -102,10 +104,10 @@ async def download_resources(
     files: list[OutputFile] = []
     with tempfile.TemporaryDirectory(prefix=TEMPORARY_PREFIX, ignore_cleanup_errors=True) as folder:
         for index, resource in enumerate(resources, 1):
-            path = Path(folder) / f"output-{index}"
+            path = Path(folder) / f'output-{index}'
             content = await _download_file(project_id, resource.resource_id, path, settings, deadline)
-            files.append(OutputFile(resource.resource_id, cast("Kind", RESOURCE_KINDS[resource.type]), content))
+            files.append(OutputFile(resource.resource_id, cast('Kind', RESOURCE_KINDS[resource.type]), content))
     return tuple(files)
 
 
-__all__ = ["download_resources"]
+__all__ = ['download_resources']

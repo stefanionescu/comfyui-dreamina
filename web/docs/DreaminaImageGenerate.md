@@ -1,6 +1,6 @@
 # Image: Generate
 
-Runs any Dreamina model that makes images, from a prompt or from images. It
+Runs any Dreamina model that makes images from a prompt or from images. It
 outputs the images, and references to them for the next Dreamina node.
 
 ## Inputs
@@ -31,7 +31,7 @@ order. Set `"mode"` in `arguments` to choose.
 ## Use
 
 1. Write the prompt, and set `ratio` and `resolution` in `arguments`.
-2. To edit, connect images to `images`, or another node's `references`.
+2. To edit, connect images to `images`, or the `references` of another node.
 3. Connect `images` to **Save Image**, and select **Run**.
 
 The node makes one image unless `arguments` sets `count`. Once Dreamina

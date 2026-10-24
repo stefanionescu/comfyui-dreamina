@@ -1,4 +1,4 @@
-"""Units the size and time limits are written in."""
+"""Units that the size and time limits use."""
 
 # A megabyte is 1,000,000 bytes, as the settings count them.
 BYTES_PER_MEGABYTE = 1_000_000
@@ -7,6 +7,6 @@ BYTES_PER_MEGABYTE = 1_000_000
 SECONDS_PER_MINUTE = 60
 
 __all__ = [
-    "BYTES_PER_MEGABYTE",
-    "SECONDS_PER_MINUTE",
+    'BYTES_PER_MEGABYTE',
+    'SECONDS_PER_MINUTE',
 ]

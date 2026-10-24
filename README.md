@@ -24,7 +24,7 @@ account.
 ## Requirements
 
 - Python 3.12 or later.
-- ComfyUI 0.37.2 or later, with frontend 1.52.7 or later in the 1.x series.
+- ComfyUI 0.37.2 or later, with frontend 1.52.7 or a later version below 2.0.
 - A Dreamina account that can use the
   [Dreamina Canvas CLI](https://dreamina.capcut.com/canvas-cli).
 
@@ -41,7 +41,7 @@ Put the extension in `ComfyUI/custom_nodes/dreamina`, install its
    that holds `main.py`, and put the extension in its `custom_nodes` folder.
 3. Select **Terminal** in the same panel and run:
 
-```sh
+```sh title="In the ComfyUI folder"
 pip install -r custom_nodes/dreamina/requirements.txt
 ```
 
@@ -49,13 +49,13 @@ pip install -r custom_nodes/dreamina/requirements.txt
 
 From the ComfyUI folder:
 
-```sh
+```sh title="In the ComfyUI folder"
 .venv/bin/python -m pip install -r custom_nodes/dreamina/requirements.txt
 ```
 
 With uv:
 
-```sh
+```sh title="In the ComfyUI folder"
 uv pip install --python .venv/bin/python -r custom_nodes/dreamina/requirements.txt
 ```
 
@@ -69,7 +69,7 @@ From the ComfyUI folder, in PowerShell:
 
 ### Windows portable
 
-From the folder that holds `ComfyUI` and `python_embeded`, in PowerShell:
+From the folder that holds `ComfyUI` and `python_embedded`, in PowerShell:
 
 ```powershell
 .\python_embeded\python.exe -m pip install -r .\ComfyUI\custom_nodes\dreamina\requirements.txt
@@ -85,11 +85,12 @@ To update or remove the extension, see the
 
 ## First run
 
-1. Open **ComfyUI menu → Extensions → Dreamina → Dreamina Settings**. If it
-   says the Dreamina CLI is not installed, select **Install**.
+1. In the **ComfyUI menu**, select **Extensions**, then **Dreamina**, then
+   **Dreamina Settings**. If it says the Dreamina CLI is not installed, select
+   **Install**.
 2. Select **Sign in**, and approve the sign-in on dreamina.capcut.com.
-3. Open **Browse Templates → dreamina → image-01-design-a-host** and select
-   **Run**.
+3. In **Browse Templates**, open **dreamina**, then
+   **image-01-design-a-host**, and select **Run**.
 4. See your host in **Design** and on the **ComfyUI** canvas in Dreamina.
 
 To send the same run again, change `run_number`.
@@ -112,7 +113,7 @@ To send the same run again, change `run_number`.
 | [Video: Animate a Saved Image](example_workflows/video-05-animate-a-saved-image.json)       | A saved picture and a scene             |
 | [Video: Cast a Saved Host](example_workflows/video-06-cast-a-saved-host.json)               | The saved host and a kitchen            |
 
-They are in **Browse Templates → dreamina**. Start with each workflow's
+They are in **Browse Templates**, under **dreamina**. Start with each workflow's
 **Start Here** note. Most steps are subgraphs. Media inputs start empty, and
 most workflows make their own inputs with Dreamina models.
 
@@ -144,8 +145,8 @@ The nodes are under **Dreamina** in the node menu, and each has a help page.
 Type any Dreamina model name in `model`, such as `seedance_2.5`. Nothing in
 the extension lists or limits models. When you queue a workflow, and again
 when it runs, the node checks the name and your settings against your own
-model list from Dreamina, before anything is paid. **Model: Info** shows any
-model's modes, settings, and voices, for free.
+model list from Dreamina, before Dreamina bills anything. **Model: Info**
+shows any model's modes, settings, and voices, and bills nothing.
 
 ![Video: Generate on the canvas: the images, videos, audio, and references inputs; model set to seedance_2.0_mini; credit_ceiling; run_number; a prompt about a host holding up a green bottle; and arguments holding ratio 16:9, resolution 720p, and duration 4.](docs/images/screenshots/video-generate-node.png)
 
@@ -153,12 +154,12 @@ Write the model's settings in `arguments` as JSON, under Dreamina's names,
 such as `{"ratio": "9:16", "resolution": "720p", "duration": 5}`. The node
 stops if the model makes another kind of output, or does not take a setting
 or value you sent. The [advanced guide](ADVANCED.md#models) says how the
-mode is chosen.
+node chooses the mode.
 
 ## How a run works
 
 1. The node checks your inputs against your model list, and stops before
-   anything is paid.
+   Dreamina bills anything.
 2. It uploads your images, video, and audio to the **ComfyUI** canvas in your
    Dreamina account, and sends one run with `credit_ceiling`, the most
    credits the run may cost. Dreamina runs it only if its price is within
@@ -180,12 +181,17 @@ COMFYUI_PATH = "/path/to/ComfyUI"
 COMFYUI_PYTHON = "/path/to/ComfyUI/.venv/bin/python"
 ```
 
-Install the tools, dependencies, and Git hooks, and run the full check:
+Install the tools, the dependencies, and the Git hooks:
 
 ```shell
 mise trust
-mise run repo:setup
-mise run repo:check
+mise run setup
+```
+
+The hooks run gspot on every commit and push. To run every check yourself:
+
+```shell
+bun run --no-install gspot check
 ```
 
 Restart ComfyUI after changing Python. The

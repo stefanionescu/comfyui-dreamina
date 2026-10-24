@@ -35,8 +35,8 @@ audio, or a reference, it uses omni dubbing, which takes no voice, so set
 1. Write the words in `prompt`.
 2. Copy a voice from **Model: Info**, and set it as `voice-name`.
 3. To dub instead, connect a picture or audio, and set `arguments` to `{}`.
-4. Connect `audio` to **Save Audio (Advanced)** or **Preview Audio**, and
-   select **Run**.
+4. Connect `audio` to **Preview Audio**, or to the core node
+   `SaveAudioAdvanced` to save the clip, and select **Run**.
 
 Once Dreamina accepts a run, a cancel stops only the wait: the clip is still
 made and billed. Collect it with **Generation: Download**.

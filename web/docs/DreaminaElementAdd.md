@@ -24,9 +24,9 @@ voice, and a name. It bills nothing.
 
 1. Connect the subject's clearest image to `main`, and type a `title`.
 2. Connect `references` to **Video: Generate** or **Image: Generate**.
-3. Write `{{reference1}}` in that node's prompt where the subject appears.
+3. Write `{{reference1}}` in the prompt of that node where the subject appears.
 
-ComfyUI images and audio are uploaded to your canvas first. The same inputs
+The node uploads ComfyUI images and audio to your canvas first. The same inputs
 give back the same Element, and new inputs make a new one. Example:
 **video-03-keep-a-host-across-shots**.
 

@@ -3,19 +3,20 @@
 import hmac
 import json
 import hashlib
+from pathlib import Path
 import secrets
 import threading
-from ..types import Json
-from pathlib import Path
 from dataclasses import asdict, fields
-from ..config.settings import SETTING_RANGES
-from ..storage.files import save_file, read_file
-from ..config.security import ACCOUNT_TOKEN_BYTES
-from ..types.errors import ErrorCode, DreaminaError
-from ..types.settings import Settings, Configuration
+
+from ..state import Json
 from .schema import DEFAULT_SETTINGS, parse_settings
+from ..state.errors import ErrorCode, DreaminaError
+from ..state.parsing import parse_json, validate_fields
+from ..storage.files import read_file, save_file
 from ..config.storage import FILE_NAMES, MAX_FILE_BYTES
-from ..types.parsing import parse_json, validate_fields
+from ..state.settings import Settings, Configuration
+from ..config.security import ACCOUNT_TOKEN_BYTES
+from ..config.settings import SETTING_RANGES
 from ..config.messages.settings import SETTINGS_CHANGED, SETTING_READ_ONLY, SETTINGS_UNREADABLE
 
 EDITABLE_SETTINGS = frozenset(item.name for item in fields(Settings))
@@ -35,16 +36,28 @@ class ConfigurationStore:
         self._account_changes = 0
         self._account_key = secrets.token_bytes(ACCOUNT_TOKEN_BYTES)
 
+    def _read_revised_settings(self) -> tuple[Settings, str]:
+        """Read the settings and their revision, which identifies these non-secret settings.
+
+        A window saves against the revision it read, so a stale window cannot overwrite newer changes.
+        """
+        settings = self.read_settings()
+        encoded = json.dumps(asdict(settings), sort_keys=True, separators=(',', ':')).encode()
+        return settings, hashlib.sha256(encoded).hexdigest()
+
     def read_settings(self) -> Settings:
-        """Read settings without creating files or directories; a save replaces the file whole, so no lock is needed."""
-        path = self.directory / FILE_NAMES["SETTINGS"]
+        """Read settings without creating files or directories.
+
+        A save replaces the file whole, so a read needs no lock.
+        """
+        path = self.directory / FILE_NAMES['SETTINGS']
         if not path.exists():
             return DEFAULT_SETTINGS
-        content = read_file(path, max_bytes=MAX_FILE_BYTES["SETTINGS"]).decode()
+        content = read_file(path, max_bytes=MAX_FILE_BYTES['SETTINGS']).decode()
         return parse_settings(validate_fields(parse_json(content)))
 
-    def read_snapshot(self) -> Configuration:
-        """Read the settings and the account token together, refusing settings that cannot be read."""
+    def read_configuration(self) -> Configuration:
+        """Read the settings and the account token together, refusing unreadable settings."""
         with self.lock:
             try:
                 settings = self.read_settings()
@@ -55,14 +68,14 @@ class ConfigurationStore:
     def read_status(self) -> dict[str, Json]:
         """Describe the effective settings, their ranges, and their revision."""
         with self.lock:
-            settings = self.read_settings()
+            settings, revision = self._read_revised_settings()
         return {
-            "settings": asdict(settings),
-            "setting_ranges": {
-                name: {"minimum": definition["minimum"], "maximum": definition["maximum"]}
+            'settings': asdict(settings),
+            'setting_ranges': {
+                name: {'minimum': definition['minimum'], 'maximum': definition['maximum']}
                 for name, definition in SETTING_RANGES.items()
             },
-            "revision": settings.revision,
+            'revision': revision,
         }
 
     def save_settings(self, changes: dict[str, Json], revision: str) -> None:
@@ -70,14 +83,14 @@ class ConfigurationStore:
         if changes.keys() - EDITABLE_SETTINGS:
             raise DreaminaError(ErrorCode.CONFIGURATION, SETTING_READ_ONLY)
         with self.lock:
-            current = self.read_settings()
-            if revision != current.revision:
+            current, current_revision = self._read_revised_settings()
+            if revision != current_revision:
                 raise DreaminaError(ErrorCode.CONFLICT, SETTINGS_CHANGED)
             updated = parse_settings(asdict(current) | changes)
-            save_file(self.directory / FILE_NAMES["SETTINGS"], (json.dumps(asdict(updated), indent=2) + "\n").encode())
+            save_file(self.directory / FILE_NAMES['SETTINGS'], (json.dumps(asdict(updated), indent=2) + '\n').encode())
 
     def create_account_token(self, user_id: int, account_changes: int) -> str:
-        """Build the account's cache token and keep it unless the account changed while it was read.
+        """Build the account's cache token and keep it unless the account changed while the caller read it.
 
         The random key makes the token useless outside this process; the account ID itself is never stored.
         """
@@ -94,4 +107,4 @@ class ConfigurationStore:
             self._account_changes += 1
 
 
-__all__ = ["ConfigurationStore"]
+__all__ = ['ConfigurationStore']

@@ -27,8 +27,8 @@ keeps working on a run it accepted, and bills it. This node bills nothing.
 2. Connect the output you need, such as `video` to **Save Video**.
 3. Select **Run**.
 
-A run leaves the list once its outputs are downloaded, or when Dreamina no
-longer has it. An upscale shows `upscale` as its model. Outputs the run did
+A run leaves the list once a node downloads its outputs, or when Dreamina
+cannot find it. An upscale shows `upscale` as its model. Outputs the run did
 not make stop the nodes connected to them. Example:
 **video-04-recover-a-video**.
 

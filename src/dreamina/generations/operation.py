@@ -8,29 +8,29 @@ from __future__ import annotations
 
 import time
 import uuid
-import asyncio
-from ..models import find_model
-from ..modes import choose_mode
-from ..uploads import send_media
 from typing import TYPE_CHECKING
+import asyncio
+from datetime import UTC, datetime, timedelta
+
+from ..cli import parse_reply, send_command
+from ..modes import choose_mode
+from ..canvas import find_canvas, create_canvas
+from ..models import find_model
+from .waiting import validate_lost_run, wait_for_operation
+from ..uploads import send_media
 from ..contract import validate_cli
-from ..failures import build_failure
+from ..failures import build_failure, build_generation_failure
+from ..arguments import build_flags, choose_prompt, parse_arguments, validate_argument_names
 from ..downloads import download_resources
 from ..operation import wait_until_settled
-from ..cli import parse_reply, send_command
-from datetime import UTC, datetime, timedelta
-from ...config.execution import PROGRESS_STEPS
-from ..canvas import find_canvas, create_canvas
-from ..failures import build_generation_failure
-from ...config.messages.run import CLI_FAILED, RUN_REFUSED
-from .waiting import validate_lost_run, wait_for_operation
-from ...types.replies import RunReply, NodeView, NodeShowReply
-from ...types.errors import ErrorCode, DreaminaError, SubmissionAbsentError
-from ...types.generations import RunCall, GenerationRecord, GenerationResult
 from ..references import format_prompt, plan_references, validate_references
+from ...state.runs import NodeView, RunReply, NodeShowReply
+from ...state.errors import ErrorCode, DreaminaError, SubmissionAbsentError
 from ...config.dreamina import EXIT_CODES, CALL_SECONDS, DREAMINA_URLS, ACCEPTED_PHASE
+from ...config.execution import PROGRESS_STEPS
+from ...state.generations import RunCall, GenerationRecord, GenerationResult
 from ...config.generations import RECORD_VERSION, OPERATION_STATES, RECORD_RETENTION_SECONDS
-from ..arguments import build_flags, choose_prompt, parse_arguments, validate_argument_names
+from ...config.messages.run import CLI_FAILED, RUN_REFUSED
 from ...config.messages.generations import (
     WAIT_LIMIT,
     RUN_UNRECORDED,
@@ -42,33 +42,34 @@ from ...config.messages.generations import (
 
 if TYPE_CHECKING:
     from pathlib import Path
-    from ...types import Json
-    from ..operation import Progress
-    from ...types.cli import CliResult
-    from .records import GenerationStore
     from collections.abc import Callable
+
+    from ...state import Json
+    from .records import GenerationStore
+    from ..operation import Progress
+    from ...state.cli import CliResult
+    from ...state.models import ModelMode, ListedModel
+    from ...state.settings import Settings, Configuration
     from ...storage.canvas import CanvasStore
-    from ...types.references import LocalMedia
-    from ...types.generations import GenerationPlan
-    from ...types.models import ModelMode, ListedModel
-    from ...types.settings import Settings, Configuration
+    from ...state.references import LocalMedia
+    from ...state.generations import GenerationPlan
 
 
 async def _read_node_id(result: CliResult, call: RunCall) -> str:
-    """Read the node of a run Dreamina accepted, or stop: a refusal is raised, and a lost reply is checked read-only.
+    """Read the node of a run Dreamina accepted, or stop: it raises a refusal, and checks a lost reply read-only.
 
     Exit 0 and exit 20 follow acceptance, and so does a failure of the CLI's own records after the submit; every
     other failure means the run did not start.
     """
     reply = result.reply
-    if result.exit_code == EXIT_CODES["OK"]:
+    if result.exit_code == EXIT_CODES['OK']:
         try:
             return parse_reply(reply.payload, RunReply).node.node_id
         except DreaminaError:
             await validate_lost_run(call.submit_id, call.project_id)
     storage = reply.error.local_storage if reply.error is not None else None
     phase = storage.submission_phase if storage is not None else None
-    if result.exit_code != EXIT_CODES["INCOMPLETE"] and phase != ACCEPTED_PHASE:
+    if result.exit_code != EXIT_CODES['INCOMPLETE'] and phase != ACCEPTED_PHASE:
         raise build_failure(result, RUN_REFUSED, credit_ceiling=call.credit_ceiling)
     items = reply.partial.items if reply.partial is not None else ()
     node_id = next((item.node_id for item in items if item.submit_id == call.submit_id and item.node_id), None)
@@ -98,7 +99,8 @@ class CollectOperation:
     async def _wait_for_success(self, deadline: float, progress: Progress | None, settings: Settings) -> None:
         """Wait until the generation ends with at least one output; its own failure deletes the record.
 
-        A failed wait keeps the record, so a sign-out or an update during the wait can still be collected.
+        A failed wait keeps the record, so the person can still collect the generation after a sign-out or an update
+        during the wait.
         """
         record = self.record
         try:
@@ -110,14 +112,14 @@ class CollectOperation:
             raise DreaminaError(error.code, GENERATION_UNCOLLECTED.format(reason=str(error))) from None
         if reply is None:
             raise DreaminaError(ErrorCode.TIMEOUT, WAIT_LIMIT.format(seconds=settings.request_timeout_seconds))
-        if not any(resource.state == OPERATION_STATES["SUCCEEDED"] for resource in reply.resources):
+        if not any(resource.state == OPERATION_STATES['SUCCEEDED'] for resource in reply.resources):
             await asyncio.to_thread(self.generations.delete, record.submit_id)
             raise build_generation_failure(reply)
 
     async def _read_node(self, deadline: float) -> dict[str, Json]:
-        """Read the generation's canvas node as Dreamina returns it; a node no longer there deletes the record."""
+        """Read the generation's canvas node as Dreamina returns it; a missing node deletes the record."""
         record = self.record
-        arguments = ("node", "show", "--project-id", record.project_id, "--node-id", record.node_id)
+        arguments = ('node', 'show', '--project-id', record.project_id, '--node-id', record.node_id)
         try:
             result = await send_command(arguments, max(deadline - time.monotonic(), 1.0))
             if not result.reply.ok:
@@ -138,14 +140,11 @@ class CollectOperation:
             return None
         return saved.web_url
 
-    def validate(self, settings: Settings) -> None:
-        """Accept every record; there is nothing to refuse before reading its status."""
-
     async def send(self, configuration: Configuration, progress: Progress | None) -> GenerationResult:
         """Wait for the generation, read its node, and download its outputs, then delete the record.
 
-        The record goes only after every download, so a failed download can be collected again. A cancel leaves the
-        record for Generation: Download.
+        The record goes only after every download, so the person can collect a failed download again. A cancel leaves
+        the record for Generation: Download.
         """
         record = self.record
         settings = configuration.settings
@@ -162,7 +161,7 @@ class CollectOperation:
         except asyncio.CancelledError as error:
             raise DreaminaError(ErrorCode.INTERRUPTED, GENERATION_KEEPS_RUNNING) from error
         if progress is not None:
-            await progress(PROGRESS_STEPS["DOWNLOADED"])
+            await progress(PROGRESS_STEPS['DOWNLOADED'])
         await asyncio.to_thread(self.generations.delete, record.submit_id)
         return GenerationResult(record, node, view.title, files, await self._read_canvas_url(), self.request_id)
 
@@ -177,9 +176,9 @@ class GenerationOperation:
         canvas: CanvasStore,
         encode: Callable[[LocalMedia, Path], Path],
     ) -> None:
-        """Keep the node's plan, the stores, and ComfyUI's encoder, which the node passes in.
+        """Keep the plan of the node, the stores, and ComfyUI's encoder, which the node passes in.
 
-        The encoder is ComfyUI's, since this package may not import ComfyUI.
+        The encoder is ComfyUI's, because this package may not import ComfyUI.
         """
         self.plan = plan
         self.generations = generations
@@ -187,17 +186,17 @@ class GenerationOperation:
         self.encode = encode
 
     async def _plan_run(self) -> tuple[ListedModel, ModelMode, str, tuple[str, ...]]:
-        """Refuse locally everything the live model list says Dreamina would refuse, and build the flags."""
+        """Refuse locally everything that the live model list says Dreamina refuses, and build the flags."""
         plan = self.plan
         await validate_cli()
         values = parse_arguments(plan.arguments)
         listed = await find_model(plan.model, plan.kind)
         validate_argument_names(listed, values)
         items = (*plan.references, *plan.local)
-        mode = choose_mode(listed, plan.kind, tuple(item.media for item in items), values)
+        mode, label = choose_mode(listed, plan.kind, tuple(item.media for item in items), values)
         prompt = choose_prompt(plan.prompt, values)
-        flags = build_flags(listed.name, mode, prompt, values)
-        validate_references(mode, items, values)
+        flags = build_flags(listed.name, mode, label, prompt, values)
+        validate_references(mode, label, items, values)
         return listed, mode, prompt, flags
 
     async def _send_media(
@@ -208,17 +207,17 @@ class GenerationOperation:
         canvas = await find_canvas(self.canvas) or await create_canvas(self.canvas)
         uploaded = await send_media(canvas.project_id, plan.local, self.encode, configuration.settings, deadline)
         ordered, placed = plan_references(plan.references, plan.local, uploaded)
-        text = ("--prompt", format_prompt(prompt, placed)) if prompt else ("--title", plan.title)
-        return canvas.project_id, (*text, *(item for reference in ordered for item in ("--ref", reference.typed_value)))
+        text = ('--prompt', format_prompt(prompt, placed)) if prompt else ('--title', plan.title)
+        return canvas.project_id, (*text, *(item for reference in ordered for item in ('--ref', reference)))
 
     async def _build_call(self, configuration: Configuration, deadline: float, progress: Progress | None) -> RunCall:
         """Check, upload, and build the run call; a cancel here stops the run with nothing sent to the model."""
         listed, mode, prompt, flags = await self._plan_run()
         if progress is not None:
-            await progress(PROGRESS_STEPS["CHECKED"])
+            await progress(PROGRESS_STEPS['CHECKED'])
         project_id, sources = await self._send_media(configuration, deadline, prompt)
         if progress is not None:
-            await progress(PROGRESS_STEPS["UPLOADED"])
+            await progress(PROGRESS_STEPS['UPLOADED'])
         return RunCall(
             kind=self.plan.kind,
             project_id=project_id,
@@ -233,8 +232,13 @@ class GenerationOperation:
     async def _send_run(self, call: RunCall) -> tuple[GenerationRecord, str | None]:
         """Send the run call once, with its own time limit, and record an accepted run before anything waits for it."""
         submitted_at = datetime.now(UTC).isoformat()
+        # The node sends the run call once and never again.
+        arguments = (
+            'node', 'create', call.kind, '--project-id', call.project_id, '--model', call.model, *call.flags,
+            *call.sources, '--run', '--submit-id', call.submit_id, '--credit-ceiling', str(call.credit_ceiling),
+        )  # fmt: skip
         try:
-            result = await send_command(call.arguments, CALL_SECONDS["RUN"])
+            result = await send_command(arguments, CALL_SECONDS['RUN'])
         except DreaminaError as error:
             if error.code is ErrorCode.TRANSPORT:
                 await validate_lost_run(call.submit_id, call.project_id)
@@ -252,9 +256,6 @@ class GenerationOperation:
         await asyncio.to_thread(self.generations.save, record)
         return record, result.reply.meta.request_id if result.reply.meta is not None else None
 
-    def validate(self, settings: Settings) -> None:
-        """Accept every plan: each check needs the model, which send reads after the CLI check."""
-
     async def send(self, configuration: Configuration, progress: Progress | None) -> GenerationResult:
         """Check, upload, send the run once, record it, then wait for it and collect what it made.
 
@@ -269,9 +270,9 @@ class GenerationOperation:
         if is_cancelled:
             raise DreaminaError(ErrorCode.INTERRUPTED, GENERATION_KEEPS_RUNNING)
         if progress is not None:
-            await progress(PROGRESS_STEPS["ACCEPTED"])
+            await progress(PROGRESS_STEPS['ACCEPTED'])
         collect = CollectOperation(record, self.generations, self.canvas, deadline, request_id)
         return await collect.send(configuration, progress)
 
 
-__all__ = ["CollectOperation", "GenerationOperation"]
+__all__ = ['CollectOperation', 'GenerationOperation']

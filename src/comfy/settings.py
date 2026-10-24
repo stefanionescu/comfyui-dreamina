@@ -2,22 +2,22 @@
 
 import re
 import asyncio
+
 from aiohttp import web
-from ..types import Json
-from ..config.security import ROUTES
+
+from ..state import Json
+from ..state.errors import ErrorCode, DreaminaError
 from ..settings.body import read_body
-from ..types.parsing import validate_fields
+from ..state.parsing import validate_fields
+from ..settings.store import ConfigurationStore
 from ..config.dreamina import MINIMUM_VERSION
 from ..config.patterns import REVISION_PATTERN
+from ..config.security import ROUTES
 from ..settings.access import build_local_route
-from ..settings.store import ConfigurationStore
-from ..dreamina.contract import is_current_version
-from ..types.errors import ErrorCode, DreaminaError
-from ..config.messages.requests import BODY_NOT_ALLOWED
-from ..config.messages.requests import SETTINGS_REVISION_REQUIRED
-from ..dreamina.installer import save_cli, read_cli_version, download_installer
 from ..dreamina.account import SignInState, is_signed_in, read_account, delete_sign_in
-
+from ..dreamina.contract import is_current_version
+from ..dreamina.installer import save_cli, read_cli_version, download_installer
+from ..config.messages.requests import BODY_NOT_ALLOWED, SETTINGS_REVISION_REQUIRED
 
 REVISION = re.compile(REVISION_PATTERN)
 
@@ -41,7 +41,7 @@ class SettingsRoutes:
         A failed status read shows signed out. A failed account read shows signed out only when the sign-in is the
         cause; otherwise the account stays signed in with its plan unknown.
         """
-        signed_out: dict[str, Json] = {"signed_in": False, "is_vip": None, "vip_level": None}
+        signed_out: dict[str, Json] = {'signed_in': False, 'is_vip': None, 'vip_level': None}
         try:
             is_signed = is_found and await is_signed_in()
         except DreaminaError:
@@ -52,34 +52,34 @@ class SettingsRoutes:
             account = await read_account()
         except DreaminaError as error:
             is_signed = error.code is not ErrorCode.AUTHENTICATION
-            return {"signed_in": is_signed, "is_vip": None, "vip_level": None}
-        return {"signed_in": True, "is_vip": account.is_vip, "vip_level": account.vip_level}
+            return {'signed_in': is_signed, 'is_vip': None, 'vip_level': None}
+        return {'signed_in': True, 'is_vip': account.is_vip, 'vip_level': account.vip_level}
 
     async def read_status(self, _request: web.Request) -> dict[str, Json]:
         """Describe the settings, the CLI, the account, and any pending sign-in; every route returns it."""
         status = await asyncio.to_thread(self.configuration.read_status)
         version = await read_cli_version()
         cli: dict[str, Json] = {
-            "found": version is not None,
-            "version": version,
-            "minimum_version": MINIMUM_VERSION,
-            "is_current": is_current_version(version),
+            'found': version is not None,
+            'version': version,
+            'minimum_version': MINIMUM_VERSION,
+            'is_current': is_current_version(version),
         }
         state: dict[str, Json] = {
-            "cli": cli,
-            "account": await self._read_account_status(is_found=version is not None),
-            "sign_in": self.sign_in.build_status(),
-            "mutation_allowed": not self.is_multi_user,
+            'cli': cli,
+            'account': await self._read_account_status(is_found=version is not None),
+            'sign_in': self.sign_in.build_status(),
+            'mutation_allowed': not self.is_multi_user,
         }
         return status | state
 
     async def save_settings(self, request: web.Request) -> dict[str, Json]:
         """Validate a request limits patch, save it against the caller's current revision, and return the status."""
         document = await read_body(request)
-        revision = document.get("revision")
-        if document.keys() != {"revision", "settings"} or not isinstance(revision, str) or not REVISION.match(revision):
+        revision = document.get('revision')
+        if document.keys() != {'revision', 'settings'} or not isinstance(revision, str) or not REVISION.match(revision):
             raise web.HTTPBadRequest(text=SETTINGS_REVISION_REQUIRED)
-        await asyncio.to_thread(self.configuration.save_settings, validate_fields(document["settings"]), revision)
+        await asyncio.to_thread(self.configuration.save_settings, validate_fields(document['settings']), revision)
         return await self.read_status(request)
 
     async def create_session(self, request: web.Request) -> dict[str, Json]:
@@ -107,12 +107,12 @@ class SettingsRoutes:
 
     def register(self, routes: web.RouteTableDef) -> None:
         """Register the guarded status, request limits, sign-in, sign-out, and install routes."""
-        policy = {"is_multi_user": self.is_multi_user}
-        routes.get(ROUTES["STATUS"])(build_local_route(self.read_status, is_mutation=False, **policy))
-        routes.patch(ROUTES["SETTINGS"])(build_local_route(self.save_settings, is_mutation=True, **policy))
-        routes.post(ROUTES["SESSION"])(build_local_route(self.create_session, is_mutation=True, **policy))
-        routes.delete(ROUTES["SESSION"])(build_local_route(self.delete_session, is_mutation=True, **policy))
-        routes.post(ROUTES["CLI"])(build_local_route(self.save_release, is_mutation=True, **policy))
+        policy = {'is_multi_user': self.is_multi_user}
+        routes.get(ROUTES['STATUS'])(build_local_route(self.read_status, is_mutation=False, **policy))
+        routes.patch(ROUTES['SETTINGS'])(build_local_route(self.save_settings, is_mutation=True, **policy))
+        routes.post(ROUTES['SESSION'])(build_local_route(self.create_session, is_mutation=True, **policy))
+        routes.delete(ROUTES['SESSION'])(build_local_route(self.delete_session, is_mutation=True, **policy))
+        routes.post(ROUTES['CLI'])(build_local_route(self.save_release, is_mutation=True, **policy))
 
 
-__all__ = ["SettingsRoutes"]
+__all__ = ['SettingsRoutes']

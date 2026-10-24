@@ -3,12 +3,13 @@
 from __future__ import annotations
 
 import time
-from .failures import build_failure
-from ..types.replies import VoicePage
-from ..config.dreamina import EXIT_CODES
+
 from .cli import parse_reply, send_command
-from ..config.messages.run import CLI_FAILED
+from .failures import build_failure
 from ..config.models import VOICE_PAGE_COUNT
+from ..state.replies import VoicePage
+from ..config.dreamina import EXIT_CODES
+from ..config.messages.run import CLI_FAILED
 
 
 async def read_voices(model: str, deadline: float) -> tuple[str, ...]:
@@ -19,11 +20,11 @@ async def read_voices(model: str, deadline: float) -> tuple[str, ...]:
     names: list[str] = []
     offset = 0
     while True:
-        arguments = ("voice", "list", "--model", model, "--offset", str(offset), "--count", str(VOICE_PAGE_COUNT))
+        arguments = ('voice', 'list', '--model', model, '--offset', str(offset), '--count', str(VOICE_PAGE_COUNT))
         result = await send_command(arguments, max(deadline - time.monotonic(), 1.0))
         failure = result.reply.error
-        if result.exit_code == EXIT_CODES["INVALID"] or (
-            failure is not None and failure.failure_class == "invalid_input"
+        if result.exit_code == EXIT_CODES['INVALID'] or (
+            failure is not None and failure.failure_class == 'invalid_input'
         ):
             return ()
         if not result.reply.ok:
@@ -37,4 +38,4 @@ async def read_voices(model: str, deadline: float) -> tuple[str, ...]:
         offset = voice_page.next_offset
 
 
-__all__ = ["read_voices"]
+__all__ = ['read_voices']

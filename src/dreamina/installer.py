@@ -1,4 +1,4 @@
-"""Install the Dreamina CLI with ByteDance's official installer, and read which release is installed.
+"""Install the Dreamina CLI with ByteDance's official installer, and read the installed release.
 
 What runs is ByteDance's own script, fetched from its one host; the extension bundles no installer and no binary, and
 never runs a command a reply names.
@@ -8,21 +8,23 @@ from __future__ import annotations
 
 import os
 import sys
+from http import HTTPStatus
 import shutil
-import aiohttp
 import asyncio
+from pathlib import Path
 import tempfile
 import contextlib
-from pathlib import Path
-from http import HTTPStatus
 from urllib.parse import urlsplit
-from .failures import sanitize_reason
-from ..types.replies import VersionReply
+
+import aiohttp
+
 from .cli import parse_reply, send_command
-from ..config.storage import TEMPORARY_PREFIX
+from .failures import sanitize_reason
 from ..config.units import SECONDS_PER_MINUTE
+from ..state.errors import ErrorCode, DreaminaError
+from ..state.replies import VersionReply
+from ..config.storage import TEMPORARY_PREFIX
 from ..config.dreamina import ACCOUNT_TIMEOUTS
-from ..types.errors import ErrorCode, DreaminaError
 from ..config.installer import (
     INSTALLER_URLS,
     INSTALLER_BYTES,
@@ -42,26 +44,27 @@ from ..config.messages.cli import (
 )
 
 # The installer key for the server's system.
-_SYSTEM = "WINDOWS" if sys.platform == "win32" else "POSIX"
+_SYSTEM = 'WINDOWS' if sys.platform == 'win32' else 'POSIX'
 
 
 async def _read_script(url: str) -> bytes:
     """Download the installer script, refusing another status, a body larger than a script, and any other host.
 
-    The redirects to ByteDance's CDN are followed, and the script is kept only when it came over HTTPS from a CapCut
-    domain. The proxy settings of the environment are not read, and TLS is verified, as aiohttp does by default.
+    The download follows the redirects to ByteDance's content delivery network, and keeps the script only when it came
+    over HTTPS from a CapCut domain. The session reads no proxy settings from the environment and verifies TLS, as
+    aiohttp does by default.
     """
     async with (
         aiohttp.ClientSession(trust_env=False) as session,
         session.get(url, max_redirects=INSTALLER_REDIRECTS) as response,
     ):
-        host = response.url.host or ""
-        if response.status != HTTPStatus.OK or response.url.scheme != "https" or not host.endswith(INSTALLER_DOMAINS):
+        host = response.url.host or ''
+        if response.status != HTTPStatus.OK or response.url.scheme != 'https' or not host.endswith(INSTALLER_DOMAINS):
             raise DreaminaError(ErrorCode.TRANSPORT, INSTALL_DOWNLOAD_FAILED)
         script = bytearray()
         async for chunk in response.content.iter_any():
             script += chunk
-            if len(script) > INSTALLER_BYTES["SCRIPT"]:
+            if len(script) > INSTALLER_BYTES['SCRIPT']:
                 raise DreaminaError(ErrorCode.TRANSPORT, INSTALL_DOWNLOAD_FAILED)
     return bytes(script)
 
@@ -71,7 +74,7 @@ def _save_script(script: bytes, suffix: str) -> Path:
     descriptor, name = tempfile.mkstemp(prefix=TEMPORARY_PREFIX, suffix=suffix)
     path = Path(name)
     try:
-        with os.fdopen(descriptor, "wb") as file:
+        with os.fdopen(descriptor, 'wb') as file:
             file.write(script)
     except BaseException:
         path.unlink(missing_ok=True)
@@ -80,18 +83,18 @@ def _save_script(script: bytes, suffix: str) -> Path:
 
 
 async def _read_tail(stream: asyncio.StreamReader | None) -> bytes:
-    """Read one output stream to its end, keeping only its last INSTALLER_BYTES["OUTPUT"] bytes."""
-    tail = b""
-    while stream is not None and (chunk := await stream.read(INSTALLER_BYTES["OUTPUT"])):
-        tail = (tail + chunk)[-INSTALLER_BYTES["OUTPUT"] :]
+    """Read one output stream to its end, keeping only its last `INSTALLER_BYTES["OUTPUT"]` bytes."""
+    tail = b''
+    while stream is not None and (chunk := await stream.read(INSTALLER_BYTES['OUTPUT'])):
+        tail = (tail + chunk)[-INSTALLER_BYTES['OUTPUT'] :]
     return tail
 
 
 def _describe_output(stdout: bytes, stderr: bytes) -> str:
-    """Quote the installer's last lines, from stderr or from stdout when stderr is empty, cleaned of paths and links."""
-    text = (stderr if stderr.strip() else stdout).decode(errors="replace")
+    """Quote the installer's last lines without paths and links, from stderr or from stdout when stderr is empty."""
+    text = (stderr if stderr.strip() else stdout).decode(errors='replace')
     lines = [line.strip() for line in text.splitlines() if line.strip()]
-    return sanitize_reason(" ".join(lines[-INSTALLER_REASON_LINES:]))
+    return sanitize_reason(' '.join(lines[-INSTALLER_REASON_LINES:]))
 
 
 async def _wait_for_installer(installer_path: Path) -> None:
@@ -133,9 +136,9 @@ async def _wait_for_installer(installer_path: Path) -> None:
 
 
 async def read_cli_version() -> str | None:
-    """Return the installed release; None when no CLI is found or it does not answer."""
+    """Return the installed release; None when the CLI is missing or does not answer."""
     try:
-        result = await send_command(("version",), ACCOUNT_TIMEOUTS["LOCAL"])
+        result = await send_command(('version',), ACCOUNT_TIMEOUTS['LOCAL'])
         reply = parse_reply(result.reply.payload, VersionReply) if result.reply.ok else None
     except DreaminaError:
         return None
@@ -159,8 +162,8 @@ async def download_installer() -> Path:
 async def save_cli(installer_path: Path) -> None:
     """Run the downloaded installer, which writes the CLI to disk, and refuse a CLI that does not answer afterwards.
 
-    The installer file is deleted whatever the outcome. The next run checks the new binary, whose modification time
-    changed.
+    This function deletes the installer file whatever the outcome. The next run checks the new binary, whose
+    modification time changed.
     """
     try:
         await _wait_for_installer(installer_path)
@@ -170,4 +173,4 @@ async def save_cli(installer_path: Path) -> None:
         raise DreaminaError(ErrorCode.CONFIGURATION, INSTALL_NO_ANSWER)
 
 
-__all__ = ["download_installer", "read_cli_version", "save_cli"]
+__all__ = ['download_installer', 'read_cli_version', 'save_cli']

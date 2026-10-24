@@ -1,9 +1,9 @@
 # Model: Info
 
-Shows what a Dreamina model takes, as JSON: its modes, the settings of each
-mode with their values and ranges, the references and files it takes, and a
-speech model's voices. Use it to write a paid node's `arguments`. It reads
-your live model list, so it needs sign-in. It bills nothing.
+Shows what a Dreamina model takes, as JSON. It lists the modes, the settings of
+each mode with their values and ranges, the references and files the model takes,
+and the voices of a speech model. Use it to write the `arguments` of a paid node.
+It reads your live model list, so it needs sign-in. It bills nothing.
 
 ## Inputs
 
@@ -55,8 +55,8 @@ For example, one flag of `seedance_2.0_fast`:
 2. Connect `info` to **Preview as Text** to read it.
 
 Write each setting in `arguments` under its `flag` name, such as
-`{"duration": 4}`. The flags are exactly what the paid node accepts, so a
-voice listed for a model with no `voice-name` flag cannot be sent. A value
+`{"duration": 4}`. The flags are exactly what the paid node accepts, so the
+paid node cannot send a voice listed for a model with no `voice-name` flag. A value
 Dreamina does not give is null. Example: **audio-01-voice-a-script**.
 
 [Dreamina Canvas CLI](https://dreamina.capcut.com/canvas-cli)

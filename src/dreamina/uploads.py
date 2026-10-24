@@ -1,6 +1,6 @@
 """Upload a run's local media to the pack's canvas through the CLI, each distinct file once.
 
-Nothing is kept between runs. The encoded files live in a private temporary folder until their uploads finish.
+This module keeps nothing between runs. The encoded files live in a private temporary folder until their uploads finish.
 """
 
 from __future__ import annotations
@@ -8,25 +8,27 @@ from __future__ import annotations
 import math
 import time
 import uuid
+from typing import TYPE_CHECKING
 import asyncio
 import hashlib
-import tempfile
 from pathlib import Path
-from typing import TYPE_CHECKING
-from .failures import build_failure
-from ..types.replies import UploadReply
-from ..types.references import Reference
+import tempfile
+
 from .cli import parse_reply, send_command
-from ..config.storage import TEMPORARY_PREFIX
-from ..config.units import BYTES_PER_MEGABYTE
-from ..types.errors import ErrorCode, DreaminaError
+from .failures import build_failure
 from ..config.media import FREE_ATTEMPTS, UPLOAD_FORMATS, UPLOAD_STATE_UNKNOWN
+from ..config.units import BYTES_PER_MEGABYTE
+from ..state.errors import ErrorCode, DreaminaError
+from ..state.replies import UploadReply
+from ..config.storage import TEMPORARY_PREFIX
+from ..state.references import Reference
 from ..config.messages.media import UPLOAD_LIMIT, UPLOAD_REFUSED, UPLOAD_UNREADABLE
 
 if TYPE_CHECKING:
-    from ..types.settings import Settings
-    from ..types.references import LocalMedia
     from collections.abc import Callable, Sequence
+
+    from ..state.settings import Settings
+    from ..state.references import LocalMedia
 
 
 def _encode_files(
@@ -36,14 +38,14 @@ def _encode_files(
     encoded: list[tuple[Path, int, str]] = []
     for item in items:
         path = encode(item, folder)
-        with path.open("rb") as file:
-            digest = hashlib.file_digest(file, "sha256").hexdigest()
+        with path.open('rb') as file:
+            digest = hashlib.file_digest(file, 'sha256').hexdigest()
         encoded.append((path, path.stat().st_size, digest))
     return encoded
 
 
 def _validate_upload_size(items: Sequence[LocalMedia], sizes: Sequence[int], settings: Settings) -> None:
-    """Refuse the first file larger than the maximum upload size, before anything is uploaded."""
+    """Refuse the first file larger than the maximum upload size, before any upload."""
     maximum = settings.max_upload_megabytes
     for item, size in zip(items, sizes, strict=True):
         if size > maximum * BYTES_PER_MEGABYTE:
@@ -56,8 +58,8 @@ def _validate_upload_size(items: Sequence[LocalMedia], sizes: Sequence[int], set
 async def _send_upload(project_id: str, path: Path, media_type: str, resource_id: str, deadline: float) -> None:
     """Upload one file, sending it a second time with the same resource ID only when the first outcome is unknown.
 
-    A reply the CLI runner could not read, a retryable failure, and the CLI's own unknown upload state are unknown
-    outcomes; every other failure has a definite answer and is raised at once.
+    The unknown outcomes are a reply the CLI runner cannot read, a retryable failure, and the CLI's own unknown upload
+    state. Every other failure has a definite answer, and this function raises it at once.
     """
     arguments = (
         "resource", "upload", "--project-id", project_id, "--file", str(path), "--type", media_type,
@@ -92,8 +94,8 @@ async def send_media(
 ) -> tuple[Reference, ...]:
     """Upload every item to the canvas and return one resource reference per item, in item order.
 
-    Every item is encoded and checked against the maximum upload size before the first upload. Items with the same
-    bytes are uploaded once and share one reference.
+    This function encodes every item and checks it against the maximum upload size before the first upload. It
+    uploads items with the same bytes once, and they share one reference.
     """
     if not items:
         return ()
@@ -104,12 +106,12 @@ async def send_media(
         for item, (path, _, digest) in zip(items, encoded, strict=True):
             if digest not in uploaded:
                 resource_id = str(uuid.uuid4())
-                await _send_upload(project_id, path, UPLOAD_FORMATS[item.media]["TYPE"], resource_id, deadline)
+                await _send_upload(project_id, path, UPLOAD_FORMATS[item.media]['TYPE'], resource_id, deadline)
                 uploaded[digest] = resource_id
     return tuple(
-        Reference(origin="resource", value=uploaded[digest], media=item.media, title=None)
+        Reference(origin='resource', value=uploaded[digest], media=item.media, title=None)
         for item, (_, _, digest) in zip(items, encoded, strict=True)
     )
 
 
-__all__ = ["send_media"]
+__all__ = ['send_media']

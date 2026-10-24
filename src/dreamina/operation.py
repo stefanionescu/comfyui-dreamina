@@ -1,27 +1,14 @@
-"""Define the operation every node hands to the run wrapper, and how a paid call is awaited through a cancel."""
+"""Define the progress report every operation gives, and how to await a paid call through a cancel."""
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 import asyncio
-from typing import Protocol, TYPE_CHECKING
 
 if TYPE_CHECKING:
     from collections.abc import Callable, Awaitable
-    from ..types.settings import Settings, Configuration
 
 type Progress = Callable[[int], Awaitable[None]]
-
-
-class Operation[Result](Protocol):
-    """One Dreamina operation, validated before anything is sent."""
-
-    def validate(self, settings: Settings) -> None:
-        """Refuse inputs the settings do not allow, before anything is sent."""
-        raise NotImplementedError(settings)
-
-    async def send(self, configuration: Configuration, progress: Progress | None) -> Result:
-        """Send the operation, report each step reached, and return its result."""
-        raise NotImplementedError(configuration, progress)
 
 
 async def wait_until_settled[T](task: asyncio.Task[T]) -> bool:
@@ -38,4 +25,4 @@ async def wait_until_settled[T](task: asyncio.Task[T]) -> bool:
     return is_cancelled
 
 
-__all__ = ["Operation", "wait_until_settled"]
+__all__ = ['wait_until_settled']

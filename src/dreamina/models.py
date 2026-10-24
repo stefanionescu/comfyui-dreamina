@@ -1,21 +1,24 @@
-"""Read each kind's models from the person's live Dreamina model list, sharing reads and keeping each list.
+"""Read and keep each kind's models from the person's live Dreamina model list, sharing reads.
 
-Each list is kept for the life of the process. The read is free, and a name it misses reads the list again once.
+This module keeps each list for the life of the process. The read is free, and a name it misses reads the list again
+once.
 """
 
 from __future__ import annotations
 
+from typing import TYPE_CHECKING
 import asyncio
 import difflib
 import weakref
-from .cli import send_command
-from typing import TYPE_CHECKING
-from .failures import build_failure
+
 from pydantic import ValidationError
-from ..types.models import ModelListReply
-from ..config.messages.run import CLI_FAILED
-from ..types.errors import ErrorCode, DreaminaError
+
+from .cli import send_command
+from .failures import build_failure
+from ..state.errors import ErrorCode, DreaminaError
+from ..state.models import ModelListReply
 from ..config.models import KINDS, KIND_NODES, LIST_COMMAND, DEFAULT_MODELS, SUGGESTION_COUNT, LIST_TIMEOUT_SECONDS
+from ..config.messages.run import CLI_FAILED
 from ..config.messages.models import (
     ANY_KIND,
     KIND_NAMES,
@@ -28,8 +31,8 @@ from ..config.messages.models import (
 )
 
 if TYPE_CHECKING:
-    from ..types import Kind
-    from ..types.models import ListedModel
+    from ..state import Kind
+    from ..state.models import ListedModel
 
 # Each kind's models, read once per ComfyUI process; a name a list misses reads it again.
 _LISTS: dict[str, tuple[ListedModel, ...]] = {}
@@ -68,8 +71,9 @@ async def _send_model_list(kind: str) -> tuple[ListedModel, ...]:
 async def _read_model_list(kind: str) -> tuple[ListedModel, ...]:
     """Return one kind's kept models, or read them, sharing the read with every caller that asks at the same time.
 
-    A task belongs to its event loop, and ComfyUI runs each prompt on a new one and validates queued prompts on the
-    server's, so the reads in flight are kept per loop. A caller's cancel leaves the read running for the others.
+    A task belongs to its event loop. ComfyUI runs each prompt on a new loop and validates queued prompts on the
+    server's loop, so this module keeps the reads in flight per loop. A caller's cancel leaves the read running for the
+    others.
     """
     if kind in _LISTS:
         return _LISTS[kind]
@@ -89,7 +93,7 @@ def _find_match(models: tuple[ListedModel, ...], name: str) -> ListedModel | Non
         return exact
     aliased = [model for model in models if any(alias.casefold() == typed for alias in model.aliases)]
     if len(aliased) > 1:
-        names = ", ".join(model.name for model in aliased)
+        names = ', '.join(model.name for model in aliased)
         raise DreaminaError(ErrorCode.INVALID_INPUT, MODEL_AMBIGUOUS.format(model=name, names=names))
     return aliased[0] if aliased else None
 
@@ -119,7 +123,7 @@ def _build_unknown(name: str, models: tuple[ListedModel, ...], made: str) -> Dre
         ),
         reverse=True,
     )
-    names = ", ".join(model.name for model in ranked[:SUGGESTION_COUNT])
+    names = ', '.join(model.name for model in ranked[:SUGGESTION_COUNT])
     return DreaminaError(ErrorCode.UNAVAILABLE, MODEL_UNKNOWN.format(model=name, names=names))
 
 
@@ -135,14 +139,14 @@ async def _find_any(name: str) -> ListedModel:
 
 
 async def find_model(name: str, kind: Kind | None) -> ListedModel:
-    """Find a typed model name in the person's live list of one kind, or of every kind when no kind is given.
+    """Find a typed model name in the person's live list of one kind, or of every kind when the caller gives no kind.
 
-    A paid node passes its kind, and a model of another kind is refused with the node that runs it. Model: Info
-    passes no kind.
+    A paid node passes its kind, and this function refuses a model of another kind, naming the node that runs it.
+    Model: Info passes no kind.
     """
     name = name.strip()
     if not name:
-        raise DreaminaError(ErrorCode.INVALID_INPUT, MODEL_EMPTY.format(example=DEFAULT_MODELS[kind or "image"]))
+        raise DreaminaError(ErrorCode.INVALID_INPUT, MODEL_EMPTY.format(example=DEFAULT_MODELS[kind or 'image']))
     if kind is None:
         return await _find_any(name)
     match, models = await _find_in_kind(name, kind)
@@ -157,4 +161,4 @@ async def find_model(name: str, kind: Kind | None) -> ListedModel:
     raise _build_unknown(name, models, KIND_NAMES[kind])
 
 
-__all__ = ["find_model"]
+__all__ = ['find_model']

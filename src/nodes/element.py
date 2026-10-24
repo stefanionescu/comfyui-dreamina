@@ -3,22 +3,24 @@
 from __future__ import annotations
 
 import time
-import asyncio
-from comfy_api.latest import io
-from dataclasses import dataclass
-from ..comfy.runtime import get_runtime
-from ..dreamina.uploads import send_media
-from ..comfy.execution import wait_for_run
-from ..dreamina.contract import validate_cli
-from ..config.dreamina import TITLE_MAX_UNITS
-from ..types.references import ElementRequest
-from ..config.messages.run import FREE_TIMEOUT
-from ..dreamina.elements import create_element
 from typing import TYPE_CHECKING, cast, override
-from ..types.errors import ErrorCode, DreaminaError
+import asyncio
+from dataclasses import dataclass
+
+from comfy_api.latest import io
+
+from ..comfy.media import list_local_media, encode_local_file
+from ..state.errors import ErrorCode, DreaminaError
+from ..comfy.runtime import get_runtime
+from ..comfy.execution import wait_for_run
+from ..config.dreamina import TITLE_MAX_UNITS
 from ..dreamina.canvas import find_canvas, create_canvas
-from ..comfy.media import encode_local_file, list_local_media
 from ..config.namespace import MENUS, NODE_PREFIX, SOCKET_TYPES
+from ..dreamina.uploads import send_media
+from ..state.references import ElementRequest
+from ..dreamina.contract import validate_cli
+from ..dreamina.elements import create_element
+from ..config.messages.run import FREE_TIMEOUT
 from ..config.messages.inputs import (
     SINGLE_VALUE,
     ELEMENT_MAIN_COUNT,
@@ -31,14 +33,16 @@ from ..config.messages.inputs import (
 )
 
 if TYPE_CHECKING:
+    from collections.abc import Sequence
+
     import torch
     from comfy_api.latest import Input
-    from collections.abc import Sequence
-    from ..types.references import Reference, LocalMedia
 
-_REFERENCES = io.Custom(SOCKET_TYPES["REFERENCES"])
-# The node's name in menus, as its timeout message says it.
-_DISPLAY_NAME = "Element: Add"
+    from ..state.references import Reference, LocalMedia
+
+_REFERENCES = io.Custom(SOCKET_TYPES['REFERENCES'])
+# The name of the node in menus, as its timeout message says it.
+_DISPLAY_NAME = 'Element: Add'
 
 
 @dataclass(frozen=True, slots=True)
@@ -46,7 +50,7 @@ class _Sources:
     """The connected sources, checked: the media to upload and the references kept as they are.
 
     Attributes:
-        local: The ComfyUI images, main's first, then the voice clips, one item per frame and clip.
+        local: The ComfyUI images, main's first, then the voice clips; each frame and each clip is one item.
         main_frames: How many of the images are main's.
         main: main's references.
         auxiliary: auxiliary's references.
@@ -62,18 +66,18 @@ class _Sources:
 
 
 def _read_text(name: str, values: Sequence[str]) -> str:
-    """Take the one stripped value a text input holds; several different values are refused."""
+    """Take the one stripped value a text input holds, and refuse several different values."""
     texts = {value.strip() for value in values}
     if len(texts) > 1:
         raise DreaminaError(ErrorCode.INVALID_INPUT, SINGLE_VALUE.format(name=name))
-    return next(iter(texts), "")
+    return next(iter(texts), '')
 
 
 def _parse_sources(values: Sequence[object] | None) -> tuple[list[object], tuple[Reference, ...]]:
     """Split connected values into ComfyUI media and references; a references value is a tuple."""
     media = [value for value in values or () if not isinstance(value, tuple)]
     references = tuple(
-        item for value in values or () if isinstance(value, tuple) for item in cast("tuple[Reference, ...]", value)
+        item for value in values or () if isinstance(value, tuple) for item in cast('tuple[Reference, ...]', value)
     )
     return media, references
 
@@ -81,25 +85,25 @@ def _parse_sources(values: Sequence[object] | None) -> tuple[list[object], tuple
 def _read_sources(
     main: Sequence[object], auxiliary: Sequence[object] | None, voice: Sequence[object] | None
 ) -> _Sources:
-    """Check what is connected before anything is uploaded: one main image, images in auxiliary, one voice at most."""
+    """Check the connected sources before any upload: one main image, images in auxiliary, one voice at most."""
     main_media, main_references = _parse_sources(main)
     auxiliary_media, auxiliary_references = _parse_sources(auxiliary)
     voice_media, voice_references = _parse_sources(voice)
-    main_images: list[torch.Tensor] = cast("list[torch.Tensor]", main_media)
-    images: list[torch.Tensor] = [*main_images, *cast("list[torch.Tensor]", auxiliary_media)]
-    clips: list[Input.Audio] = cast("list[Input.Audio]", voice_media)
+    main_images: list[torch.Tensor] = cast('list[torch.Tensor]', main_media)
+    images: list[torch.Tensor] = [*main_images, *cast('list[torch.Tensor]', auxiliary_media)]
+    clips: list[Input.Audio] = cast('list[Input.Audio]', voice_media)
     local = list_local_media(images, (), clips)
     main_frames = sum(int(batch.shape[0]) for batch in main_images)
     if main_frames + len(main_references) != 1:
         raise DreaminaError(ErrorCode.INVALID_INPUT, ELEMENT_MAIN_COUNT)
-    if any(reference.media != "image" for reference in main_references):
+    if any(reference.media != 'image' for reference in main_references):
         raise DreaminaError(ErrorCode.INVALID_INPUT, ELEMENT_MAIN_MEDIA)
-    if any(reference.media != "image" for reference in auxiliary_references):
+    if any(reference.media != 'image' for reference in auxiliary_references):
         raise DreaminaError(ErrorCode.INVALID_INPUT, ELEMENT_AUXILIARY_MEDIA)
-    voices = sum(1 for item in local if item.media == "audio")
+    voices = sum(1 for item in local if item.media == 'audio')
     if voices + len(voice_references) > 1:
         raise DreaminaError(ErrorCode.INVALID_INPUT, ELEMENT_VOICE_COUNT)
-    if any(reference.media != "audio" for reference in voice_references):
+    if any(reference.media != 'audio' for reference in voice_references):
         raise DreaminaError(ErrorCode.INVALID_INPUT, ELEMENT_VOICE_MEDIA)
     return _Sources(local, main_frames, main_references, auxiliary_references, voice_references)
 
@@ -109,14 +113,14 @@ async def _send_element(sources: _Sources, title: str, description: str, deadlin
     runtime = get_runtime()
     await validate_cli()
     canvas = await find_canvas(runtime.canvas) or await create_canvas(runtime.canvas)
-    settings = (await asyncio.to_thread(runtime.configuration.read_snapshot)).settings
+    settings = (await asyncio.to_thread(runtime.configuration.read_configuration)).settings
     uploaded = await send_media(canvas.project_id, sources.local, encode_local_file, settings, deadline)
-    images = [reference for item, reference in zip(sources.local, uploaded, strict=True) if item.media == "image"]
-    clips = [reference for item, reference in zip(sources.local, uploaded, strict=True) if item.media == "audio"]
+    images = [reference for item, reference in zip(sources.local, uploaded, strict=True) if item.media == 'image']
+    clips = [reference for item, reference in zip(sources.local, uploaded, strict=True) if item.media == 'audio']
     auxiliary = (*sources.auxiliary, *images[sources.main_frames :])
     request = ElementRequest(
         main=(*sources.main, *images[: sources.main_frames])[0],
-        auxiliary=tuple(sorted(auxiliary, key=lambda reference: reference.origin != "node")),
+        auxiliary=tuple(sorted(auxiliary, key=lambda reference: reference.origin != 'node')),
         voice=next(iter((*sources.voice, *clips)), None),
         title=title,
         description=description,
@@ -130,14 +134,14 @@ async def _create_element(
     voice: Sequence[object] | None,
     texts: tuple[Sequence[str], Sequence[str]],
 ) -> io.NodeOutput:
-    """Check every input before anything is uploaded, then make the Element within the request timeout."""
-    title, description = _read_text("title", texts[0]), _read_text("description", texts[1])
+    """Check every input before any upload, then make the Element within the request timeout."""
+    title, description = _read_text('title', texts[0]), _read_text('description', texts[1])
     if not title:
         raise DreaminaError(ErrorCode.INVALID_INPUT, ELEMENT_TITLE_EMPTY)
-    if len(title.encode("utf-16-le")) // 2 > TITLE_MAX_UNITS:
+    if len(title.encode('utf-16-le')) // 2 > TITLE_MAX_UNITS:
         raise DreaminaError(ErrorCode.INVALID_INPUT, ELEMENT_TITLE_LENGTH.format(maximum=TITLE_MAX_UNITS))
     sources = _read_sources(main, auxiliary, voice)
-    seconds = (await asyncio.to_thread(get_runtime().configuration.read_snapshot)).settings.request_timeout_seconds
+    seconds = (await asyncio.to_thread(get_runtime().configuration.read_configuration)).settings.request_timeout_seconds
     try:
         async with asyncio.timeout(seconds):
             element = await _send_element(sources, title, description, time.monotonic() + seconds)
@@ -154,51 +158,51 @@ class ElementAdd(io.ComfyNode):
     def define_schema(cls) -> io.Schema:
         """Describe the node: a main image, more angles, a voice, a title, and a note in; one Element out."""
         return io.Schema(
-            node_id=f"{NODE_PREFIX}{cls.__name__}",
+            node_id=f'{NODE_PREFIX}{cls.__name__}',
             display_name=_DISPLAY_NAME,
-            category=MENUS["SHARED"],
+            category=MENUS['SHARED'],
             description=(
-                "Make a Dreamina Element from a main image, more angles, and a voice, so later runs keep the subject "
-                "the same. It bills nothing."
+                'Make a Dreamina Element from a main image, more angles, and a voice, so later runs keep the subject '
+                'the same. It bills nothing.'
             ),
             inputs=[
                 io.MultiType.Input(
-                    "main",
+                    'main',
                     types=[io.Image, _REFERENCES],
                     tooltip=(
                         "The Element's main image: one ComfyUI image, or one image from another Dreamina node's "
-                        "references."
+                        'references.'
                     ),
                 ),
                 io.MultiType.Input(
-                    "auxiliary",
+                    'auxiliary',
                     types=[io.Image, _REFERENCES],
                     optional=True,
-                    tooltip="More images of the same subject, such as its side and back.",
+                    tooltip='More images of the same subject, such as its side and back.',
                 ),
                 io.MultiType.Input(
-                    "voice",
+                    'voice',
                     types=[io.Audio, _REFERENCES],
                     optional=True,
                     tooltip="The Element's voice: one ComfyUI audio clip, or the references of Audio: Generate.",
                 ),
                 io.String.Input(
-                    "title", default="", tooltip="The Element's name on your Dreamina canvas, such as Host."
+                    'title', default='', tooltip="The Element's name on your Dreamina canvas, such as Host."
                 ),
                 io.String.Input(
-                    "description",
-                    default="",
+                    'description',
+                    default='',
                     multiline=True,
-                    tooltip="A note kept with the Element on your canvas. Leave it empty to send none.",
+                    tooltip='A note kept with the Element on your canvas. Leave it empty to send none.',
                 ),
             ],
-            outputs=[_REFERENCES.Output("references", display_name="references")],
+            outputs=[_REFERENCES.Output('references', display_name='references')],
             is_input_list=True,
         )
 
     @classmethod
     @override
-    async def execute(  # pyright: ignore[reportIncompatibleMethodOverride] -- reason: ComfyUI calls by schema.
+    async def execute(  # pyright: ignore[reportIncompatibleMethodOverride] # reason: ComfyUI calls by schema.
         cls,
         *,
         main: list[object],
@@ -211,4 +215,4 @@ class ElementAdd(io.ComfyNode):
         return await wait_for_run(asyncio.create_task(_create_element(main, auxiliary, voice, (title, description))))
 
 
-__all__ = ["ElementAdd"]
+__all__ = ['ElementAdd']

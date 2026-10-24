@@ -1,209 +1,207 @@
 """The video workflows: animate a host, film a product ad, recover a video left running, and animate a saved image."""
 
-from __future__ import annotations
-
 import json
-from scripts.nodes.host import HostNode
-from src.config.namespace import NODE_PREFIX
-from scripts.workflows.descriptions.audio import CAST
-from scripts.workflows.descriptions.texts import SHARED_TEXTS
-from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
-from scripts.workflows.page.config import STAGE_COLOUR, IMAGE_PREVIEW
-from scripts.workflows.page.graph import Node, Group, Subgraph, Workflow
-from scripts.workflows.descriptions.nodes import IMAGE_GENERATE, VIDEO_GENERATE
 
-SEEDANCE_2_5 = "seedance_2.5"
-PORTRAIT_ARGUMENTS = json.dumps({"ratio": "9:16", "resolution": "2K"}, indent=2)
-ANIMATE_ARGUMENTS = json.dumps({"ratio": "9:16", "resolution": "720p", "duration": 4}, indent=2)
-FILM_ARGUMENTS = json.dumps({"mode": "m2v", "ratio": "9:16", "resolution": "480p", "duration": 4}, indent=2)
+from scripts.nodes.host import HostNode
+from scripts.workflows.page.graph import Node, Group, Subgraph, Workflow
+from scripts.workflows.page.config import STAGE_COLOUR, IMAGE_PREVIEW
+from scripts.workflows.descriptions.audio import CAST
+from scripts.workflows.descriptions.nodes import IMAGE_GENERATE, VIDEO_GENERATE, GENERATION_DOWNLOAD
+from scripts.workflows.descriptions.notes import WORKFLOW_TEXTS
+from scripts.workflows.descriptions.texts import SHARED_TEXTS
+
+FILM_MODEL = 'seedance_2.5'
+PORTRAIT_ARGUMENTS = json.dumps({'ratio': '9:16', 'resolution': '2K'}, indent=2)
+ANIMATE_ARGUMENTS = json.dumps({'ratio': '9:16', 'resolution': '720p', 'duration': 4}, indent=2)
+FILM_ARGUMENTS = json.dumps({'mode': 'm2v', 'ratio': '9:16', 'resolution': '480p', 'duration': 4}, indent=2)
 # Part 0's quote of Film's settings, 48 credits, rounded up to the next 10.
 FILM_CEILING = 50
 PORTRAIT_HOST = (
-    "A friendly man in his thirties with short curly hair and a denim jacket, standing in a bright studio with shelves "
-    "of sneakers behind him. Waist up, looking at the camera, photorealistic."
+    'A friendly man in his thirties with short curly hair and a denim jacket, standing in a bright studio with shelves '
+    'of sneakers behind him. Waist up, looking at the camera, photorealistic.'
 )
 ANIMATE_SCENE = (
-    "He smiles, picks up a sneaker from the shelf, and turns it toward the camera. Slow push-in, warm light."
+    'He smiles, picks up a sneaker from the shelf, and turns it toward the camera. Slow push-in, warm light.'
 )
 FILM_HOST = (
-    "A cheerful woman in her late twenties with shoulder-length auburn hair and a mustard knit sweater. Waist up, "
-    "facing the camera, in a bright studio, photorealistic."
+    'A cheerful woman in her late twenties with shoulder-length auburn hair and a mustard knit sweater. Waist up, '
+    'facing the camera, in a bright studio, photorealistic.'
 )
 FILM_PRODUCT = (
-    "A pair of white canvas sneakers with red laces, side view, on a plain white background, soft studio light."
+    'A pair of white canvas sneakers with red laces, side view, on a plain white background, soft studio light.'
 )
 FILM_SCENE = (
-    "The host in {{reference1}} holds up the sneakers from {{image1}}, smiles, and turns them toward the camera to "
-    "show the red laces. Bright studio, slow push-in."
+    'The host in {{reference1}} holds up the sneakers from {{image1}}, smiles, and turns them toward the camera to '
+    'show the red laces. Bright studio, slow push-in.'
 )
 MOVE_SCENE = (
-    "She takes a bite of the burger, laughs, and gives the camera a thumbs-up. The camera holds still, soft daylight."
+    'She takes a bite of the burger, laughs, and gives the camera a thumbs-up. The camera holds still, soft daylight.'
 )
 SHOT_PROMPT = (
-    "A white canvas sneaker with red laces turns slowly on a plain white turntable. Soft studio light, slow push-in."
+    'A white canvas sneaker with red laces turns slowly on a plain white turntable. Soft studio light, slow push-in.'
 )
-ANIMATE_TEXTS = WORKFLOW_TEXTS["video-01-animate-a-host"]
-FILM_TEXTS = WORKFLOW_TEXTS["video-02-film-a-product-ad"]
-RECOVER_TEXTS = WORKFLOW_TEXTS["video-04-recover-a-video"]
-MOVE_TEXTS = WORKFLOW_TEXTS["video-05-animate-a-saved-image"]
+ANIMATE_TEXTS = WORKFLOW_TEXTS['video-01-animate-a-host']
+FILM_TEXTS = WORKFLOW_TEXTS['video-02-film-a-product-ad']
+RECOVER_TEXTS = WORKFLOW_TEXTS['video-04-recover-a-video']
+MOVE_TEXTS = WORKFLOW_TEXTS['video-05-animate-a-saved-image']
 
 PORTRAIT = Subgraph(
-    name=SHARED_TEXTS["portrait"],
+    name=SHARED_TEXTS['portrait'],
     nodes=(
-        Node("draw", IMAGE_GENERATE, {"arguments": PORTRAIT_ARGUMENTS}, is_paid=True),
-        Node("look", HostNode.PREVIEW_IMAGE),
+        Node('draw', IMAGE_GENERATE, {'arguments': PORTRAIT_ARGUMENTS}, is_paid=True),
+        Node('look', HostNode.PREVIEW_IMAGE),
     ),
-    links=(("draw.images", "look.images"),),
-    columns=(("draw",), ("look",)),
-    inputs=(("host", "draw.prompt"),),
-    outputs=(("references", "draw.references"),),
-    description=ANIMATE_TEXTS["portrait_description"],
-    previews=(("look", IMAGE_PREVIEW),),
+    links=(('draw.images', 'look.images'),),
+    columns=(('draw',), ('look',)),
+    inputs=(('host', 'draw.prompt'),),
+    outputs=(('references', 'draw.references'),),
+    description=ANIMATE_TEXTS['portrait_description'],
+    previews=(('look', IMAGE_PREVIEW),),
 )
 
 ANIMATE = Subgraph(
-    name=SHARED_TEXTS["animate"],
+    name=SHARED_TEXTS['animate'],
     nodes=(
-        Node("video", VIDEO_GENERATE, {"arguments": ANIMATE_ARGUMENTS}, is_paid=True),
-        Node("save", HostNode.SAVE_VIDEO, {"filename_prefix": "video/dreamina/host"}),
+        Node('video', VIDEO_GENERATE, {'arguments': ANIMATE_ARGUMENTS}, is_paid=True),
+        Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/host'}),
     ),
-    links=(("video.video", "save.video"),),
-    columns=(("video",), ("save",)),
-    inputs=(("references", "video.references"), ("scene", "video.prompt")),
-    description=ANIMATE_TEXTS["animate_description"],
+    links=(('video.video', 'save.video'),),
+    columns=(('video',), ('save',)),
+    inputs=(('references', 'video.references'), ('scene', 'video.prompt')),
+    description=ANIMATE_TEXTS['animate_description'],
 )
 
 ANIMATE_HOST = Workflow(
-    slug="video-01-animate-a-host",
+    slug='video-01-animate-a-host',
     nodes=(
-        Node("host", HostNode.TEXT_BLOCK, {"value": PORTRAIT_HOST}, title=SHARED_TEXTS["host"]),
-        Node("scene", HostNode.TEXT_BLOCK, {"value": ANIMATE_SCENE}, title=SHARED_TEXTS["scene"]),
-        Node("portrait", PORTRAIT.name),
-        Node("animate", ANIMATE.name),
+        Node('host', HostNode.TEXT_BLOCK, {'value': PORTRAIT_HOST}, title=SHARED_TEXTS['host']),
+        Node('scene', HostNode.TEXT_BLOCK, {'value': ANIMATE_SCENE}, title=SHARED_TEXTS['scene']),
+        Node('portrait', PORTRAIT.name),
+        Node('animate', ANIMATE.name),
     ),
     links=(
-        ("host.STRING", "portrait.host"),
-        ("portrait.references", "animate.references"),
-        ("scene.STRING", "animate.scene"),
+        ('host.STRING', 'portrait.host'),
+        ('portrait.references', 'animate.references'),
+        ('scene.STRING', 'animate.scene'),
     ),
     stacks=(
-        (Group(SHARED_TEXTS["input"], (("host", "scene"),), note=ANIMATE_TEXTS["input"]),),
-        (Group(SHARED_TEXTS["portrait"], (("portrait",),), STAGE_COLOUR, ANIMATE_TEXTS["portrait"]),),
-        (Group(SHARED_TEXTS["animate"], (("animate",),), STAGE_COLOUR, ANIMATE_TEXTS["animate"]),),
+        (Group(SHARED_TEXTS['input'], (('host', 'scene'),), note=ANIMATE_TEXTS['input']),),
+        (Group(SHARED_TEXTS['portrait'], (('portrait',),), STAGE_COLOUR, ANIMATE_TEXTS['portrait']),),
+        (Group(SHARED_TEXTS['animate'], (('animate',),), STAGE_COLOUR, ANIMATE_TEXTS['animate']),),
     ),
     subgraphs=(PORTRAIT, ANIMATE),
 )
 
 PACKSHOT = Subgraph(
-    name=SHARED_TEXTS["packshot"],
+    name=SHARED_TEXTS['packshot'],
     nodes=(
-        Node("draw", IMAGE_GENERATE, is_paid=True),
-        Node("look", HostNode.PREVIEW_IMAGE),
+        Node('draw', IMAGE_GENERATE, is_paid=True),
+        Node('look', HostNode.PREVIEW_IMAGE),
     ),
-    links=(("draw.images", "look.images"),),
-    columns=(("draw",), ("look",)),
-    inputs=(("product", "draw.prompt"),),
-    outputs=(("images", "draw.images"),),
-    description=FILM_TEXTS["packshot_description"],
-    previews=(("look", IMAGE_PREVIEW),),
+    links=(('draw.images', 'look.images'),),
+    columns=(('draw',), ('look',)),
+    inputs=(('product', 'draw.prompt'),),
+    outputs=(('images', 'draw.images'),),
+    description=FILM_TEXTS['packshot_description'],
+    previews=(('look', IMAGE_PREVIEW),),
 )
 
 FILM = Subgraph(
-    name=SHARED_TEXTS["film"],
+    name=SHARED_TEXTS['film'],
     nodes=(
         Node(
-            "video",
+            'video',
             VIDEO_GENERATE,
-            {"model": SEEDANCE_2_5, "arguments": FILM_ARGUMENTS, "credit_ceiling": FILM_CEILING},
+            {'model': FILM_MODEL, 'arguments': FILM_ARGUMENTS, 'credit_ceiling': FILM_CEILING},
             is_paid=True,
         ),
-        Node("save", HostNode.SAVE_VIDEO, {"filename_prefix": "video/dreamina/product-ad"}),
+        Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/product-ad'}),
     ),
-    links=(("video.video", "save.video"),),
-    columns=(("video",), ("save",)),
-    inputs=(("host", "video.references"), ("product", "video.images"), ("scene", "video.prompt")),
-    description=FILM_TEXTS["film_description"],
+    links=(('video.video', 'save.video'),),
+    columns=(('video',), ('save',)),
+    inputs=(('host', 'video.references'), ('product', 'video.images'), ('scene', 'video.prompt')),
+    description=FILM_TEXTS['film_description'],
 )
 
 FILM_AD = Workflow(
-    slug="video-02-film-a-product-ad",
+    slug='video-02-film-a-product-ad',
     nodes=(
-        Node("host", HostNode.TEXT_BLOCK, {"value": FILM_HOST}, title=SHARED_TEXTS["host"]),
-        Node("product", HostNode.TEXT_BLOCK, {"value": FILM_PRODUCT}, title=SHARED_TEXTS["product"]),
-        Node("scene", HostNode.TEXT_BLOCK, {"value": FILM_SCENE}, title=SHARED_TEXTS["scene"]),
-        Node("cast", CAST.name),
-        Node("packshot", PACKSHOT.name),
-        Node("film", FILM.name),
+        Node('host', HostNode.TEXT_BLOCK, {'value': FILM_HOST}, title=SHARED_TEXTS['host']),
+        Node('product', HostNode.TEXT_BLOCK, {'value': FILM_PRODUCT}, title=SHARED_TEXTS['product']),
+        Node('scene', HostNode.TEXT_BLOCK, {'value': FILM_SCENE}, title=SHARED_TEXTS['scene']),
+        Node('cast', CAST.name),
+        Node('packshot', PACKSHOT.name),
+        Node('film', FILM.name),
     ),
     links=(
-        ("host.STRING", "cast.host"),
-        ("product.STRING", "packshot.product"),
-        ("cast.references", "film.host"),
-        ("packshot.images", "film.product"),
-        ("scene.STRING", "film.scene"),
+        ('host.STRING', 'cast.host'),
+        ('product.STRING', 'packshot.product'),
+        ('cast.references', 'film.host'),
+        ('packshot.images', 'film.product'),
+        ('scene.STRING', 'film.scene'),
     ),
     stacks=(
-        (Group(SHARED_TEXTS["input"], (("host", "product", "scene"),), note=FILM_TEXTS["input"]),),
-        (Group(SHARED_TEXTS["cast"], (("cast",),), STAGE_COLOUR, FILM_TEXTS["cast"]),),
-        (Group(SHARED_TEXTS["packshot"], (("packshot",),), STAGE_COLOUR, FILM_TEXTS["packshot"]),),
-        (Group(SHARED_TEXTS["film"], (("film",),), STAGE_COLOUR, FILM_TEXTS["film"]),),
+        (Group(SHARED_TEXTS['input'], (('host', 'product', 'scene'),), note=FILM_TEXTS['input']),),
+        (Group(SHARED_TEXTS['cast'], (('cast',),), STAGE_COLOUR, FILM_TEXTS['cast']),),
+        (Group(SHARED_TEXTS['packshot'], (('packshot',),), STAGE_COLOUR, FILM_TEXTS['packshot']),),
+        (Group(SHARED_TEXTS['film'], (('film',),), STAGE_COLOUR, FILM_TEXTS['film']),),
     ),
     subgraphs=(CAST, PACKSHOT, FILM),
 )
 
 SHOT = Subgraph(
-    name=SHARED_TEXTS["shot"],
+    name=SHARED_TEXTS['shot'],
     nodes=(
-        Node("video", VIDEO_GENERATE, {"prompt": SHOT_PROMPT}, is_paid=True),
-        Node("save", HostNode.SAVE_VIDEO, {"filename_prefix": "video/dreamina/shot"}),
+        Node('video', VIDEO_GENERATE, {'prompt': SHOT_PROMPT}, is_paid=True),
+        Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/shot'}),
     ),
-    links=(("video.video", "save.video"),),
-    columns=(("video",), ("save",)),
-    description=RECOVER_TEXTS["shot_description"],
+    links=(('video.video', 'save.video'),),
+    columns=(('video',), ('save',)),
+    description=RECOVER_TEXTS['shot_description'],
 )
 
 RECOVER_VIDEO = Workflow(
-    slug="video-04-recover-a-video",
+    slug='video-04-recover-a-video',
     nodes=(
-        Node("download", f"{NODE_PREFIX}GenerationDownload", {"generation": ""}),
-        Node("save", HostNode.SAVE_VIDEO, {"filename_prefix": "video/dreamina/recovered"}),
-        Node("shot", SHOT.name, is_bypassed=True),
+        Node('download', GENERATION_DOWNLOAD, {'generation': ''}),
+        Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/recovered'}),
+        Node('shot', SHOT.name, is_bypassed=True),
     ),
-    links=(("download.video", "save.video"),),
+    links=(('download.video', 'save.video'),),
     stacks=(
-        (Group(SHARED_TEXTS["collect"], (("download",), ("save",)), STAGE_COLOUR, RECOVER_TEXTS["collect"]),),
-        (Group(SHARED_TEXTS["shot"], (("shot",),), STAGE_COLOUR, RECOVER_TEXTS["shot"]),),
+        (Group(SHARED_TEXTS['collect'], (('download',), ('save',)), STAGE_COLOUR, RECOVER_TEXTS['collect']),),
+        (Group(SHARED_TEXTS['shot'], (('shot',),), STAGE_COLOUR, RECOVER_TEXTS['shot']),),
     ),
     subgraphs=(SHOT,),
 )
 
 MOVE = Subgraph(
-    name=SHARED_TEXTS["move"],
+    name=SHARED_TEXTS['move'],
     nodes=(
-        Node("video", VIDEO_GENERATE, {"arguments": ANIMATE_ARGUMENTS}, is_paid=True),
-        Node("save", HostNode.SAVE_VIDEO, {"filename_prefix": "video/dreamina/host-in-kitchen"}),
+        Node('video', VIDEO_GENERATE, {'arguments': ANIMATE_ARGUMENTS}, is_paid=True),
+        Node('save', HostNode.SAVE_VIDEO, {'filename_prefix': 'video/dreamina/host-in-kitchen'}),
     ),
-    links=(("video.video", "save.video"),),
-    columns=(("video",), ("save",)),
-    inputs=(("frame", "video.images"), ("scene", "video.prompt")),
-    description=MOVE_TEXTS["move_description"],
+    links=(('video.video', 'save.video'),),
+    columns=(('video',), ('save',)),
+    inputs=(('frame', 'video.images'), ('scene', 'video.prompt')),
+    description=MOVE_TEXTS['move_description'],
 )
 
 ANIMATE_IMAGE = Workflow(
-    slug="video-05-animate-a-saved-image",
+    slug='video-05-animate-a-saved-image',
     nodes=(
-        Node("frame", HostNode.IMAGE, {"image": ""}, title=SHARED_TEXTS["frame"]),
-        Node("scene", HostNode.TEXT_BLOCK, {"value": MOVE_SCENE}, title=SHARED_TEXTS["scene"]),
-        Node("move", MOVE.name),
+        Node('frame', HostNode.IMAGE, {'image': ''}, title=SHARED_TEXTS['frame']),
+        Node('scene', HostNode.TEXT_BLOCK, {'value': MOVE_SCENE}, title=SHARED_TEXTS['scene']),
+        Node('move', MOVE.name),
     ),
-    links=(("frame.IMAGE", "move.frame"), ("scene.STRING", "move.scene")),
+    links=(('frame.IMAGE', 'move.frame'), ('scene.STRING', 'move.scene')),
     stacks=(
-        (Group(SHARED_TEXTS["input"], (("frame", "scene"),), note=MOVE_TEXTS["input"]),),
-        (Group(SHARED_TEXTS["move"], (("move",),), STAGE_COLOUR, MOVE_TEXTS["move"]),),
+        (Group(SHARED_TEXTS['input'], (('frame', 'scene'),), note=MOVE_TEXTS['input']),),
+        (Group(SHARED_TEXTS['move'], (('move',),), STAGE_COLOUR, MOVE_TEXTS['move']),),
     ),
     subgraphs=(MOVE,),
 )
 
 VIDEO_WORKFLOWS = (ANIMATE_HOST, FILM_AD, RECOVER_VIDEO, ANIMATE_IMAGE)
 
-__all__ = ["VIDEO_WORKFLOWS"]
+__all__ = ['VIDEO_WORKFLOWS']

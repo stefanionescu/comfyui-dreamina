@@ -72,13 +72,7 @@ function message(key) {
 }
 function formatMessage(key, values) {
   const replacements = new Map(Object.entries(values));
-  return message(key).replaceAll(
-    /\{(\w+)\}/g,
-    (placeholder, name) => replacements.get(name) ?? placeholder
-  );
-}
-function setText(target, content) {
-  target.replaceChildren(document.createTextNode(content));
+  return message(key).replaceAll(/\{(\w+)\}/g, (placeholder, name) => replacements.get(name) ?? placeholder);
 }
 function selectedLocale() {
   const value = app.extensionManager.setting.get("Comfy.Locale");
@@ -103,7 +97,7 @@ function requestLocal(route, options) {
 // web/scripts/dom.ts
 function element(tag, text) {
   const node = document.createElement(tag);
-  if (text !== void 0) node.appendChild(document.createTextNode(text));
+  if (text !== void 0) node.append(document.createTextNode(text));
   return node;
 }
 function button(text, type = "button") {
@@ -133,6 +127,7 @@ var browserRoutes = {
 var CliSection = class {
   /**
    * Build the part without contacting the server.
+   *
    * @param actions - The dialog's request for the part's button.
    */
   constructor(actions) {
@@ -154,16 +149,12 @@ var CliSection = class {
   /** Ask before ByteDance's official installer runs, then send the install; a cancel sends nothing. */
   confirmInstall() {
     const question = message(this.found ? "cli.confirmUpdate" : "cli.confirmInstall");
-    if (!window.confirm(question)) return;
-    this.actions.update(
-      message("cli.installed"),
-      browserRoutes.settings.cli,
-      "POST",
-      message("cli.installing")
-    );
+    if (!globalThis.confirm(question)) return;
+    this.actions.update(message("cli.installed"), browserRoutes.settings.cli, "POST", message("cli.installing"));
   }
   /**
-   * Show whether the CLI is installed and current, and name the button for it.
+   * Show whether the server finds the CLI and whether it is current, and name the button for it.
+   *
    * @param cli - The CLI part of the last status.
    */
   display(cli) {
@@ -174,8 +165,8 @@ var CliSection = class {
     else if (cli.found) {
       text = formatMessage("cli.outdated", { version, minimum: cli.minimumVersion });
     }
-    setText(this.state, text);
-    setText(this.action, message(cli.found ? "cli.update" : "cli.install"));
+    this.state.replaceChildren(document.createTextNode(text));
+    this.action.replaceChildren(document.createTextNode(message(cli.found ? "cli.update" : "cli.install")));
   }
 };
 
@@ -206,12 +197,7 @@ function describeChallenge(userCode, url2, expiresAt) {
     hour: "2-digit",
     minute: "2-digit"
   });
-  return [
-    element("p", message("account.code")),
-    code,
-    link,
-    element("p", formatMessage("account.until", { time }))
-  ];
+  return [element("p", message("account.code")), code, link, element("p", formatMessage("account.until", { time }))];
 }
 function describeAccount(configuration) {
   const { cli, account, signIn } = configuration;
@@ -232,20 +218,24 @@ function describeAccount(configuration) {
 var AccountSection = class {
   /**
    * Build the part without contacting the server.
-   * @param actions - The dialog's requests, its quiet status read, and its status line.
+   *
+   * @param actions - The dialog's requests, its quiet status read, its status line, and its request lifetime,
+   *     whose end stops following the sign-in.
    */
   constructor(actions) {
     this.actions = actions;
     this.fields.disabled = true;
+    actions.signal.addEventListener("abort", () => {
+      clearTimeout(this.timer);
+    });
     const buttons = element("div");
     buttons.className = "dreamina-actions";
     buttons.append(this.signIn, this.signOut);
     this.fields.append(element("legend", message("account.legend")), this.lines, buttons);
     this.form.append(this.fields);
-    this.signOut.addEventListener(
-      "click",
-      () => this.actions.update(message("account.signOutDone"), browserRoutes.settings.session, "DELETE")
-    );
+    this.signOut.addEventListener("click", () => {
+      this.actions.update(message("account.signOutDone"), browserRoutes.settings.session, "DELETE");
+    });
     this.form.addEventListener("submit", (event) => {
       event.preventDefault();
       this.isStarting = true;
@@ -262,7 +252,8 @@ var AccountSection = class {
   isStarting = false;
   /**
    * Read the status once more while a sign-in waits, and report how it ended.
-   * @returns When the read is shown.
+   *
+   * @returns When the dialog shows the read.
    */
   async poll() {
     this.timer = void 0;
@@ -271,7 +262,27 @@ var AccountSection = class {
     this.actions.report(describeOutcome(configuration));
   }
   /**
+   * Open the sign-in page once after Sign in, then read the status again while the sign-in waits.
+   *
+   * @param waiting - The sign-in that waits for the person, or undefined when none does.
+   */
+  followSignIn(waiting) {
+    if (this.isStarting && waiting !== void 0) {
+      window.open(waiting.verificationUrl, "_blank", "noopener,noreferrer");
+    }
+    this.isStarting = false;
+    if (waiting === void 0) {
+      clearTimeout(this.timer);
+      this.timer = void 0;
+    } else {
+      this.timer ??= setTimeout(() => {
+        this.poll().catch(reportError);
+      }, browserLimits.signInPollMilliseconds);
+    }
+  }
+  /**
    * Show the account, open the sign-in page once after Sign in, and follow a waiting sign-in.
+   *
    * @param configuration - The last status.
    */
   display(configuration) {
@@ -280,17 +291,7 @@ var AccountSection = class {
     this.lines.replaceChildren(...describeAccount(configuration));
     this.signIn.hidden = !cli.found || account.signedIn || waiting !== void 0;
     this.signOut.hidden = !cli.found || !account.signedIn;
-    if (this.isStarting && waiting !== void 0) {
-      window.open(waiting.verificationUrl, "_blank", "noopener,noreferrer");
-    }
-    this.isStarting = false;
-    if (waiting === void 0) this.dispose();
-    else this.timer ??= setTimeout(() => void this.poll(), browserLimits.signInPollMilliseconds);
-  }
-  /** Stop following the sign-in. */
-  dispose() {
-    clearTimeout(this.timer);
-    this.timer = void 0;
+    this.followSignIn(waiting);
   }
 };
 
@@ -819,9 +820,7 @@ function safeParse(schema, input, config$1) {
 
 // web/scripts/schema.ts
 var publicErrorSchema = object({
-  error: optional(
-    pipe(string(), minLength(1), maxLength(browserLimits.maxErrorCharacters))
-  )
+  error: optional(pipe(string(), minLength(1), maxLength(browserLimits.maxErrorCharacters)))
 });
 function parsePublicError(value) {
   const result = safeParse(publicErrorSchema, value);
@@ -842,9 +841,7 @@ var signInSchema = object({
   user_code: pipe(string(), minLength(1), maxLength(32)),
   verification_url: pipe(string(), url(), startsWith("https://")),
   expires_at: pipe(string(), isoTimestamp()),
-  message: nullable(
-    pipe(string(), minLength(1), maxLength(browserLimits.maxErrorCharacters))
-  )
+  message: nullable(pipe(string(), minLength(1), maxLength(browserLimits.maxErrorCharacters)))
 });
 var configurationDocumentSchema = object({
   revision: pipe(string(), regex(browserPatterns.revision)),
@@ -896,12 +893,7 @@ function parseConfiguration(value) {
   const settings = new Map(Object.entries(document2.settings));
   for (const [name, definition] of Object.entries(definitions)) {
     const setting = safeParse(
-      pipe(
-        number(),
-        safeInteger(),
-        minValue(definition.minimum),
-        maxValue(definition.maximum)
-      ),
+      pipe(number(), safeInteger(), minValue(definition.minimum), maxValue(definition.maximum)),
       settings.get(name)
     );
     if (!setting.success) throw new Error(message("settings.invalidLimit"));
@@ -930,6 +922,19 @@ var FAILURES = /* @__PURE__ */ new Map([
   [`DELETE ${browserRoutes.settings.session}`, "account.signOutFailed"],
   [`POST ${browserRoutes.settings.cli}`, "cli.installFailed"]
 ]);
+async function sendRequest(fetcher, route, options) {
+  let response;
+  try {
+    response = await fetcher(route, options);
+  } catch {
+    throw new Error(message("settings.unreachable"));
+  }
+  try {
+    return { response, document: await response.json() };
+  } catch {
+    throw new Error(message("settings.unreadableResponse"));
+  }
+}
 async function requestConfiguration(fetcher, signal, route = browserRoutes.settings.status, method = "GET", body) {
   const timeout = route === browserRoutes.settings.cli ? browserLimits.installTimeoutMilliseconds : browserLimits.requestTimeoutMilliseconds;
   const options = {
@@ -940,18 +945,7 @@ async function requestConfiguration(fetcher, signal, route = browserRoutes.setti
     headers: { "Content-Type": "application/json", "X-Dreamina-Comfy": "1" }
   };
   if (body !== void 0) options.body = JSON.stringify(body);
-  let response;
-  try {
-    response = await fetcher(route, options);
-  } catch {
-    throw new Error(message("settings.unreachable"));
-  }
-  let document2;
-  try {
-    document2 = await response.json();
-  } catch {
-    throw new Error(message("settings.unreadableResponse"));
-  }
+  const { response, document: document2 } = await sendRequest(fetcher, route, options);
   if (!response.ok) {
     throw new Error(
       parsePublicError(document2) ?? message(FAILURES.get(`${method} ${route}`) ?? "settings.saveFailed")
@@ -965,6 +959,7 @@ var current;
 var SettingsDialog = class {
   /**
    * Build the dialog's parts without contacting the server.
+   *
    * @param fetcher - ComfyUI's local API client.
    */
   constructor(fetcher) {
@@ -980,7 +975,9 @@ var SettingsDialog = class {
     header.append(heading, close);
     this.status.setAttribute("role", "status");
     this.status.setAttribute("aria-live", "polite");
-    this.reload.addEventListener("click", () => this.updateSettings(message("settings.reread")));
+    this.reload.addEventListener("click", () => {
+      this.updateSettings(message("settings.reread"));
+    });
     const footer = element("footer");
     footer.append(this.status, this.reload);
     this.dialog.append(
@@ -1002,18 +999,26 @@ var SettingsDialog = class {
   limitFields = element("fieldset");
   inputs = /* @__PURE__ */ new Map();
   cli = new CliSection({
-    update: (success, route, method, working) => this.updateSettings(success, route, method, void 0, working)
+    update: (success, route, method, working) => {
+      this.updateSettings(success, route, method, void 0, working);
+    }
   });
   account = new AccountSection({
-    update: (success, route, method) => this.updateSettings(success, route, method),
+    update: (success, route, method) => {
+      this.updateSettings(success, route, method);
+    },
     poll: () => this.pollStatus(),
-    report: (text) => setText(this.status, text)
+    report: (text) => {
+      this.status.replaceChildren(document.createTextNode(text));
+    },
+    signal: this.controller.signal
   });
   configuration;
   // Every request joins this chain, so the next one starts only after the last one settles.
   pending = Promise.resolve();
   /**
    * Build duration, timeout, and media size inputs.
+   *
    * @returns The form for execution limits.
    */
   limits() {
@@ -1030,6 +1035,7 @@ var SettingsDialog = class {
   }
   /**
    * Build fields from the backend's setting definitions.
+   *
    * @param configuration - The validated limits.
    */
   populateLimits(configuration) {
@@ -1049,7 +1055,8 @@ var SettingsDialog = class {
     this.limitFields.append(button(message("settings.saveLimits"), "submit"));
   }
   /**
-   * Save only limits changed since the last successful read.
+   * Save only limits that changed after the last successful read.
+   *
    * @param configuration - The settings and revision currently shown.
    */
   saveLimits(configuration) {
@@ -1059,7 +1066,7 @@ var SettingsDialog = class {
       if (input.valueAsNumber !== settings.get(name)) changes.set(name, input.valueAsNumber);
     }
     if (changes.size === 0) {
-      setText(this.status, message("settings.noLimitChanges"));
+      this.status.replaceChildren(document.createTextNode(message("settings.noLimitChanges")));
       return;
     }
     this.updateSettings(message("settings.limitsSaved"), browserRoutes.settings.values, "PATCH", {
@@ -1069,6 +1076,7 @@ var SettingsDialog = class {
   }
   /**
    * Show the validated status and apply the server's editing policy.
+   *
    * @param configuration - The last successful server response.
    */
   display(configuration) {
@@ -1084,10 +1092,12 @@ var SettingsDialog = class {
     }
     this.cli.display(configuration.cli);
     this.account.display(configuration);
-    if (!configuration.mutationAllowed) setText(this.status, message("settings.readOnly"));
+    if (!configuration.mutationAllowed)
+      this.status.replaceChildren(document.createTextNode(message("settings.readOnly")));
   }
   /**
-   * Queue a request after the last one, disabling the parts and showing its working text.
+   * Disable the parts, show the working text, and queue a request after the last one.
+   *
    * @param success - The success message.
    * @param route - The local settings route.
    * @param method - The HTTP method.
@@ -1097,38 +1107,32 @@ var SettingsDialog = class {
   updateSettings(success, route, method, body, working = message("working")) {
     this.cli.fields.disabled = this.account.fields.disabled = this.limitFields.disabled = true;
     this.reload.disabled = true;
-    setText(this.status, working);
+    this.status.replaceChildren(document.createTextNode(working));
     this.pending = this.pending.then(() => this.requestSettings(success, route, method, body));
   }
   /**
    * Apply the server response and restore editing after a settings request.
+   *
    * @param success - The success message.
    * @param route - The local settings route.
    * @param method - The HTTP method.
    * @param body - The settings change, if any.
-   * @returns When the response or error is displayed.
+   * @returns When the dialog displays the response or error.
    */
   async requestSettings(success, route, method, body) {
     try {
-      const value = await requestConfiguration(
-        this.fetcher,
-        this.controller.signal,
-        route,
-        method,
-        body
-      );
+      const value = await requestConfiguration(this.fetcher, this.controller.signal, route, method, body);
       if (this.controller.signal.aborted) return;
-      setText(this.status, success);
+      this.status.replaceChildren(document.createTextNode(success));
       this.display(value);
     } catch (error) {
       if (!this.controller.signal.aborted)
-        setText(
-          this.status,
-          error instanceof Error ? error.message : message("settings.updateFailed")
+        this.status.replaceChildren(
+          document.createTextNode(error instanceof Error ? error.message : message("settings.updateFailed"))
         );
     } finally {
       if (!this.controller.signal.aborted) {
-        const isLocked = !this.configuration?.mutationAllowed;
+        const isLocked = this.configuration?.mutationAllowed !== true;
         this.cli.fields.disabled = this.account.fields.disabled = isLocked;
         this.limitFields.disabled = isLocked;
         this.reload.disabled = false;
@@ -1136,7 +1140,8 @@ var SettingsDialog = class {
     }
   }
   /**
-   * Read the status quietly while a sign-in waits, changing only the CLI and account parts.
+   * While a sign-in waits, read the status quietly and change only the CLI and account parts.
+   *
    * @returns The status, or undefined after an error, which the status line then shows.
    */
   pollStatus() {
@@ -1149,9 +1154,10 @@ var SettingsDialog = class {
         return value;
       } catch (error) {
         if (!this.controller.signal.aborted)
-          setText(
-            this.status,
-            error instanceof Error ? error.message : message("settings.readFailed")
+          this.status.replaceChildren(
+            document.createTextNode(
+              error instanceof Error ? error.message : message("settings.readFailed")
+            )
           );
         return void 0;
       }
@@ -1167,16 +1173,14 @@ var SettingsDialog = class {
   }
   /** Stop requests and the sign-in poll, and return focus to the caller. */
   dispose() {
-    this.account.dispose();
     this.controller.abort();
     this.dialog.remove();
     if (current === this) current = void 0;
-    if (this.previousFocus instanceof HTMLElement && this.previousFocus.isConnected)
-      this.previousFocus.focus();
+    if (this.previousFocus instanceof HTMLElement && this.previousFocus.isConnected) this.previousFocus.focus();
   }
 };
 function openSettings(fetcher) {
-  if (current?.dialog.open) {
+  if (current?.dialog.open === true) {
     current.dialog.focus();
     return;
   }
@@ -1190,7 +1194,7 @@ app2.registerExtension({
   setup: () => {
     const stylesheet = document.createElement("link");
     stylesheet.rel = "stylesheet";
-    stylesheet.href = new URL("./extension.css", import.meta.url).href;
+    stylesheet.href = new URL("extension.css", import.meta.url).href;
     const stylesheets = /* @__PURE__ */ new Set();
     for (const link of document.querySelectorAll("link[rel=stylesheet]")) {
       stylesheets.add(link.getAttribute("href"));

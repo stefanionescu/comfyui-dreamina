@@ -1,0 +1,117 @@
+"""What the pack reads about Dreamina's models from the CLI's model list."""
+
+from pydantic import Field
+
+from . import Kind, Reply
+
+
+class ModelFlag(Reply):
+    """One flag of a mode entry.
+
+    Attributes:
+        name: The flag as the list writes it, with its two leading dashes, such as --ratio.
+        required: Whether a run needs it.
+        values: The allowed values, exactly as listed; None when the flag takes any text.
+
+        minimum: The smallest number allowed.
+        maximum: The largest number allowed.
+        step: The step from the minimum, or from 0 when there is no minimum.
+        min_length: The shortest text allowed, in characters.
+        max_length: The longest text allowed, in characters.
+
+    """
+
+    name: str = Field(alias='flag')
+    required: bool
+    values: tuple[str, ...] | None = None
+    minimum: float | None = Field(default=None, alias='min')
+    maximum: float | None = Field(default=None, alias='max')
+    step: float | None = None
+    min_length: int | None = Field(default=None, alias='minLength')
+    max_length: int | None = Field(default=None, alias='maxLength')
+
+
+class ReferenceLimit(Reply):
+    """How many references of one media type a mode entry takes.
+
+    Attributes:
+        media_type: image, video, or audio.
+        minimum: The fewest of that type.
+        maximum: The most of that type.
+
+    """
+
+    media_type: str = Field(alias='mediaType')
+    minimum: int = Field(alias='min')
+    maximum: int = Field(alias='max')
+
+
+class ModelReferences(Reply):
+    """The references a mode entry takes.
+
+    Attributes:
+        minimum: The fewest references in all.
+        maximum: The most references in all.
+        limits: The media types the entry enables; an empty tuple enables none.
+        required_types: A run takes references of at least one of these types; empty when there is no such rule.
+        exclusive_types: A run takes references of at most one of these types; empty when there is no such rule.
+
+    """
+
+    minimum: int = Field(alias='min')
+    maximum: int = Field(alias='max')
+    limits: tuple[ReferenceLimit, ...] = Field(alias='types')
+    required_types: tuple[str, ...] = Field(default=(), alias='requireAnyOfTypes')
+    exclusive_types: tuple[str, ...] = Field(default=(), alias='mutuallyExclusiveTypes')
+
+
+class ModelMode(Reply):
+    """One mode entry of a model; one mode name can have several entries.
+
+    Attributes:
+        name: The mode, such as first_last_frame, sent as --mode.
+        scenario: The speech scenario, sent as --scenario; None for every other mode.
+        flags: The flags this entry accepts, in list order.
+        references: The entry's reference limits; None when the list leaves them out, which means the entry takes none.
+        vip_required: Whether the entry needs a paid plan, for Model: Info only.
+        vip_sizes: The sizes a paid plan unlocks, for Model: Info only.
+
+    """
+
+    name: str
+    scenario: str | None = None
+    flags: tuple[ModelFlag, ...] = ()
+    references: ModelReferences | None = None
+    vip_required: bool | None = Field(default=None, alias='vipRequired')
+    vip_sizes: tuple[str, ...] | None = Field(default=None, alias='vipResolutions')
+
+
+class ListedModel(Reply):
+    """One model of the person's live model list.
+
+    Attributes:
+        kind: The list's type, which is the kind the pack read the list for.
+        name: The canonical name, sent as --model.
+        aliases: Other names that match; never sent.
+        modes: The mode entries in list order.
+
+    """
+
+    kind: Kind = Field(alias='type')
+    name: str = Field(alias='model')
+    aliases: tuple[str, ...] = ()
+    modes: tuple[ModelMode, ...]
+
+
+class ModelListReply(Reply):
+    """The reply of model list for one kind.
+
+    Attributes:
+        items: The models of that kind.
+
+    """
+
+    items: tuple[ListedModel, ...]
+
+
+__all__ = ['ListedModel', 'ModelFlag', 'ModelListReply', 'ModelMode', 'ModelReferences', 'ReferenceLimit']

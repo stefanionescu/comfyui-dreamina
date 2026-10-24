@@ -10,16 +10,17 @@ import os
 import sys
 import math
 import shutil
-import asyncio
-import contextlib
-from pathlib import Path
 from typing import TYPE_CHECKING
+import asyncio
+from pathlib import Path
+import contextlib
+
 from pydantic import ValidationError
-from ..types.parsing import parse_json
-from ..types.cli import CliReply, CliResult
+
+from ..state.cli import CliReply, CliResult
+from ..state.errors import ErrorCode, DreaminaError
+from ..state.parsing import parse_json
 from ..config.storage import ENVIRONMENT_VARIABLES
-from ..types.errors import ErrorCode, DreaminaError
-from ..config.messages.cli import CLI_MISSING, CLI_TIMEOUT, CLI_NOT_STARTED, CLI_REPLY_INVALID
 from ..config.dreamina import (
     EXIT_CODES,
     REPLY_BYTES,
@@ -28,19 +29,21 @@ from ..config.dreamina import (
     MAX_REPLY_DEPTH,
     GLOBAL_ARGUMENTS,
 )
+from ..config.messages.cli import CLI_MISSING, CLI_TIMEOUT, CLI_NOT_STARTED, CLI_REPLY_INVALID
 
 if TYPE_CHECKING:
-    from ..types import Json, Reply
     from collections.abc import Sequence
 
+    from ..state import Json, Reply
+
 # The key of the server's system in BINARY_NAMES and INSTALL_FOLDERS.
-_SYSTEM = "WINDOWS" if sys.platform == "win32" else "POSIX"
+_SYSTEM = 'WINDOWS' if sys.platform == 'win32' else 'POSIX'
 
 
 async def _read_stream(stream: asyncio.StreamReader | None, max_bytes: int) -> bytes:
     """Read one stream to its end in chunks, refusing a reply over its cap."""
     content = bytearray()
-    while stream is not None and (chunk := await stream.read(REPLY_BYTES["CHUNK"])):
+    while stream is not None and (chunk := await stream.read(REPLY_BYTES['CHUNK'])):
         content += chunk
         if len(content) > max_bytes:
             raise DreaminaError(ErrorCode.TRANSPORT, CLI_REPLY_INVALID)
@@ -49,7 +52,7 @@ async def _read_stream(stream: asyncio.StreamReader | None, max_bytes: int) -> b
 
 def _parse_result(exit_code: int, stdout: bytes, stderr: bytes) -> CliResult:
     """Read the call's one reply: from stdout on success and from stderr otherwise."""
-    is_ok = exit_code == EXIT_CODES["OK"]
+    is_ok = exit_code == EXIT_CODES['OK']
     content = stdout if is_ok else stderr
     try:
         document = parse_json(content.decode(), max_bytes=len(content) + 1, max_depth=MAX_REPLY_DEPTH)
@@ -62,12 +65,12 @@ def _parse_result(exit_code: int, stdout: bytes, stderr: bytes) -> CliResult:
 
 
 def find_binary() -> Path | None:
-    """Return the first CLI found in the installer's own folder, on PATH, or in the installer's default folder.
+    """Return the first CLI found in the installer's own folder, on `PATH`, or in the installer's default folder.
 
-    It runs at every call, so an install or a move is found at once.
+    It runs at every call, so it finds an install or a move at once.
     """
     name = BINARY_NAMES[_SYSTEM]
-    folder = os.environ.get(ENVIRONMENT_VARIABLES["INSTALL_DIRECTORY"])
+    folder = os.environ.get(ENVIRONMENT_VARIABLES['INSTALL_DIRECTORY'])
     found = shutil.which(name)
     candidates = (
         Path(folder) / name if folder else None,
@@ -88,8 +91,9 @@ def parse_reply[R: Reply](payload: Json, record: type[R]) -> R:
 async def send_command(arguments: Sequence[str], timeout_seconds: float) -> CliResult:
     """Run one call and return its exit code and reply; the caller decides what a failure reply means.
 
-    No shell is involved, so each argument reaches the CLI as it is. The server's environment reaches the CLI
-    unchanged, so it finds the person's sign-in. Both streams are read at once, so a full pipe never stops the child.
+    The call runs without a shell, so each argument reaches the CLI as it is. The server's environment reaches the CLI
+    unchanged, so it finds the person's sign-in. The call reads both streams at once, so a full pipe never stops the
+    child.
     """
     binary = find_binary()
     if binary is None:
@@ -108,8 +112,8 @@ async def send_command(arguments: Sequence[str], timeout_seconds: float) -> CliR
     try:
         async with asyncio.timeout(timeout_seconds):
             stdout, stderr, exit_code = await asyncio.gather(
-                _read_stream(process.stdout, REPLY_BYTES["STDOUT"]),
-                _read_stream(process.stderr, REPLY_BYTES["STDERR"]),
+                _read_stream(process.stdout, REPLY_BYTES['STDOUT']),
+                _read_stream(process.stderr, REPLY_BYTES['STDERR']),
                 process.wait(),
             )
     except TimeoutError:
@@ -122,4 +126,4 @@ async def send_command(arguments: Sequence[str], timeout_seconds: float) -> CliR
     return _parse_result(exit_code, stdout, stderr)
 
 
-__all__ = ["find_binary", "parse_reply", "send_command"]
+__all__ = ['find_binary', 'parse_reply', 'send_command']
