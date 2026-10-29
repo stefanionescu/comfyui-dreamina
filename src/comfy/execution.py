@@ -10,7 +10,6 @@ from comfy_api.latest import ComfyAPI
 from comfy.model_management import throw_exception_if_processing_interrupted
 
 from .runtime import get_runtime
-from ..state.errors import ErrorCode, DreaminaError
 from ..config.execution import PROGRESS_STEPS, CANCELLATION_POLL_SECONDS
 
 if TYPE_CHECKING:
@@ -45,10 +44,10 @@ async def _wait_for_thread[T](work: Callable[[], T]) -> T:
 
 
 async def wait_for_run[T](task: asyncio.Task[T]) -> T:
-    """Forward ComfyUI's cancel to the owned asyncio task that runs an operation.
+    """Pass ComfyUI's cancel to the owned asyncio task that runs an operation, wait for it, then let the cancel through.
 
-    A cancel after Dreamina accepted the run ends the task with the message that the generation keeps running. That
-    message replaces ComfyUI's own interrupt, because ComfyUI shows no text for an interrupt.
+    ComfyUI's interrupt reaches ComfyUI, which then stops the prompt before its next node. A run that Dreamina accepted
+    keeps running and Dreamina bills it; Generation: Download collects it.
     """
     try:
         while not task.done():
@@ -58,14 +57,7 @@ async def wait_for_run[T](task: asyncio.Task[T]) -> T:
     finally:
         if not task.done():
             task.cancel()
-            outcomes = await asyncio.gather(task, return_exceptions=True)
-            interrupted = [
-                outcome
-                for outcome in outcomes
-                if isinstance(outcome, DreaminaError) and outcome.code is ErrorCode.INTERRUPTED
-            ]
-            if interrupted:
-                raise interrupted[0]
+            await asyncio.gather(task, return_exceptions=True)
 
 
 async def send_run[Result](
