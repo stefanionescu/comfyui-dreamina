@@ -33,7 +33,7 @@
         "Node name for S&R": "MarkdownNote"
       },
       "widgets_values": [
-        "1. Sign in to Dreamina in **ComfyUI menu → Extensions → Dreamina → Dreamina Settings**.\n2. Upload three pictures from `example_workflows/assets/` in this pack's folder: `dreamina/host-full-body.webp` in **Host**, `live-shopping/kitchen-counter.webp` in **Place**, and `live-shopping/burger.webp` in **Product**.\n3. In **Change**, say what happens. `{{image1}}`, `{{image2}}`, and `{{image3}}` stand for the pictures in the order **Pictures** lists them.\n4. Press **Run**. The picture is saved under `image/dreamina`."
+        "1. Sign in to Dreamina in **ComfyUI menu → Extensions → Dreamina → Dreamina Settings**.\n2. Upload three pictures from `example_workflows/assets/` in this pack's folder: `dreamina/host-full-body.webp` in **Host**, `references/kitchen-counter.webp` in **Place**, and `references/burger.webp` in **Product**.\n3. In **Change**, say what happens. `{{image1}}`, `{{image2}}`, and `{{image3}}` stand for the pictures in the order **Pictures** lists them.\n4. Press **Run**. The picture is saved under `image/dreamina`."
       ],
       "title": "Start Here"
     },

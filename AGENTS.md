@@ -85,8 +85,8 @@ the built `web/extension.js` and `web/extension.css`.
 - A registered node ID never changes, and neither do input names, output names, socket types, or the names of the
   files the extension stores. A display label can change, but it changes no saved key.
 - The help page of a node is `web/docs/<node ID>.md`, named with the exact registered ID.
-- The comfyui-live-shopping extension calls `DreaminaImageGenerate`, `DreaminaVideoGenerate`, and `DreaminaModelInfo`
-  by their input names, so those names never change.
+- Other extensions call `DreaminaImageGenerate`, `DreaminaVideoGenerate`, and `DreaminaModelInfo` by their input
+  names, so those names never change.
 - Example workflows are `example_workflows/<family>-<two-digit number>-<task>.json`, and `README.md` links each one.
 - The extension talks to Dreamina only through the installed `dreamina-canvas` CLI, with `--format json` and
   `--non-interactive`. It never passes `--yes`, never calls an undocumented endpoint, and never ships or patches the CLI

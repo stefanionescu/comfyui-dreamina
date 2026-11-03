@@ -53,8 +53,8 @@ WORKFLOW_TEXTS = {
     },
     'image-05-place-a-host-in-a-scene': {
         'input': SIGN_IN_STEP + "2. Upload three pictures from `example_workflows/assets/` in this pack's folder: "
-        '`dreamina/host-full-body.webp` in **Host**, `live-shopping/kitchen-counter.webp` in **Place**, and '
-        '`live-shopping/burger.webp` in **Product**.\n'
+        '`dreamina/host-full-body.webp` in **Host**, `references/kitchen-counter.webp` in **Place**, and '
+        '`references/burger.webp` in **Product**.\n'
         '3. In **Change**, say what happens. `{{image1}}`, `{{image2}}`, and `{{image3}}` stand for the pictures in '
         'the order **Pictures** lists them.\n'
         '4. Press **Run**. The picture is saved under `image/dreamina`.',
@@ -142,7 +142,7 @@ WORKFLOW_TEXTS = {
     'video-06-cast-a-saved-host': {
         'input': SIGN_IN_STEP + "2. Upload three pictures from `example_workflows/assets/` in this pack's folder: "
         '`dreamina/host.webp` in **Host**, `dreamina/host-full-body.webp` in **Full Body**, and '
-        '`live-shopping/kitchen-counter.webp` in **Place**.\n'
+        '`references/kitchen-counter.webp` in **Place**.\n'
         '3. In **Scene**, say what happens. `{{reference1}}` stands for the host and `{{image1}}` for the place.\n'
         '4. Press **Run**. The video is saved under `video/dreamina`.',
         'keep': '**Element: Add** uploads both host pictures and saves them as an Element named **Host**, with '

@@ -5,21 +5,7 @@
 [![Python 3.12 or later](docs/images/badges/python.svg)](#requirements)
 [![MIT license](docs/images/badges/license.svg)](LICENSE.md)
 
-Run Dreamina's image, video, and audio models in ComfyUI with your own Dreamina
-account.
-
-## Contents
-
-- [Requirements](#requirements)
-- [Install](#install)
-- [First run](#first-run)
-- [Example workflows](#example-workflows)
-- [Nodes](#nodes)
-- [Models](#models)
-- [How a run works](#how-a-run-works)
-- [Development](#development)
-- [Common problems](#common-problems)
-- [License](#license)
+Run Dreamina's image, video, and audio models in ComfyUI with your own account.
 
 ## Requirements
 
@@ -28,74 +14,71 @@ account.
 - A Dreamina account that can use the
   [Dreamina Canvas CLI](https://dreamina.capcut.com/canvas-cli).
 
+Generation uses your Dreamina credits. The extension installs and runs the
+Dreamina CLI on the ComfyUI computer.
+
 ## Install
 
-Put the extension in `ComfyUI/custom_nodes/dreamina`, install its
-`requirements.txt` with ComfyUI's Python, and restart ComfyUI.
+Stop ComfyUI. From its `custom_nodes` folder, clone the extension:
 
-### Comfy Desktop
+```sh
+git clone https://github.com/stefanionescu/comfyui-dreamina.git dreamina
+```
 
-1. In the instance chooser, select the **⋮** icon on the instance card, then
-   **Manage**.
-2. Under **About**, copy **Location**. In that folder, find the `ComfyUI` folder
-   that holds `main.py`, and put the extension in its `custom_nodes` folder.
-3. Select **Terminal** in the same panel and run:
+In Comfy Desktop, use **Manage > About > Location** to find the installation's
+`ComfyUI` folder. Its **Terminal** opens that instance's Python environment.
 
-```sh title="In the ComfyUI folder"
+Install runtime dependencies with the Python that runs ComfyUI.
+Choose the command for your installation:
+
+**Comfy Desktop**, in its Terminal:
+
+```sh title="Comfy Desktop terminal, in the ComfyUI folder"
 pip install -r custom_nodes/dreamina/requirements.txt
 ```
 
-### macOS or Linux
-
-From the ComfyUI folder:
+**macOS or Linux**, from the ComfyUI folder:
 
 ```sh title="In the ComfyUI folder"
 .venv/bin/python -m pip install -r custom_nodes/dreamina/requirements.txt
 ```
 
-With uv:
+**Windows**, in PowerShell from the ComfyUI folder:
 
-```sh title="In the ComfyUI folder"
-uv pip install --python .venv/bin/python -r custom_nodes/dreamina/requirements.txt
-```
-
-### Windows
-
-From the ComfyUI folder, in PowerShell:
-
-```powershell
+```powershell title="In the ComfyUI folder"
 .\.venv\Scripts\python.exe -m pip install -r .\custom_nodes\dreamina\requirements.txt
 ```
 
-### Windows portable
+**Windows portable**, in PowerShell from the folder containing ComfyUI:
 
-From the folder that holds `ComfyUI` and `python_embedded`, in PowerShell:
-
-```powershell
+```powershell title="Windows portable parent folder"
 .\python_embeded\python.exe -m pip install -r .\ComfyUI\custom_nodes\dreamina\requirements.txt
 ```
 
-**Dreamina Settings** installs the Dreamina CLI. To install it from a terminal instead:
-
-- macOS or Linux: `curl -fsSL https://dreamina.capcut.com/canvas-cli/install.sh | bash`
-- Windows PowerShell: `irm https://dreamina.capcut.com/canvas-cli/install.ps1 | iex`
-
-To update or remove the extension, see the
-[advanced guide](ADVANCED.md#update-or-remove).
+Replace `.venv` if your environment has another name. Restart ComfyUI and
+reload its window.
 
 ## First run
 
-1. In the **ComfyUI menu**, select **Extensions**, then **Dreamina**, then
-   **Dreamina Settings**. If it says the Dreamina CLI is not installed, select
-   **Install**.
-2. Select **Sign in**, and approve the sign-in on dreamina.capcut.com.
-3. In **Browse Templates**, open **dreamina**, then
-   **image-01-design-a-host**, and select **Run**.
-4. See your host in **Design** and on the **ComfyUI** canvas in Dreamina.
+1. Open **Extensions > Dreamina > Dreamina Settings** from the ComfyUI menu.
+   Select **Install** if the Dreamina CLI is missing, then **Sign in**.
+   Approve the sign-in on dreamina.capcut.com.
+2. Open **Browse Templates > dreamina > image-01-design-a-host**.
+3. Read **Start Here**, edit the description, and check `credit_ceiling`.
+   This is the maximum Dreamina credits the generation may cost.
+4. Select **Run**. **Design** shows the image; Dreamina also keeps it on your
+   **ComfyUI** canvas.
 
-To send the same run again, change `run_number`.
+Generations use your Dreamina credits. Cancelling in ComfyUI stops the wait;
+the generation continues. Use **Generation: Download** to collect it later.
+
+Change `run_number` to run again with unchanged inputs. For remote or multi-user
+setups, see the [access instructions](ADVANCED.md#sign-in-and-access).
 
 ## Example workflows
+
+Open these from **Browse Templates > dreamina**, or load their JSON files.
+Read **Start Here** before running. After an update, open examples in a new tab.
 
 | Workflow                                                                                    | Input                                   |
 | ------------------------------------------------------------------------------------------- | --------------------------------------- |
@@ -113,105 +96,38 @@ To send the same run again, change `run_number`.
 | [Video: Animate a Saved Image](example_workflows/video-05-animate-a-saved-image.json)       | A saved picture and a scene             |
 | [Video: Cast a Saved Host](example_workflows/video-06-cast-a-saved-host.json)               | The saved host and a kitchen            |
 
-They are in **Browse Templates**, under **dreamina**. Start with each workflow's
-**Start Here** note. Most steps are subgraphs. Media inputs start empty, and
-most workflows make their own inputs with Dreamina models.
-
-The workflows that start from a saved picture name a sample in
-`example_workflows/assets/` to upload. `dreamina/` holds pictures these
-workflows made with Dreamina, and `live-shopping/` holds a kitchen and a
-burger made with GPT Image for the live-shopping workflows.
-
-![Screenshot of video-02: the Start Here note and a note for each step sit above four groups. Input holds the Host, Product, and Scene prompts; Cast draws the host; Packshot draws the product; and Film sends both to Seedance 2.5.](docs/images/screenshots/video-02-workflow.png)
+Saved-image examples use [sample inputs](example_workflows/assets/), including
+Dreamina portraits, a kitchen, and a product photo.
 
 ## Nodes
 
-The nodes are under **Dreamina** in the node menu, and each has a help page.
+Find the nodes under **Dreamina**. Each linked help page explains its inputs,
+outputs, and usage.
 
-![Node map: one card for each kind of node. Image: Generate, Video: Generate, and Audio: Generate each run any Dreamina model of their kind, and Image: Generate feeds Image: Upscale. The references output of Element: Add and of every paid node feeds any paid node. Generation: Download collects runs left running, and Model: Info shows what a model takes. A blue square marks a node that starts a paid run, and a hollow square one that bills nothing.](docs/images/diagrams/node-map.svg)
+| Node                                                           | What it does                                                                             | Paid |
+| -------------------------------------------------------------- | ---------------------------------------------------------------------------------------- | ---- |
+| [Image: Generate](web/docs/DreaminaImageGenerate.md)           | Makes or edits images with a Dreamina image model.                                       | Yes  |
+| [Image: Upscale](web/docs/DreaminaImageUpscale.md)             | Makes images larger and sharper with Dreamina's upscale.                                 | Yes  |
+| [Video: Generate](web/docs/DreaminaVideoGenerate.md)           | Makes video from a prompt, frames, or references with a Dreamina video model.            | Yes  |
+| [Audio: Generate](web/docs/DreaminaAudioGenerate.md)           | Reads text in a chosen voice, or dubs speech for a picture, with a Dreamina audio model. | Yes  |
+| [Element: Add](web/docs/DreaminaElementAdd.md)                 | Makes an Element that keeps a character, product, or place the same across runs.         | No   |
+| [Generation: Download](web/docs/DreaminaGenerationDownload.md) | Downloads what Dreamina made for a run after the run stopped.                            | No   |
+| [Model: Info](web/docs/DreaminaModelInfo.md)                   | Shows a model's modes, settings, reference and file limits, and voices, as JSON.         | No   |
 
-| Node                                                           | What it does                                                                               | Paid |
-| -------------------------------------------------------------- | ------------------------------------------------------------------------------------------ | ---- |
-| [Image: Generate](web/docs/DreaminaImageGenerate.md)           | Makes or edits images with any Dreamina image model.                                       | Yes  |
-| [Image: Upscale](web/docs/DreaminaImageUpscale.md)             | Makes images larger and sharper with Dreamina's upscale.                                   | Yes  |
-| [Video: Generate](web/docs/DreaminaVideoGenerate.md)           | Makes video from a prompt, frames, or references with any Dreamina video model.            | Yes  |
-| [Audio: Generate](web/docs/DreaminaAudioGenerate.md)           | Reads text in a chosen voice, or dubs speech for a picture, with any Dreamina audio model. | Yes  |
-| [Element: Add](web/docs/DreaminaElementAdd.md)                 | Makes an Element that keeps a character, product, or place the same across runs.           | No   |
-| [Generation: Download](web/docs/DreaminaGenerationDownload.md) | Downloads what Dreamina made for a run after the run stopped.                              | No   |
-| [Model: Info](web/docs/DreaminaModelInfo.md)                   | Shows a model's modes, settings, reference and file limits, and voices, as JSON.           | No   |
+Use `model` to choose a model available to your Dreamina account.
+**Model: Info** shows its modes, settings, limits, and voices without starting
+a paid generation. See [models and arguments](ADVANCED.md#models).
 
-## Models
+## Troubleshooting
 
-Type any Dreamina model name in `model`, such as `seedance_2.5`. Nothing in
-the extension lists or limits models. When you queue a workflow, and again
-when it runs, the node checks the name and your settings against your own
-model list from Dreamina, before Dreamina bills anything. **Model: Info**
-shows any model's modes, settings, and voices, and bills nothing.
+| Problem                                 | What to check                                                               |
+| --------------------------------------- | --------------------------------------------------------------------------- |
+| Nodes or templates are missing          | Install the complete extension, then restart ComfyUI and reload its window. |
+| The Dreamina CLI is missing             | Select **Install** in **Dreamina Settings** on the ComfyUI computer.        |
+| Sign-in is missing                      | ComfyUI must run as the computer user who signed in.                        |
+| The generation exceeds `credit_ceiling` | Check the quoted cost before raising the ceiling and running again.         |
+| A cancelled generation was charged      | Collect its outputs with **Generation: Download**.                          |
 
-![Video: Generate on the canvas: the images, videos, audio, and references inputs; model set to seedance_2.0_mini; credit_ceiling 20; ratio 9:16; resolution 720p; duration 4; count 1; run_number; a prompt about a host holding up a green bottle; and an empty arguments box.](docs/images/screenshots/video-generate-node.png)
+See the [advanced guide](ADVANCED.md#troubleshooting) for request errors and recovery.
 
-Each node has its own inputs for the settings every model of its kind
-takes, under Dreamina's names: `ratio`, `resolution`, and `count`, plus
-`duration` for video and `voice_name` for speech. Write any other flag in
-`arguments` as JSON, such as `{"mode": "m2v"}`. The node stops if the model makes another kind of output, or does not take a setting
-or value you sent. The [advanced guide](ADVANCED.md#models) says how the
-node chooses the mode.
-
-## How a run works
-
-1. The node checks your inputs against your model list, and stops before
-   Dreamina bills anything.
-2. It uploads your images, video, and audio to the **ComfyUI** canvas in your
-   Dreamina account, and sends one run with `credit_ceiling`, the most
-   credits the run may cost. Dreamina runs it only if its price is within
-   that.
-3. The node records the run, waits, and downloads the outputs. They also
-   carry `references` to what Dreamina made, so the next Dreamina node uses
-   it with no download or upload.
-
-The [advanced guide](ADVANCED.md#what-each-node-sends) lists what each node
-sends.
-
-## Development
-
-Development needs mise. Point the checks at ComfyUI in `.mise.local.toml`:
-
-```toml
-[env]
-COMFYUI_PATH = "/path/to/ComfyUI"
-COMFYUI_PYTHON = "/path/to/ComfyUI/.venv/bin/python"
-```
-
-Install the tools, the dependencies, and the Git hooks:
-
-```shell
-mise trust
-mise run setup
-```
-
-The hooks run gspot on every commit and push. To run every check yourself:
-
-```shell
-bun run --no-install gspot check
-```
-
-Restart ComfyUI after changing Python. The
-[advanced guide](ADVANCED.md#development) lists every task.
-
-## Common problems
-
-| Problem                                 | Fix                                                                                                                   |
-| --------------------------------------- | --------------------------------------------------------------------------------------------------------------------- |
-| ComfyUI could not find the Dreamina CLI | Select **Install** in **Dreamina Settings**, or run the command under [Install](#install) on the ComfyUI computer.    |
-| You are not signed in to Dreamina       | Select **Sign in** in **Dreamina Settings**. ComfyUI must run as the computer user who signed in.                     |
-| A run stops above its `credit_ceiling`  | Nothing was billed. Raise `credit_ceiling` to the number the message gives, and run again.                            |
-| The model is not in your list           | Copy a name the message suggests, or check it with **Model: Info**. Your Dreamina plan may not offer that model.      |
-| A canceled run was billed               | Dreamina cannot stop a run it accepted. Collect its outputs with **Generation: Download**.                            |
-| No Dreamina nodes in the menu           | Check that the folder is `ComfyUI/custom_nodes/dreamina` and the console shows no import error, then restart ComfyUI. |
-| The templates are missing               | Reinstall the whole extension, including `example_workflows`.                                                         |
-
-More in the [advanced guide's troubleshooting](ADVANCED.md#troubleshooting).
-
-## License
-
-[MIT](LICENSE.md).
+[Advanced guide](ADVANCED.md) · [MIT license](LICENSE.md)
