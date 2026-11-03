@@ -9,7 +9,7 @@ from scripts.workflows.descriptions.texts import SHARED_TEXTS
 
 DESIGN_FLAGS = {'ratio': '3:4'}
 HOST_PROMPT = (
-    'Studio portrait of a live-shopping host: a cheerful woman in her late twenties with shoulder-length auburn hair, '
+    'Studio portrait of a presenter: a cheerful woman in her late twenties with shoulder-length auburn hair, '
     'a mustard knit sweater, and small gold hoop earrings. Waist up, facing the camera, plain light gray background, '
     'soft light.'
 )

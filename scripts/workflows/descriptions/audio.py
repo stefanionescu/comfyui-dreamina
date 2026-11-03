@@ -15,7 +15,7 @@ SCRIPT_PROMPT = (
     'Welcome back to the show. Today we have three new sneakers, and the first pair is already selling fast.'
 )
 CAST_HOST = (
-    'A friendly live-shopping host in his thirties with short curly hair and a denim jacket. Waist up, facing the '
+    'A friendly presenter in his thirties with short curly hair and a denim jacket. Waist up, facing the '
     'camera, in a bright studio, photorealistic.'
 )
 LINE_PROMPT = "Hi everyone, it's so good to see you. I've got something special to show you today."
