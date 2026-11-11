@@ -51,7 +51,7 @@ class SettingsDialog {
 
     /**
     Build the dialog's parts without contacting the server.
-    
+
     @param fetcher - ComfyUI's local API client.
     */
     constructor(private readonly fetcher: Fetcher) {
@@ -84,7 +84,7 @@ class SettingsDialog {
 
     /**
     Build duration, timeout, and media size inputs.
-    
+
     @returns The form for execution limits.
     */
     private limits(): HTMLFormElement {
@@ -102,7 +102,7 @@ class SettingsDialog {
 
     /**
     Build fields from the backend's setting definitions.
-    
+
     @param configuration - The validated limits.
     */
     private populateLimits(configuration: Configuration): void {
@@ -124,7 +124,7 @@ class SettingsDialog {
 
     /**
     Save only limits that changed after the last successful read.
-    
+
     @param configuration - The settings and revision currently shown.
     */
     private saveLimits(configuration: Configuration): void {
@@ -145,7 +145,7 @@ class SettingsDialog {
 
     /**
     Show the validated status and apply the server's editing policy.
-    
+
     @param configuration - The last successful server response.
     */
     private display(configuration: Configuration): void {
@@ -167,7 +167,7 @@ class SettingsDialog {
 
     /**
     Disable the parts, show the working text, and queue a request after the last one.
-    
+
     @param success - The success message.
     @param route - The local settings route.
     @param method - The HTTP method.
@@ -189,7 +189,7 @@ class SettingsDialog {
 
     /**
     Apply the server response and restore editing after a settings request.
-    
+
     @param success - The success message.
     @param route - The local settings route.
     @param method - The HTTP method.
@@ -219,7 +219,7 @@ class SettingsDialog {
 
     /**
     While a sign-in waits, read the status quietly and change only the CLI and account parts.
-    
+
     @returns The status, or undefined after an error, which the status line then shows.
     */
     private pollStatus(): Promise<Configuration | undefined> {

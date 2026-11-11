@@ -26,7 +26,7 @@ export class CliSection {
 
     /**
     Build the part without contacting the server.
-    
+
     @param actions - The dialog's request for the part's button.
     */
     constructor(private readonly actions: CliActions) {
@@ -51,7 +51,7 @@ export class CliSection {
 
     /**
     Show whether the server finds the CLI and whether it is current, and name the button for it.
-    
+
     @param cli - The CLI part of the last status.
     */
     display(cli: CliStatus): void {

@@ -167,11 +167,11 @@ function describeAccount(configuration) {
 }
 var AccountSection = class {
   /**
-  Build the part without contacting the server.
+      Build the part without contacting the server.
   
-  @param actions - The dialog's requests, its quiet status read, its status line, and its request lifetime,
-      whose end stops following the sign-in.
-  */
+      @param actions - The dialog's requests, its quiet status read, its status line, and its request lifetime,
+          whose end stops following the sign-in.
+      */
   constructor(actions) {
     this.actions = actions;
     this.fields.disabled = true;
@@ -201,10 +201,10 @@ var AccountSection = class {
   form = element("form");
   fields = element("fieldset");
   /**
-  Read the status once more while a sign-in waits, and report how it ended.
+      Read the status once more while a sign-in waits, and report how it ended.
   
-  @returns When the dialog shows the read.
-  */
+      @returns When the dialog shows the read.
+      */
   async poll() {
     this.timer = void 0;
     const configuration = await this.actions.poll();
@@ -212,10 +212,10 @@ var AccountSection = class {
     this.actions.report(describeOutcome(configuration));
   }
   /**
-  Open the sign-in page once after Sign in, then read the status again while the sign-in waits.
+      Open the sign-in page once after Sign in, then read the status again while the sign-in waits.
   
-  @param waiting - The sign-in that waits for the person, or undefined when none does.
-  */
+      @param waiting - The sign-in that waits for the person, or undefined when none does.
+      */
   followSignIn(waiting) {
     if (this.isStarting && waiting !== void 0) {
       window.open(waiting.verificationUrl, "_blank", "noopener,noreferrer");
@@ -231,10 +231,10 @@ var AccountSection = class {
     }
   }
   /**
-  Show the account, open the sign-in page once after Sign in, and follow a waiting sign-in.
+      Show the account, open the sign-in page once after Sign in, and follow a waiting sign-in.
   
-  @param configuration - The last status.
-  */
+      @param configuration - The last status.
+      */
   display(configuration) {
     const { cli, account, signIn } = configuration;
     const waiting = cli.found && !account.signedIn && signIn?.state === "waiting" ? signIn : void 0;
@@ -912,10 +912,10 @@ async function requestConfiguration(fetcher, signal, route = browserRoutes.setti
 // web/scripts/settings/cli.ts
 var CliSection = class {
   /**
-  Build the part without contacting the server.
+      Build the part without contacting the server.
   
-  @param actions - The dialog's request for the part's button.
-  */
+      @param actions - The dialog's request for the part's button.
+      */
   constructor(actions) {
     this.actions = actions;
     this.fields.disabled = true;
@@ -941,10 +941,10 @@ var CliSection = class {
     this.actions.update(message("cli.installed"), browserRoutes.settings.cli, "POST", message("cli.installing"));
   }
   /**
-  Show whether the server finds the CLI and whether it is current, and name the button for it.
+      Show whether the server finds the CLI and whether it is current, and name the button for it.
   
-  @param cli - The CLI part of the last status.
-  */
+      @param cli - The CLI part of the last status.
+      */
   display(cli) {
     this.found = cli.found;
     const version = cli.version ?? "";
@@ -962,10 +962,10 @@ var CliSection = class {
 var DIALOG_CLASS = "dreamina-dialog";
 var SettingsDialog = class {
   /**
-  Build the dialog's parts without contacting the server.
+      Build the dialog's parts without contacting the server.
   
-  @param fetcher - ComfyUI's local API client.
-  */
+      @param fetcher - ComfyUI's local API client.
+      */
   constructor(fetcher) {
     this.fetcher = fetcher;
     this.dialog.className = DIALOG_CLASS;
@@ -1021,10 +1021,10 @@ var SettingsDialog = class {
   // Every request joins this chain, so the next one starts only after the last one settles.
   pending = Promise.resolve();
   /**
-  Build duration, timeout, and media size inputs.
+      Build duration, timeout, and media size inputs.
   
-  @returns The form for execution limits.
-  */
+      @returns The form for execution limits.
+      */
   limits() {
     const form = element("form");
     this.limitFields.disabled = true;
@@ -1038,10 +1038,10 @@ var SettingsDialog = class {
     return form;
   }
   /**
-  Build fields from the backend's setting definitions.
+      Build fields from the backend's setting definitions.
   
-  @param configuration - The validated limits.
-  */
+      @param configuration - The validated limits.
+      */
   populateLimits(configuration) {
     this.limitFields.replaceChildren(element("legend", message("settings.limits")));
     for (const [name, definition] of Object.entries(configuration.definitions)) {
@@ -1059,10 +1059,10 @@ var SettingsDialog = class {
     this.limitFields.append(button(message("settings.saveLimits"), "submit"));
   }
   /**
-  Save only limits that changed after the last successful read.
+      Save only limits that changed after the last successful read.
   
-  @param configuration - The settings and revision currently shown.
-  */
+      @param configuration - The settings and revision currently shown.
+      */
   saveLimits(configuration) {
     const changes = /* @__PURE__ */ new Map();
     const settings = new Map(Object.entries(configuration.settings));
@@ -1079,10 +1079,10 @@ var SettingsDialog = class {
     });
   }
   /**
-  Show the validated status and apply the server's editing policy.
+      Show the validated status and apply the server's editing policy.
   
-  @param configuration - The last successful server response.
-  */
+      @param configuration - The last successful server response.
+      */
   display(configuration) {
     this.configuration = configuration;
     if (this.inputs.size === 0) this.populateLimits(configuration);
@@ -1100,14 +1100,14 @@ var SettingsDialog = class {
       this.status.replaceChildren(document.createTextNode(message("settings.readOnly")));
   }
   /**
-  Disable the parts, show the working text, and queue a request after the last one.
+      Disable the parts, show the working text, and queue a request after the last one.
   
-  @param success - The success message.
-  @param route - The local settings route.
-  @param method - The HTTP method.
-  @param body - The settings change, if any.
-  @param working - The text shown while the request runs.
-  */
+      @param success - The success message.
+      @param route - The local settings route.
+      @param method - The HTTP method.
+      @param body - The settings change, if any.
+      @param working - The text shown while the request runs.
+      */
   updateSettings(success, route, method, body, working = message("working")) {
     this.cli.fields.disabled = this.account.fields.disabled = this.limitFields.disabled = true;
     this.reload.disabled = true;
@@ -1115,14 +1115,14 @@ var SettingsDialog = class {
     this.pending = this.pending.then(() => this.requestSettings(success, route, method, body));
   }
   /**
-  Apply the server response and restore editing after a settings request.
+      Apply the server response and restore editing after a settings request.
   
-  @param success - The success message.
-  @param route - The local settings route.
-  @param method - The HTTP method.
-  @param body - The settings change, if any.
-  @returns When the dialog displays the response or error.
-  */
+      @param success - The success message.
+      @param route - The local settings route.
+      @param method - The HTTP method.
+      @param body - The settings change, if any.
+      @returns When the dialog displays the response or error.
+      */
   async requestSettings(success, route, method, body) {
     try {
       const value = await requestConfiguration(this.fetcher, this.controller.signal, route, method, body);
@@ -1144,10 +1144,10 @@ var SettingsDialog = class {
     }
   }
   /**
-  While a sign-in waits, read the status quietly and change only the CLI and account parts.
+      While a sign-in waits, read the status quietly and change only the CLI and account parts.
   
-  @returns The status, or undefined after an error, which the status line then shows.
-  */
+      @returns The status, or undefined after an error, which the status line then shows.
+      */
   pollStatus() {
     const reply = this.pending.then(async () => {
       try {

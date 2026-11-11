@@ -89,7 +89,7 @@ export class AccountSection {
 
     /**
     Build the part without contacting the server.
-    
+
     @param actions - The dialog's requests, its quiet status read, its status line, and its request lifetime,
         whose end stops following the sign-in.
     */
@@ -115,7 +115,7 @@ export class AccountSection {
 
     /**
     Read the status once more while a sign-in waits, and report how it ended.
-    
+
     @returns When the dialog shows the read.
     */
     private async poll(): Promise<void> {
@@ -127,7 +127,7 @@ export class AccountSection {
 
     /**
     Open the sign-in page once after Sign in, then read the status again while the sign-in waits.
-    
+
     @param waiting - The sign-in that waits for the person, or undefined when none does.
     */
     private followSignIn(waiting: Configuration['signIn']): void {
@@ -147,7 +147,7 @@ export class AccountSection {
 
     /**
     Show the account, open the sign-in page once after Sign in, and follow a waiting sign-in.
-    
+
     @param configuration - The last status.
     */
     display(configuration: Configuration): void {
