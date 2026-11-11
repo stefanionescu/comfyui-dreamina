@@ -66,7 +66,19 @@ class _Sources:
 
 
 def _read_text(name: str, values: Sequence[str]) -> str:
-    """Take the one stripped value a text input holds, and refuse several different values."""
+    """Take the one stripped value a text input holds, and refuse several different values.
+
+    Args:
+        name: The name of the text input, for the error message.
+        values: The values the text input holds, one per list item.
+
+    Returns:
+        The stripped text, or an empty string when the input holds nothing.
+
+    Raises:
+        DreaminaError: When the values differ.
+
+    """
     texts = {value.strip() for value in values}
     if len(texts) > 1:
         raise DreaminaError(ErrorCode.INVALID_INPUT, SINGLE_VALUE.format(name=name))
@@ -74,7 +86,15 @@ def _read_text(name: str, values: Sequence[str]) -> str:
 
 
 def _parse_sources(values: Sequence[object] | None) -> tuple[list[object], tuple[Reference, ...]]:
-    """Split connected values into ComfyUI media and references; a references value is a tuple."""
+    """Split connected values into ComfyUI media and references; a references value is a tuple.
+
+    Args:
+        values: The values connected to one socket; None when nothing is connected.
+
+    Returns:
+        The ComfyUI media, then the references.
+
+    """
     media = [value for value in values or () if not isinstance(value, tuple)]
     references = tuple(
         item for value in values or () if isinstance(value, tuple) for item in cast('tuple[Reference, ...]', value)
@@ -85,7 +105,21 @@ def _parse_sources(values: Sequence[object] | None) -> tuple[list[object], tuple
 def _read_sources(
     main: Sequence[object], auxiliary: Sequence[object] | None, voice: Sequence[object] | None
 ) -> _Sources:
-    """Check the connected sources before any upload: one main image, images in auxiliary, one voice at most."""
+    """Check the connected sources before any upload: one main image, images in auxiliary, one voice at most.
+
+    Args:
+        main: The values of the main socket.
+        auxiliary: The values of the auxiliary socket; None when nothing is connected.
+        voice: The values of the voice socket; None when nothing is connected.
+
+    Returns:
+        The checked sources.
+
+    Raises:
+        DreaminaError: When main is not exactly one image, auxiliary holds a reference that is not an image, or voice
+            holds several items or a reference that is not audio.
+
+    """
     main_media, main_references = _parse_sources(main)
     auxiliary_media, auxiliary_references = _parse_sources(auxiliary)
     voice_media, voice_references = _parse_sources(voice)
@@ -109,7 +143,18 @@ def _read_sources(
 
 
 async def _send_element(sources: _Sources, title: str, description: str, deadline: float) -> Reference:
-    """Upload the ComfyUI media, bind every source by its bare ID, and make the Element."""
+    """Upload the ComfyUI media, bind every source by its bare ID, and make the Element.
+
+    Args:
+        sources: The checked sources.
+        title: The Element's name on the canvas.
+        description: The note kept with the Element.
+        deadline: The monotonic time by which the uploads and the Element call must end.
+
+    Returns:
+        The reference of the new Element.
+
+    """
     runtime = get_runtime()
     await validate_cli()
     canvas = await find_canvas(runtime.canvas) or await create_canvas(runtime.canvas)
@@ -134,7 +179,21 @@ async def _create_element(
     voice: Sequence[object] | None,
     texts: tuple[Sequence[str], Sequence[str]],
 ) -> io.NodeOutput:
-    """Check every input before any upload, then make the Element within the request timeout."""
+    """Check every input before any upload, then make the Element within the request timeout.
+
+    Args:
+        main: What the node received on its main socket.
+        auxiliary: What the node received on its auxiliary socket, if anything.
+        voice: What the node received on its voice socket, if anything.
+        texts: The values of the title input, then those of the description input.
+
+    Returns:
+        The node output that holds the Element's reference.
+
+    Raises:
+        DreaminaError: When the title is empty or too long, or the work passes the request timeout.
+
+    """
     title, description = _read_text('title', texts[0]), _read_text('description', texts[1])
     if not title:
         raise DreaminaError(ErrorCode.INVALID_INPUT, ELEMENT_TITLE_EMPTY)
@@ -156,7 +215,12 @@ class ElementAdd(io.ComfyNode):
     @classmethod
     @override
     def define_schema(cls) -> io.Schema:
-        """Describe the node: a main image, more angles, a voice, a title, and a note in; one Element out."""
+        """Describe the node: a main image, more angles, a voice, a title, and a note in; one Element out.
+
+        Returns:
+            The schema of Element: Add.
+
+        """
         return io.Schema(
             node_id=f'{NODE_PREFIX}{cls.__name__}',
             display_name=_DISPLAY_NAME,
@@ -211,7 +275,19 @@ class ElementAdd(io.ComfyNode):
         auxiliary: list[object] | None = None,
         voice: list[object] | None = None,
     ) -> io.NodeOutput:
-        """Make the Element in an owned task, so ComfyUI's cancel stops the work."""
+        """Make the Element in an owned task, so ComfyUI's cancel stops the work.
+
+        Args:
+            main: The main image: ComfyUI images or references.
+            title: The Element's name, as a list of one text.
+            description: The note for the Element, as a list of one text.
+            auxiliary: More images of the subject: ComfyUI images or references.
+            voice: The Element's voice: ComfyUI audio or references.
+
+        Returns:
+            The node output that holds the Element's reference.
+
+        """
         return await wait_for_run(asyncio.create_task(_create_element(main, auxiliary, voice, (title, description))))
 
 

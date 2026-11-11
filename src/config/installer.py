@@ -14,7 +14,7 @@ INSTALLER_DOMAINS = ('.capcut.com', '.capcutstatic.com')
 INSTALLER_REDIRECTS = 3
 
 # The program and options that run a downloaded installer; the installer file goes last.
-INSTALLER_SHELLS = {
+INSTALLER_PROGRAMS = {
     'POSIX': ('bash',),
     'WINDOWS': ('powershell.exe', '-NoProfile', '-ExecutionPolicy', 'Bypass', '-File'),
 }
@@ -39,9 +39,9 @@ __all__ = [
     'INSTALLER_BYTES',
     'INSTALLER_DOMAINS',
     'INSTALLER_DOWNLOAD_SECONDS',
+    'INSTALLER_PROGRAMS',
     'INSTALLER_REASON_LINES',
     'INSTALLER_REDIRECTS',
-    'INSTALLER_SHELLS',
     'INSTALLER_URLS',
     'INSTALL_TIMEOUT_SECONDS',
 ]

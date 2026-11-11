@@ -1,4 +1,4 @@
-# Image: Generate
+# Image: generate
 
 Runs any Dreamina model that makes images from a prompt or from images. It
 outputs the images, and references to them for the next Dreamina node.

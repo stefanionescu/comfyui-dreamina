@@ -83,9 +83,6 @@ function selectedLocale() {
   }
 }
 
-// web/scripts/extension.ts
-import { app as app2 } from "../../scripts/app.js";
-
 // web/scripts/http.ts
 import { api } from "../../scripts/api.js";
 function requestLocal(route, options) {
@@ -120,53 +117,6 @@ var browserRoutes = {
     values: "/dreamina/v1/settings",
     session: "/dreamina/v1/session",
     cli: "/dreamina/v1/cli"
-  }
-};
-
-// web/scripts/settings/cli.ts
-var CliSection = class {
-  /**
-   * Build the part without contacting the server.
-   *
-   * @param actions - The dialog's request for the part's button.
-   */
-  constructor(actions) {
-    this.actions = actions;
-    this.fields.disabled = true;
-    this.fields.append(element("legend", message("cli.legend")), this.state, this.action);
-    this.form.append(this.fields);
-    this.form.addEventListener("submit", (event) => {
-      event.preventDefault();
-      this.confirmInstall();
-    });
-  }
-  actions;
-  form = element("form");
-  fields = element("fieldset");
-  state = element("p");
-  action = button(message("cli.install"), "submit");
-  found = false;
-  /** Ask before ByteDance's official installer runs, then send the install; a cancel sends nothing. */
-  confirmInstall() {
-    const question = message(this.found ? "cli.confirmUpdate" : "cli.confirmInstall");
-    if (!globalThis.confirm(question)) return;
-    this.actions.update(message("cli.installed"), browserRoutes.settings.cli, "POST", message("cli.installing"));
-  }
-  /**
-   * Show whether the server finds the CLI and whether it is current, and name the button for it.
-   *
-   * @param cli - The CLI part of the last status.
-   */
-  display(cli) {
-    this.found = cli.found;
-    const version = cli.version ?? "";
-    let text = message("cli.missing");
-    if (cli.found && cli.isCurrent) text = formatMessage("cli.current", { version });
-    else if (cli.found) {
-      text = formatMessage("cli.outdated", { version, minimum: cli.minimumVersion });
-    }
-    this.state.replaceChildren(document.createTextNode(text));
-    this.action.replaceChildren(document.createTextNode(message(cli.found ? "cli.update" : "cli.install")));
   }
 };
 
@@ -217,11 +167,11 @@ function describeAccount(configuration) {
 }
 var AccountSection = class {
   /**
-   * Build the part without contacting the server.
-   *
-   * @param actions - The dialog's requests, its quiet status read, its status line, and its request lifetime,
-   *     whose end stops following the sign-in.
-   */
+  Build the part without contacting the server.
+  
+  @param actions - The dialog's requests, its quiet status read, its status line, and its request lifetime,
+      whose end stops following the sign-in.
+  */
   constructor(actions) {
     this.actions = actions;
     this.fields.disabled = true;
@@ -243,18 +193,18 @@ var AccountSection = class {
     });
   }
   actions;
-  form = element("form");
-  fields = element("fieldset");
   lines = element("div");
   signIn = button(message("account.signIn"), "submit");
   signOut = button(message("account.signOut"));
   timer;
   isStarting = false;
+  form = element("form");
+  fields = element("fieldset");
   /**
-   * Read the status once more while a sign-in waits, and report how it ended.
-   *
-   * @returns When the dialog shows the read.
-   */
+  Read the status once more while a sign-in waits, and report how it ended.
+  
+  @returns When the dialog shows the read.
+  */
   async poll() {
     this.timer = void 0;
     const configuration = await this.actions.poll();
@@ -262,10 +212,10 @@ var AccountSection = class {
     this.actions.report(describeOutcome(configuration));
   }
   /**
-   * Open the sign-in page once after Sign in, then read the status again while the sign-in waits.
-   *
-   * @param waiting - The sign-in that waits for the person, or undefined when none does.
-   */
+  Open the sign-in page once after Sign in, then read the status again while the sign-in waits.
+  
+  @param waiting - The sign-in that waits for the person, or undefined when none does.
+  */
   followSignIn(waiting) {
     if (this.isStarting && waiting !== void 0) {
       window.open(waiting.verificationUrl, "_blank", "noopener,noreferrer");
@@ -281,10 +231,10 @@ var AccountSection = class {
     }
   }
   /**
-   * Show the account, open the sign-in page once after Sign in, and follow a waiting sign-in.
-   *
-   * @param configuration - The last status.
-   */
+  Show the account, open the sign-in page once after Sign in, and follow a waiting sign-in.
+  
+  @param configuration - The last status.
+  */
   display(configuration) {
     const { cli, account, signIn } = configuration;
     const waiting = cli.found && !account.signedIn && signIn?.state === "waiting" ? signIn : void 0;
@@ -819,8 +769,9 @@ function safeParse(schema, input, config$1) {
 }
 
 // web/scripts/schema.ts
+var errorTextSchema = pipe(string(), minLength(1), maxLength(browserLimits.maxErrorCharacters));
 var publicErrorSchema = object({
-  error: optional(pipe(string(), minLength(1), maxLength(browserLimits.maxErrorCharacters)))
+  error: optional(errorTextSchema)
 });
 function parsePublicError(value) {
   const result = safeParse(publicErrorSchema, value);
@@ -835,30 +786,35 @@ var settingDefinitionSchema = object({
   minimum: pipe(number(), safeInteger()),
   maximum: pipe(number(), safeInteger())
 });
-var labelSchema = pipe(string(), minLength(1), maxLength(64));
+var MAX_LABEL_CHARACTERS = 64;
+var MAX_CODE_CHARACTERS = 32;
+var labelSchema = pipe(string(), minLength(1), maxLength(MAX_LABEL_CHARACTERS));
+var errorTextSchema2 = pipe(string(), minLength(1), maxLength(browserLimits.maxErrorCharacters));
 var signInSchema = object({
   state: picklist(["waiting", "expired", "failed"]),
-  user_code: pipe(string(), minLength(1), maxLength(32)),
+  user_code: pipe(string(), minLength(1), maxLength(MAX_CODE_CHARACTERS)),
   verification_url: pipe(string(), url(), startsWith("https://")),
   expires_at: pipe(string(), isoTimestamp()),
-  message: nullable(pipe(string(), minLength(1), maxLength(browserLimits.maxErrorCharacters)))
+  message: nullable(errorTextSchema2)
+});
+var cliSchema = object({
+  found: boolean(),
+  version: nullable(labelSchema),
+  minimum_version: labelSchema,
+  is_current: boolean()
+});
+var accountSchema = object({
+  signed_in: boolean(),
+  is_vip: nullable(boolean()),
+  vip_level: nullable(labelSchema)
 });
 var configurationDocumentSchema = object({
   revision: pipe(string(), regex(browserPatterns.revision)),
   mutation_allowed: boolean(),
   setting_ranges: unknown(),
   settings: unknownRecordSchema,
-  cli: object({
-    found: boolean(),
-    version: nullable(labelSchema),
-    minimum_version: labelSchema,
-    is_current: boolean()
-  }),
-  account: object({
-    signed_in: boolean(),
-    is_vip: nullable(boolean()),
-    vip_level: nullable(labelSchema)
-  }),
+  cli: cliSchema,
+  account: accountSchema,
   sign_in: nullable(signInSchema)
 });
 function parseDefinitions(value) {
@@ -892,10 +848,9 @@ function parseConfiguration(value) {
   const definitions = parseDefinitions(document2.setting_ranges);
   const settings = new Map(Object.entries(document2.settings));
   for (const [name, definition] of Object.entries(definitions)) {
-    const setting = safeParse(
-      pipe(number(), safeInteger(), minValue(definition.minimum), maxValue(definition.maximum)),
-      settings.get(name)
-    );
+    const { minimum, maximum } = definition;
+    const limitSchema = pipe(number(), safeInteger(), minValue(minimum), maxValue(maximum));
+    const setting = safeParse(limitSchema, settings.get(name));
     if (!setting.success) throw new Error(message("settings.invalidLimit"));
   }
   const { cli, account } = document2;
@@ -954,17 +909,66 @@ async function requestConfiguration(fetcher, signal, route = browserRoutes.setti
   return parseConfiguration(document2);
 }
 
+// web/scripts/settings/cli.ts
+var CliSection = class {
+  /**
+  Build the part without contacting the server.
+  
+  @param actions - The dialog's request for the part's button.
+  */
+  constructor(actions) {
+    this.actions = actions;
+    this.fields.disabled = true;
+    this.fields.append(element("legend", message("cli.legend")), this.state, this.action);
+    this.form.append(this.fields);
+    this.form.addEventListener("submit", (event) => {
+      event.preventDefault();
+      this.confirmInstall();
+    });
+  }
+  actions;
+  state = element("p");
+  action = button(message("cli.install"), "submit");
+  found = false;
+  form = element("form");
+  fields = element("fieldset");
+  /**
+  Ask before ByteDance's official installer runs, then send the install; a cancel sends nothing.
+  */
+  confirmInstall() {
+    const question = message(this.found ? "cli.confirmUpdate" : "cli.confirmInstall");
+    if (!confirm(question)) return;
+    this.actions.update(message("cli.installed"), browserRoutes.settings.cli, "POST", message("cli.installing"));
+  }
+  /**
+  Show whether the server finds the CLI and whether it is current, and name the button for it.
+  
+  @param cli - The CLI part of the last status.
+  */
+  display(cli) {
+    this.found = cli.found;
+    const version = cli.version ?? "";
+    let text = message("cli.missing");
+    if (cli.found && cli.isCurrent) text = formatMessage("cli.current", { version });
+    else if (cli.found) {
+      text = formatMessage("cli.outdated", { version, minimum: cli.minimumVersion });
+    }
+    this.state.replaceChildren(document.createTextNode(text));
+    this.action.replaceChildren(document.createTextNode(message(cli.found ? "cli.update" : "cli.install")));
+  }
+};
+
 // web/scripts/settings/dialog.ts
-var current;
+var DIALOG_CLASS = "dreamina-dialog";
 var SettingsDialog = class {
   /**
-   * Build the dialog's parts without contacting the server.
-   *
-   * @param fetcher - ComfyUI's local API client.
-   */
+  Build the dialog's parts without contacting the server.
+  
+  @param fetcher - ComfyUI's local API client.
+  */
   constructor(fetcher) {
     this.fetcher = fetcher;
-    this.dialog.className = "dreamina-dialog";
+    this.dialog.className = DIALOG_CLASS;
     this.dialog.setAttribute("aria-labelledby", "dreamina-settings-title");
     const heading = element("h2", message("settings.title"));
     heading.id = "dreamina-settings-title";
@@ -1017,10 +1021,10 @@ var SettingsDialog = class {
   // Every request joins this chain, so the next one starts only after the last one settles.
   pending = Promise.resolve();
   /**
-   * Build duration, timeout, and media size inputs.
-   *
-   * @returns The form for execution limits.
-   */
+  Build duration, timeout, and media size inputs.
+  
+  @returns The form for execution limits.
+  */
   limits() {
     const form = element("form");
     this.limitFields.disabled = true;
@@ -1034,10 +1038,10 @@ var SettingsDialog = class {
     return form;
   }
   /**
-   * Build fields from the backend's setting definitions.
-   *
-   * @param configuration - The validated limits.
-   */
+  Build fields from the backend's setting definitions.
+  
+  @param configuration - The validated limits.
+  */
   populateLimits(configuration) {
     this.limitFields.replaceChildren(element("legend", message("settings.limits")));
     for (const [name, definition] of Object.entries(configuration.definitions)) {
@@ -1055,10 +1059,10 @@ var SettingsDialog = class {
     this.limitFields.append(button(message("settings.saveLimits"), "submit"));
   }
   /**
-   * Save only limits that changed after the last successful read.
-   *
-   * @param configuration - The settings and revision currently shown.
-   */
+  Save only limits that changed after the last successful read.
+  
+  @param configuration - The settings and revision currently shown.
+  */
   saveLimits(configuration) {
     const changes = /* @__PURE__ */ new Map();
     const settings = new Map(Object.entries(configuration.settings));
@@ -1075,10 +1079,10 @@ var SettingsDialog = class {
     });
   }
   /**
-   * Show the validated status and apply the server's editing policy.
-   *
-   * @param configuration - The last successful server response.
-   */
+  Show the validated status and apply the server's editing policy.
+  
+  @param configuration - The last successful server response.
+  */
   display(configuration) {
     this.configuration = configuration;
     if (this.inputs.size === 0) this.populateLimits(configuration);
@@ -1096,14 +1100,14 @@ var SettingsDialog = class {
       this.status.replaceChildren(document.createTextNode(message("settings.readOnly")));
   }
   /**
-   * Disable the parts, show the working text, and queue a request after the last one.
-   *
-   * @param success - The success message.
-   * @param route - The local settings route.
-   * @param method - The HTTP method.
-   * @param body - The settings change, if any.
-   * @param working - The text shown while the request runs.
-   */
+  Disable the parts, show the working text, and queue a request after the last one.
+  
+  @param success - The success message.
+  @param route - The local settings route.
+  @param method - The HTTP method.
+  @param body - The settings change, if any.
+  @param working - The text shown while the request runs.
+  */
   updateSettings(success, route, method, body, working = message("working")) {
     this.cli.fields.disabled = this.account.fields.disabled = this.limitFields.disabled = true;
     this.reload.disabled = true;
@@ -1111,14 +1115,14 @@ var SettingsDialog = class {
     this.pending = this.pending.then(() => this.requestSettings(success, route, method, body));
   }
   /**
-   * Apply the server response and restore editing after a settings request.
-   *
-   * @param success - The success message.
-   * @param route - The local settings route.
-   * @param method - The HTTP method.
-   * @param body - The settings change, if any.
-   * @returns When the dialog displays the response or error.
-   */
+  Apply the server response and restore editing after a settings request.
+  
+  @param success - The success message.
+  @param route - The local settings route.
+  @param method - The HTTP method.
+  @param body - The settings change, if any.
+  @returns When the dialog displays the response or error.
+  */
   async requestSettings(success, route, method, body) {
     try {
       const value = await requestConfiguration(this.fetcher, this.controller.signal, route, method, body);
@@ -1140,10 +1144,10 @@ var SettingsDialog = class {
     }
   }
   /**
-   * While a sign-in waits, read the status quietly and change only the CLI and account parts.
-   *
-   * @returns The status, or undefined after an error, which the status line then shows.
-   */
+  While a sign-in waits, read the status quietly and change only the CLI and account parts.
+  
+  @returns The status, or undefined after an error, which the status line then shows.
+  */
   pollStatus() {
     const reply = this.pending.then(async () => {
       try {
@@ -1165,30 +1169,34 @@ var SettingsDialog = class {
     this.pending = reply.then(() => void 0);
     return reply;
   }
-  /** Show the dialog and read the status. */
+  /**
+  Stop requests and the sign-in poll, and return focus to the caller.
+  */
+  dispose() {
+    this.controller.abort();
+    this.dialog.remove();
+    if (this.previousFocus instanceof HTMLElement && this.previousFocus.isConnected) this.previousFocus.focus();
+  }
+  /**
+  Show the dialog and read the status.
+  */
   show() {
     document.body.append(this.dialog);
     this.dialog.showModal();
     this.updateSettings(message("settings.reread"));
   }
-  /** Stop requests and the sign-in poll, and return focus to the caller. */
-  dispose() {
-    this.controller.abort();
-    this.dialog.remove();
-    if (current === this) current = void 0;
-    if (this.previousFocus instanceof HTMLElement && this.previousFocus.isConnected) this.previousFocus.focus();
-  }
 };
 function openSettings(fetcher) {
-  if (current?.dialog.open === true) {
-    current.dialog.focus();
+  const open = document.querySelector(`dialog.${DIALOG_CLASS}[open]`);
+  if (open) {
+    open.focus();
     return;
   }
-  current = new SettingsDialog(fetcher);
-  current.show();
+  new SettingsDialog(fetcher).show();
 }
 
 // web/scripts/extension.ts
+import { app as app2 } from "../../scripts/app.js";
 app2.registerExtension({
   name: "dreamina",
   setup: () => {

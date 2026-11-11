@@ -17,7 +17,8 @@ from .cli import find_binary, send_command
 from ..state.errors import ErrorCode, DreaminaError
 from ..state.replies import SchemaReply, VersionReply
 from ..config.dreamina import CALL_SECONDS, MINIMUM_VERSION, REQUIRED_COMMANDS, REPLY_SCHEMA_VERSION
-from ..config.patterns import VERSION_PATTERN
+from ..config.patterns import VERSION_PATTERN, SCHEMA_RANGE_PATTERN
+from ..config.generations import SCHEMA_CONSTRAINTS
 from ..config.messages.cli import CLI_CHANGED, CLI_MISSING, CLI_OUTDATED, CLI_VERSION_UNREADABLE
 
 if TYPE_CHECKING:
@@ -27,6 +28,8 @@ if TYPE_CHECKING:
     from ..state.replies import SchemaFlag, SchemaCommand
 
 _VERSION = re.compile(VERSION_PATTERN)
+# A whole-number range at the start of a flag's constraints in the schema.
+_RANGE = re.compile(SCHEMA_RANGE_PATTERN)
 # The oldest release accepted, as three numbers.
 _MINIMUM = tuple(int(part) for part in MINIMUM_VERSION.split('.'))
 # Each command this extension sends, with its flags by name, by command path.
@@ -44,6 +47,17 @@ async def _read_document[R: Reply](command: str, record: type[R]) -> R:
     """Run one local call of the check and read its reply, refusing one in a form this extension does not read.
 
     A missing CLI and one that cannot start keep their own messages.
+
+    Args:
+        command: The local command to run, version or schema.
+        record: The record class that the payload must fit.
+
+    Returns:
+        The payload as an instance of the record.
+
+    Raises:
+        DreaminaError: When the call fails, or its reply is in a form this extension does not read.
+
     """
     try:
         result = await send_command((command,), CALL_SECONDS['LOCAL'])
@@ -62,7 +76,16 @@ async def _read_document[R: Reply](command: str, record: type[R]) -> R:
 def _list_commands(
     commands: tuple[SchemaCommand, ...], parents: tuple[str, ...] = ()
 ) -> Iterator[tuple[str, dict[str, SchemaFlag]]]:
-    """Yield each command's path, its parents' names and its own joined by spaces, with its flags by name."""
+    """Yield each command's path, its parents' names and its own joined by spaces, with its flags by name.
+
+    Args:
+        commands: The commands of one level of the schema.
+        parents: The names of the commands above that level.
+
+    Yields:
+        The path of a command, with its flags by name.
+
+    """
     for command in commands:
         path = (*parents, command.name)
         yield ' '.join(path), {flag.name: flag for flag in command.flags}
@@ -70,7 +93,15 @@ def _list_commands(
 
 
 async def _read_contract() -> CommandFlags:
-    """Refuse a CLI that is too old, or that lacks a command or a flag this extension sends; return their flags."""
+    """Refuse a CLI that is too old, or that lacks a command or a flag this extension sends; return their flags.
+
+    Returns:
+        The schema's flags of each required command, by command path.
+
+    Raises:
+        DreaminaError: When the CLI is too old, its schema has another version, or a command or flag is missing.
+
+    """
     version = (await _read_document('version', VersionReply)).version
     if not is_current_version(version):
         raise DreaminaError(ErrorCode.CONFIGURATION, CLI_OUTDATED.format(version=version, minimum=MINIMUM_VERSION))
@@ -93,6 +124,12 @@ def _delete_validation(
 
     Its failure already reached every caller still waiting; taking it here keeps a validation whose callers all
     cancelled from failing unseen.
+
+    Args:
+        validations: The validations in flight on the task's event loop.
+        key: The key of the binary in validations.
+        task: The finished validation.
+
     """
     del validations[key]
     if not task.cancelled():
@@ -100,11 +137,38 @@ def _delete_validation(
 
 
 def is_current_version(version: str | None) -> bool:
-    """Whether a release is at least MINIMUM_VERSION; no version, or text that is not a release, is not current."""
+    """Whether a release is at least MINIMUM_VERSION; no version, or text that is not a release, is not current.
+
+    Args:
+        version: The release the CLI reports, or None.
+
+    Returns:
+        True when the release is at least MINIMUM_VERSION.
+
+    """
     if version is None:
         return False
     match = _VERSION.match(version)
     return match is not None and tuple(int(part) for part in match.groups()) >= _MINIMUM
+
+
+def read_rule(flag: SchemaFlag) -> range | tuple[str, ...] | None:
+    """Read a flag's rule from the schema: a whole-number range, the allowed values, or None when it gives neither.
+
+    Args:
+        flag: One flag of the upscale command, as the schema describes it.
+
+    Returns:
+        The range, the allowed values, or None.
+
+    """
+    head = flag.constraints.split(SCHEMA_CONSTRAINTS['PART'], 1)[0].strip()
+    match = _RANGE.match(head)
+    if match is not None:
+        return range(int(match.group(1)), int(match.group(2)) + 1)
+    if SCHEMA_CONSTRAINTS['CHOICE'] in head:
+        return tuple(part.strip() for part in head.split(SCHEMA_CONSTRAINTS['CHOICE']))
+    return None
 
 
 async def validate_cli() -> CommandFlags:
@@ -113,6 +177,13 @@ async def validate_cli() -> CommandFlags:
     It returns the schema's flags of every command this extension sends, so a caller that needs a flag's rule reads it
     from the same check. A task belongs to its event loop, and ComfyUI runs each prompt on a new one, so this module
     keeps the checks in flight per loop. A caller's cancel leaves the check running for the others.
+
+    Returns:
+        The schema's flags of each command this extension sends, by command path.
+
+    Raises:
+        DreaminaError: When no CLI is found.
+
     """
     binary = find_binary()
     try:
@@ -133,4 +204,4 @@ async def validate_cli() -> CommandFlags:
     return flags
 
 
-__all__ = ['is_current_version', 'validate_cli']
+__all__ = ['is_current_version', 'read_rule', 'validate_cli']

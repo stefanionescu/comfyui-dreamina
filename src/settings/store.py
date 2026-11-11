@@ -26,7 +26,12 @@ class ConfigurationStore:
     """Serialize local changes across server and executor threads."""
 
     def __init__(self, directory: Path) -> None:
-        """Select private storage and own the lock for settings changes and the account token."""
+        """Select private storage and own the lock for settings changes and the account token.
+
+        Args:
+            directory: The private folder that holds the settings file.
+
+        """
         self.directory = directory
         self.lock = threading.Lock()
         # The signed-in account's cache token; None until read in this process, and after a sign-in or sign-out.
@@ -40,6 +45,10 @@ class ConfigurationStore:
         """Read the settings and their revision, which identifies these non-secret settings.
 
         A window saves against the revision it read, so a stale window cannot overwrite newer changes.
+
+        Returns:
+            The settings, then their revision.
+
         """
         settings = self.read_settings()
         encoded = json.dumps(asdict(settings), sort_keys=True, separators=(',', ':')).encode()
@@ -49,6 +58,10 @@ class ConfigurationStore:
         """Read settings without creating files or directories.
 
         A save replaces the file whole, so a read needs no lock.
+
+        Returns:
+            The saved settings, or the defaults when no settings file exists.
+
         """
         path = self.directory / FILE_NAMES['SETTINGS']
         if not path.exists():
@@ -57,7 +70,15 @@ class ConfigurationStore:
         return parse_settings(validate_fields(parse_json(content)))
 
     def read_configuration(self) -> Configuration:
-        """Read the settings and the account token together, refusing unreadable settings."""
+        """Read the settings and the account token together, refusing unreadable settings.
+
+        Returns:
+            The settings, the account token, and the count of account changes.
+
+        Raises:
+            DreaminaError: When the settings file cannot be read or decoded.
+
+        """
         with self.lock:
             try:
                 settings = self.read_settings()
@@ -66,7 +87,12 @@ class ConfigurationStore:
             return Configuration(settings, self._account, self._account_changes)
 
     def read_status(self) -> dict[str, Json]:
-        """Describe the effective settings, their ranges, and their revision."""
+        """Describe the effective settings, their ranges, and their revision.
+
+        Returns:
+            The status document, with the keys settings, setting_ranges, and revision.
+
+        """
         with self.lock:
             settings, revision = self._read_revised_settings()
         return {
@@ -79,7 +105,16 @@ class ConfigurationStore:
         }
 
     def save_settings(self, changes: dict[str, Json], revision: str) -> None:
-        """Apply a validated patch only to the version the editor actually read."""
+        """Apply a validated patch only to the version the editor actually read.
+
+        Args:
+            changes: The settings to change, by name.
+            revision: The revision the editor read.
+
+        Raises:
+            DreaminaError: When a change names something other than a setting, or the revision is stale.
+
+        """
         if changes.keys() - EDITABLE_SETTINGS:
             raise DreaminaError(ErrorCode.CONFIGURATION, SETTING_READ_ONLY)
         with self.lock:
@@ -93,6 +128,14 @@ class ConfigurationStore:
         """Build the account's cache token and keep it unless the account changed while the caller read it.
 
         The random key makes the token useless outside this process; the account ID itself is never stored.
+
+        Args:
+            user_id: The ID of the Dreamina account, which the token is derived from.
+            account_changes: The count of account changes the caller read before it read the account.
+
+        Returns:
+            The token.
+
         """
         token = hmac.new(self._account_key, str(user_id).encode(), hashlib.sha256).hexdigest()
         with self.lock:

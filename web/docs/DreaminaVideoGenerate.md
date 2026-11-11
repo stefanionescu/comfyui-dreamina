@@ -1,4 +1,4 @@
-# Video: Generate
+# Video: generate
 
 Runs any Dreamina model that makes video: from a prompt, from a first and
 last frame, or from images, video, audio, and Elements together. It outputs the

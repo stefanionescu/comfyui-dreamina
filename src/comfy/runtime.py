@@ -47,7 +47,15 @@ def create_runtime() -> None:
 
 
 def get_runtime() -> Runtime:
-    """Reject execution before the host has loaded the extension."""
+    """Reject execution before the host has loaded the extension.
+
+    Returns:
+        The shared runtime.
+
+    Raises:
+        DreaminaError: When ComfyUI has not loaded the extension yet.
+
+    """
     if _runtime is None:
         raise DreaminaError(ErrorCode.CONFIGURATION, RUNTIME_NOT_READY)
     return _runtime

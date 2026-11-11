@@ -23,7 +23,18 @@ _DISPLAY_NAME = 'Model: Info'
 
 
 async def _read_report(name: str) -> io.NodeOutput:
-    """Read the model's report within the request timeout."""
+    """Read the model's report within the request timeout.
+
+    Args:
+        name: The model name to report on.
+
+    Returns:
+        The node output that holds the report as JSON text.
+
+    Raises:
+        DreaminaError: When the read passes the request timeout.
+
+    """
     configuration = await asyncio.to_thread(get_runtime().configuration.read_configuration)
     seconds = configuration.settings.request_timeout_seconds
     try:
@@ -40,7 +51,12 @@ class ModelInfo(io.ComfyNode):
     @classmethod
     @override
     def define_schema(cls) -> io.Schema:
-        """Describe the node: one model name in, one JSON report out."""
+        """Describe the node: one model name in, one JSON report out.
+
+        Returns:
+            The schema of Model: Info.
+
+        """
         return io.Schema(
             node_id=f'{NODE_PREFIX}{cls.__name__}',
             display_name=_DISPLAY_NAME,
@@ -64,7 +80,15 @@ class ModelInfo(io.ComfyNode):
     @classmethod
     @override
     async def execute(cls, *, model: str) -> io.NodeOutput:  # pyright: ignore[reportIncompatibleMethodOverride] # reason: ComfyUI calls by schema.
-        """Read the report in an owned task, so ComfyUI's cancel stops it."""
+        """Read the report in an owned task, so ComfyUI's cancel stops it.
+
+        Args:
+            model: The model name as typed; the node drops the spaces around it.
+
+        Returns:
+            The node output that holds the report.
+
+        """
         return await wait_for_run(asyncio.create_task(_read_report(model.strip())))
 
 

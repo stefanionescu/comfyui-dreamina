@@ -32,7 +32,15 @@ class CanvasStore:
     _lock: threading.Lock = field(default_factory=threading.Lock, init=False, repr=False)
 
     def read(self) -> CanvasRecord | None:
-        """Read the saved canvas; None when there is none or the file is not a canvas record, so a save replaces it."""
+        """Read the saved canvas; None when there is none or the file is not a canvas record, so a save replaces it.
+
+        Returns:
+            The saved canvas record, or None.
+
+        Raises:
+            DreaminaError: When the operating system cannot read the file.
+
+        """
         with self._lock:
             if not self.path.exists():
                 return None
@@ -48,7 +56,12 @@ class CanvasStore:
             return None
 
     def save(self, record: CanvasRecord) -> None:
-        """Write the canvas record atomically, replacing any earlier one."""
+        """Write the canvas record atomically, replacing any earlier one.
+
+        Args:
+            record: The canvas to save.
+
+        """
         content = (record.model_dump_json(indent=2) + '\n').encode()
         with self._lock:
             save_file(self.path, content)

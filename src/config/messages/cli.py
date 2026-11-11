@@ -47,7 +47,7 @@ INSTALL_NO_ANSWER = (
     'to see why.'
 )
 
-INSTALL_SHELL_MISSING = (
+INSTALL_PROGRAM_MISSING = (
     'The Dreamina installer needs {program}, which the ComfyUI computer does not have. Install {program}, then select '
     'Install in Dreamina Settings again.'
 )
@@ -68,6 +68,6 @@ __all__ = [
     'INSTALL_DOWNLOAD_FAILED',
     'INSTALL_FAILED',
     'INSTALL_NO_ANSWER',
-    'INSTALL_SHELL_MISSING',
+    'INSTALL_PROGRAM_MISSING',
     'INSTALL_TIMEOUT',
 ]

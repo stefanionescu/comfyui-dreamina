@@ -1,4 +1,4 @@
-# Generation: Download
+# Generation: download
 
 Downloads what Dreamina made for a run after the run stopped: you canceled
 it, ComfyUI restarted, or it took longer than the request timeout. Dreamina

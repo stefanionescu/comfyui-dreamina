@@ -24,14 +24,30 @@ if TYPE_CHECKING:
 
 
 def _format_bound(value: float | None) -> Json:
-    """Show a whole-number bound without a decimal point."""
+    """Show a whole-number bound without a decimal point.
+
+    Args:
+        value: A flag's minimum, maximum, or step; None when the flag has none.
+
+    Returns:
+        The bound as an integer when it is whole, the number otherwise, or None.
+
+    """
     if value is None:
         return None
     return int(value) if value.is_integer() else value
 
 
 def _describe_limits(limits: MaterialLimits | None) -> Json:
-    """Describe one media type's file limits, in bytes, pixels, and milliseconds; null when Dreamina gives none."""
+    """Describe one media type's file limits, in bytes, pixels, and milliseconds; null when Dreamina gives none.
+
+    Args:
+        limits: The file limits of one media type, or None.
+
+    Returns:
+        The limits by key, or None.
+
+    """
     if limits is None:
         return None
     return {
@@ -46,7 +62,16 @@ def _describe_limits(limits: MaterialLimits | None) -> Json:
 
 
 def _find_specification(mode: ModelMode, specifications: Sequence[ModeSpecification]) -> ModeSpecification | None:
-    """Return the one specification of a listed mode, told apart by mode, scenario, and total material count."""
+    """Return the one specification of a listed mode, told apart by mode, scenario, and total material count.
+
+    Args:
+        mode: The listed mode to find.
+        specifications: The model's specifications, one per mode.
+
+    Returns:
+        The specification, or None when none or several fit.
+
+    """
     references = mode.references
     fitting = [
         specification
@@ -66,7 +91,17 @@ def _find_specification(mode: ModelMode, specifications: Sequence[ModeSpecificat
 
 
 def _describe_references(mode: ModelMode, specification: ModeSpecification | None) -> Json:
-    """Describe what a mode takes; null when the list omits it, so the mode takes no materials."""
+    """Describe what a mode takes; null when the list omits it, so the mode takes no materials.
+
+    Args:
+        mode: The listed mode, which gives the counts and the rules.
+        specification: The mode's specification, which adds the file limits and the total durations; None leaves them
+            null.
+
+    Returns:
+        The reference limits by key, or None.
+
+    """
     references = mode.references
     if references is None:
         return None
@@ -92,7 +127,16 @@ def _describe_references(mode: ModelMode, specification: ModeSpecification | Non
 
 
 def _describe_mode(mode: ModelMode, specifications: Sequence[ModeSpecification]) -> dict[str, Json]:
-    """Describe one listed mode with the limits and membership its specification adds."""
+    """Describe one listed mode with the limits and membership its specification adds.
+
+    Args:
+        mode: The listed mode to describe.
+        specifications: The model's specifications, searched for the one of this mode.
+
+    Returns:
+        The mode's name, scenario, flags, references, output count, and membership.
+
+    """
     specification = _find_specification(mode, specifications)
     configs = specification.vip_configs if specification is not None else None
     return {
@@ -125,7 +169,20 @@ def _describe_mode(mode: ModelMode, specifications: Sequence[ModeSpecification])
 
 
 async def _read_specifications(model: str, kind: str, deadline: float) -> tuple[ModeSpecification, ...]:
-    """Read one model's full specification, one entry per mode, with one free call."""
+    """Read one model's full specification, one entry per mode, with one free call.
+
+    Args:
+        model: The canonical name of the model.
+        kind: The kind of the model, sent as --type.
+        deadline: The monotonic time by which the call must end.
+
+    Returns:
+        The generation specifications that name this model.
+
+    Raises:
+        build_failure: When the CLI refuses the model command.
+
+    """
     result = await send_command(('model', model, '--type', kind), max(deadline - time.monotonic(), 1.0))
     if not result.reply.ok:
         raise build_failure(result, CLI_FAILED)
@@ -142,6 +199,14 @@ async def read_report(name: str, deadline: float) -> dict[str, Json]:
 
     This function finds the model in the live lists the paid nodes check against; its full specification adds the file
     limits, and a speech model's voices follow. Every read is free.
+
+    Args:
+        name: The model name as the person typed it.
+        deadline: The monotonic time by which the reads must end.
+
+    Returns:
+        The report: the model, its aliases, kind, node, modes, and voices.
+
     """
     await validate_cli()
     model = await find_model(name, None)

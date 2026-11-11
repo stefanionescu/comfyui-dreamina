@@ -1,4 +1,4 @@
-# Image: Upscale
+# Image: upscale
 
 Makes images larger and sharper with Dreamina's upscale. It takes the images
 another Dreamina node made, or ComfyUI images, which it uploads to your

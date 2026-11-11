@@ -11,7 +11,17 @@ if TYPE_CHECKING:
 
 
 def _validate_widget_value(item: Item, value: object, owner: str) -> None:
-    """Refuse a widget value its input does not accept."""
+    """Refuse a widget value its input does not accept.
+
+    Args:
+        item: The description of the input.
+        value: The value to check.
+        owner: The node name that the error message shows.
+
+    Raises:
+        ValueError: When the value has the wrong type for the input, lies outside its range, or is none of its options.
+
+    """
     kind = item['type']
     options = cast('list[object]', item.get('options') or [])
     if kind == 'COMBO':
@@ -33,7 +43,20 @@ def _validate_widget_value(item: Item, value: object, owner: str) -> None:
 
 
 def _encode_dropdown_values(item: Item, values: Mapping[str, WidgetValue], owner: str) -> list[object]:
-    """Serialize a dynamic dropdown with the values of its option."""
+    """Serialize a dynamic dropdown with the values of its option.
+
+    Args:
+        item: The description of the dropdown.
+        values: The widget values of the node, by input name.
+        owner: The name of the node, for the error messages.
+
+    Returns:
+        The key of the chosen option, then the value of each plain widget of that option.
+
+    Raises:
+        ValueError: When the dropdown offers no option with the chosen key.
+
+    """
     name = str(item['name'])
     options = cast('list[dict[str, object]]', item['options'])
     chosen = values.get(name, options[0]['key'])
@@ -56,7 +79,16 @@ def _encode_dropdown_values(item: Item, values: Mapping[str, WidgetValue], owner
 
 
 def read_widget_default(item: Item) -> object:
-    """Read a widget's starting value; a widget without a default starts empty, as ComfyUI draws it."""
+    """Read a widget's starting value; a widget without a default starts empty, as ComfyUI draws it.
+
+    Args:
+        item: The description of the widget's input.
+
+    Returns:
+        The default of the input. Without one: the first option of a list, an empty text, False, or the minimum of
+        a number.
+
+    """
     default = item.get('default')
     if default is not None:
         return default
@@ -68,7 +100,20 @@ def read_widget_default(item: Item) -> object:
 
 
 def encode_widget_values(schema: Schema, values: Mapping[str, WidgetValue], owner: str) -> list[object]:
-    """Serialize the widget values of a node in schema order."""
+    """Serialize the widget values of a node in schema order.
+
+    Args:
+        schema: The description of the node.
+        values: The values that differ from the defaults, by input name.
+        owner: The name of the node, as the error messages show it.
+
+    Returns:
+        The values in the order the page stores them, with the extra entry that follows a seed or an upload dropdown.
+
+    Raises:
+        KeyError: When a value names no widget of the node.
+
+    """
     # ComfyUI builds the widgets of a node from its required inputs first, then its optional ones.
     widgets = sorted(
         (item for item in cast('list[Item]', schema['inputs']) if item.get('widget')),

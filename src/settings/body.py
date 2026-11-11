@@ -12,7 +12,22 @@ from ..config.messages.requests import JSON_SIZE, JSON_TYPE, JSON_SYNTAX, REQUES
 
 
 async def read_body(request: web.Request, *, max_bytes: int = SETTINGS_BODY['MAX_BYTES']) -> dict[str, Json]:
-    """Read a size-limited JSON body, including without Content-Length."""
+    """Read a size-limited JSON body, including without Content-Length.
+
+    Args:
+        request: The request whose body is read.
+        max_bytes: The most bytes the body may hold.
+
+    Returns:
+        The JSON object of the body.
+
+    Raises:
+        web.HTTPUnsupportedMediaType: When the content type is not JSON.
+        web.HTTPRequestEntityTooLarge: When the body passes the size limit.
+        web.HTTPRequestTimeout: When the body does not arrive in time.
+        web.HTTPBadRequest: When the body is not UTF-8 text.
+
+    """
     if request.content_type != JSON_MEDIA_TYPE:
         raise web.HTTPUnsupportedMediaType(text=JSON_TYPE)
     if request.content_length is not None and request.content_length > max_bytes:

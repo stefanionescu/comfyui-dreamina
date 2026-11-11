@@ -1,8 +1,9 @@
 import '#web/interface.css';
-import { message } from '#web/text.ts';
-import { app } from '../../scripts/app.js';
 import { requestLocal } from '#web/http.ts';
 import { openSettings } from '#web/settings/dialog.ts';
+import { message } from '#web/text.ts';
+
+import { app } from '../../scripts/app.js';
 
 app.registerExtension({
     name: 'dreamina',

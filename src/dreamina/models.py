@@ -49,6 +49,12 @@ def _delete_read(
 
     Its failure already reached every caller still waiting; taking it here keeps a read whose callers all cancelled
     from failing unseen.
+
+    Args:
+        reads: The reads in flight on the event loop of the read, keyed by kind.
+        kind: The kind whose read ended.
+        read: The finished task.
+
     """
     del reads[kind]
     if not read.cancelled():
@@ -56,7 +62,19 @@ def _delete_read(
 
 
 async def _send_model_list(kind: str) -> tuple[ListedModel, ...]:
-    """Read one kind's models from the CLI and keep them; a failed read keeps nothing."""
+    """Read one kind's models from the CLI and keep them; a failed read keeps nothing.
+
+    Args:
+        kind: The kind of models to list: image, video, or audio.
+
+    Returns:
+        The models the CLI lists for the kind.
+
+    Raises:
+        DreaminaError: When this extension cannot read the list the CLI sent.
+        build_failure: When the CLI refuses the list command.
+
+    """
     result = await send_command((*LIST_COMMAND, kind), LIST_TIMEOUT_SECONDS)
     if not result.reply.ok:
         raise build_failure(result, CLI_FAILED)
@@ -74,6 +92,13 @@ async def _read_model_list(kind: str) -> tuple[ListedModel, ...]:
     A task belongs to its event loop. ComfyUI runs each prompt on a new loop and validates queued prompts on the
     server's loop, so this module keeps the reads in flight per loop. A caller's cancel leaves the read running for the
     others.
+
+    Args:
+        kind: The kind whose list to return.
+
+    Returns:
+        The kept or newly read models of the kind.
+
     """
     if kind in _LISTS:
         return _LISTS[kind]
@@ -86,7 +111,19 @@ async def _read_model_list(kind: str) -> tuple[ListedModel, ...]:
 
 
 def _find_match(models: tuple[ListedModel, ...], name: str) -> ListedModel | None:
-    """Match a name to a canonical name, then to an alias, ignoring case; never by substring or ranking."""
+    """Match a name to a canonical name, then to an alias, ignoring case; never by substring or ranking.
+
+    Args:
+        models: The listed models to search.
+        name: The model name as the person typed it.
+
+    Returns:
+        The matching model, or None when no model has the name or alias.
+
+    Raises:
+        DreaminaError: When the name is an alias of more than one model.
+
+    """
     typed = name.casefold()
     exact = next((model for model in models if model.name.casefold() == typed), None)
     if exact is not None:
@@ -99,7 +136,16 @@ def _find_match(models: tuple[ListedModel, ...], name: str) -> ListedModel | Non
 
 
 async def _find_in_kind(name: str, kind: str) -> tuple[ListedModel | None, tuple[ListedModel, ...]]:
-    """Match a name in one kind's list, reading the list again once when a list kept from earlier misses it."""
+    """Match a name in one kind's list, reading the list again once when a list kept from earlier misses it.
+
+    Args:
+        name: The model name as the person typed it.
+        kind: The kind whose list to search.
+
+    Returns:
+        The match, or None, and the list that was searched last.
+
+    """
     was_kept = kind in _LISTS
     models = await _read_model_list(kind)
     match = _find_match(models, name)
@@ -111,7 +157,17 @@ async def _find_in_kind(name: str, kind: str) -> tuple[ListedModel | None, tuple
 
 
 def _build_unknown(name: str, models: tuple[ListedModel, ...], made: str) -> DreaminaError:
-    """Refuse a name no list holds, suggesting the closest canonical names; equal scores keep list order."""
+    """Refuse a name no list holds, suggesting the closest canonical names; equal scores keep list order.
+
+    Args:
+        name: The model name that no list holds.
+        models: Every model that was searched.
+        made: What the searched kinds make, as the message for an empty list names it.
+
+    Returns:
+        The error for the caller to raise.
+
+    """
     if not models:
         return DreaminaError(ErrorCode.UNAVAILABLE, MODEL_LIST_EMPTY.format(made=made))
     typed = name.casefold()
@@ -128,7 +184,18 @@ def _build_unknown(name: str, models: tuple[ListedModel, ...], made: str) -> Dre
 
 
 async def _find_any(name: str) -> ListedModel:
-    """Find a model of any kind, for Model: Info, searching each kind in menu order."""
+    """Find a model of any kind, for Model: Info, searching each kind in menu order.
+
+    Args:
+        name: The stripped model name to find.
+
+    Returns:
+        The first model that matches.
+
+    Raises:
+        _build_unknown: When no kind's list holds the name.
+
+    """
     searched: list[ListedModel] = []
     for kind in KINDS:
         match, models = await _find_in_kind(name, kind)
@@ -143,6 +210,18 @@ async def find_model(name: str, kind: Kind | None) -> ListedModel:
 
     A paid node passes its kind, and this function refuses a model of another kind, naming the node that runs it.
     Model: Info passes no kind.
+
+    Args:
+        name: The model name as typed; spaces around it are ignored.
+        kind: The kind of the calling node, or None to search every kind.
+
+    Returns:
+        The listed model with that name or alias.
+
+    Raises:
+        DreaminaError: When the name is empty, or the model belongs to another kind.
+        _build_unknown: When no searched list holds the name.
+
     """
     name = name.strip()
     if not name:

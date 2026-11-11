@@ -56,7 +56,15 @@ _SHAPES: dict[type, str] = {
 
 
 def _format_number(number: float) -> str:
-    """Write a number as the CLI receives it: a whole number without a decimal part."""
+    """Write a number as the CLI receives it: a whole number without a decimal part.
+
+    Args:
+        number: The number to write.
+
+    Returns:
+        The number as text.
+
+    """
     whole = int(number)
     if whole == number:
         return str(whole)
@@ -64,7 +72,19 @@ def _format_number(number: float) -> str:
 
 
 def _format_value(name: str, value: Json) -> str:
-    """Write one value as the text the CLI receives; the node sends only text and numbers."""
+    """Write one value as the text the CLI receives; the node sends only text and numbers.
+
+    Args:
+        name: The flag's name, which the refusal shows.
+        value: The value the person gave for the flag.
+
+    Returns:
+        The value as text.
+
+    Raises:
+        DreaminaError: When the value is neither text nor a number.
+
+    """
     if isinstance(value, bool) or not isinstance(value, (str, int, float)):
         raise DreaminaError(
             ErrorCode.INVALID_INPUT, VALUE_TYPE.format(flag=name, shape=JSON_SHAPES[_SHAPES[type(value)]])
@@ -73,7 +93,17 @@ def _format_value(name: str, value: Json) -> str:
 
 
 def _validate_number(name: str, flag: ModelFlag, text: str) -> None:
-    """Check a value against its flag's minimum, maximum, and step; the step counts from the minimum or from 0."""
+    """Check a value against its flag's minimum, maximum, and step; the step counts from the minimum or from 0.
+
+    Args:
+        name: The flag's name, which each refusal shows.
+        flag: The model's flag, with its minimum, maximum, and step.
+        text: The value as the CLI receives it.
+
+    Raises:
+        DreaminaError: When the value is not a finite number, is out of bounds, or is off the step.
+
+    """
     try:
         number = float(text)
     except ValueError:
@@ -99,7 +129,20 @@ def _validate_number(name: str, flag: ModelFlag, text: str) -> None:
 
 
 def _validate_value(name: str, flag: ModelFlag, value: Json) -> str:
-    """Check one value against its flag's listed values, length, and numeric bounds, and return it as sent."""
+    """Check one value against its flag's listed values, length, and numeric bounds, and return it as sent.
+
+    Args:
+        name: The name of the flag in a refusal.
+        flag: The model's flag, with its listed values and its limits.
+        value: The value to check, as the person gave it.
+
+    Returns:
+        The value as the text the CLI receives.
+
+    Raises:
+        DreaminaError: When the value is not one of the listed values, or is too short or too long.
+
+    """
     text = _format_value(name, value)
     if flag.values is not None and text not in flag.values:
         message = VALUE_CHOICES.format(flag=name, value=text, values=', '.join(flag.values))
@@ -116,7 +159,17 @@ def _validate_value(name: str, flag: ModelFlag, value: Json) -> str:
 
 
 def _validate_prompt(model: str, flag: ModelFlag, prompt: str) -> None:
-    """Check the prompt's length against the entry's prompt flag, naming the model and how much is over."""
+    """Check the prompt's length against the entry's prompt flag, naming the model and how much is over.
+
+    Args:
+        model: The model's name, which a refusal shows.
+        flag: The entry's prompt flag, with its length limits.
+        prompt: The prompt the run sends.
+
+    Raises:
+        DreaminaError: When the prompt is shorter or longer than the flag allows.
+
+    """
     count = len(prompt)
     if flag.min_length is not None and count < flag.min_length:
         message = PROMPT_TOO_SHORT.format(count=count, model=model, minimum=flag.min_length)
@@ -128,7 +181,22 @@ def _validate_prompt(model: str, flag: ModelFlag, prompt: str) -> None:
 
 
 def _build_mode_flags(model: str, mode: ModelMode, label: str, prompt: str, flag: ModelFlag | None) -> list[str]:
-    """Start the call with the entry's mode and scenario, and check the prompt against the entry's prompt flag."""
+    """Start the call with the entry's mode and scenario, and check the prompt against the entry's prompt flag.
+
+    Args:
+        model: The model's name, for a refusal about the prompt's length.
+        mode: The chosen entry of the model.
+        label: The entry's name in a refusal.
+        prompt: The prompt the run sends, empty when there is none.
+        flag: The entry's prompt flag, or None when the entry lists none.
+
+    Returns:
+        The mode flag with its value, then the scenario flag with its value when the entry has a scenario.
+
+    Raises:
+        DreaminaError: When the entry requires a prompt and there is none.
+
+    """
     built = [FLAG_PREFIX + SELECTION_KEYS['MODE'], mode.name]
     if mode.scenario:
         built += [FLAG_PREFIX + SELECTION_KEYS['SCENARIO'], mode.scenario]
@@ -140,7 +208,18 @@ def _build_mode_flags(model: str, mode: ModelMode, label: str, prompt: str, flag
 
 
 def parse_arguments(text: str) -> dict[str, Json]:
-    """Read the arguments box as one JSON object, keys in the person's order; empty text is an empty object."""
+    """Read the arguments box as one JSON object, keys in the person's order; empty text is an empty object.
+
+    Args:
+        text: The text of the arguments box.
+
+    Returns:
+        The keys and values of the object.
+
+    Raises:
+        DreaminaError: When the text is not valid JSON, or is JSON other than an object.
+
+    """
     if not text.strip():
         return {}
     try:
@@ -156,7 +235,19 @@ def parse_arguments(text: str) -> dict[str, Json]:
 
 
 def add_flags(flags: Mapping[str, Json], arguments: Mapping[str, Json]) -> dict[str, Json]:
-    """Join the flag inputs of the node and the arguments box into one set of flags, refusing a flag set in both."""
+    """Join the flag inputs of the node and the arguments box into one set of flags, refusing a flag set in both.
+
+    Args:
+        flags: The values of the node's flag inputs, by flag name.
+        arguments: The object read from the arguments box.
+
+    Returns:
+        The flags of both, the node's inputs first.
+
+    Raises:
+        DreaminaError: When both set the same flag.
+
+    """
     twice = next((name for name in flags if name in arguments), None)
     if twice is not None:
         raise DreaminaError(ErrorCode.INVALID_INPUT, FLAG_TWICE.format(flag=twice))
@@ -164,7 +255,16 @@ def add_flags(flags: Mapping[str, Json], arguments: Mapping[str, Json]) -> dict[
 
 
 def validate_argument_names(model: ListedModel, arguments: Mapping[str, Json]) -> None:
-    """Refuse a key no entry of the model lists, or one written with dashes; it needs nothing connected."""
+    """Refuse a key no entry of the model lists, or one written with dashes; it needs nothing connected.
+
+    Args:
+        model: The listed model, whose entries name the allowed keys.
+        arguments: The flags of the run, by key.
+
+    Raises:
+        DreaminaError: When a key starts with a dash, or no entry of the model lists it.
+
+    """
     flags = list(dict.fromkeys(flag.name.removeprefix(FLAG_PREFIX) for mode in model.modes for flag in mode.flags))
     selection = [SELECTION_KEYS['MODE']]
     if any(mode.scenario for mode in model.modes):
@@ -180,7 +280,19 @@ def validate_argument_names(model: ListedModel, arguments: Mapping[str, Json]) -
 
 
 def choose_prompt(prompt: str, arguments: Mapping[str, Json]) -> str:
-    """Return the one prompt a run sends: from the prompt box or from arguments, never both."""
+    """Return the one prompt a run sends: from the prompt box or from arguments, never both.
+
+    Args:
+        prompt: The text of the prompt box.
+        arguments: The run's flags, which may hold a prompt of their own.
+
+    Returns:
+        The prompt to send, empty when neither place holds one.
+
+    Raises:
+        DreaminaError: When both places hold a prompt, or the prompt in arguments is not text.
+
+    """
     has_text = bool(prompt.strip())
     if PROMPT_FLAG not in arguments:
         return prompt if has_text else ''
@@ -199,6 +311,20 @@ def build_flags(model: str, mode: ModelMode, label: str, prompt: str, arguments:
     This function checks the prompt, and its refusals name the model; the run call sends the prompt. The person's keys
     keep their order. The key of each flag is its name without the leading dashes, and label names the entry in
     refusals.
+
+    Args:
+        model: The model's name, for refusals about the prompt.
+        mode: The chosen entry, whose flags check each value.
+        label: The entry's name in refusals.
+        prompt: The prompt the run sends, checked here and left out of the result.
+        arguments: The run's flags by key.
+
+    Returns:
+        The flags and their values, in the order the CLI receives them.
+
+    Raises:
+        DreaminaError: When the entry does not list a given flag, or the arguments lack a required one.
+
     """
     flags = {flag.name.removeprefix(FLAG_PREFIX): flag for flag in mode.flags}
     built = _build_mode_flags(model, mode, label, prompt, flags.get(PROMPT_FLAG))

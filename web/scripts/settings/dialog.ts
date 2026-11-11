@@ -1,17 +1,19 @@
-import type { Fetcher } from '#web/http.ts';
 import { button, element } from '#web/dom.ts';
+import type { Fetcher } from '#web/http.ts';
 import { browserRoutes } from '#web/routes.ts';
-import { CliSection } from '#web/settings/cli.ts';
-import { message, LIMIT_LABELS } from '#web/text.ts';
 import { AccountSection } from '#web/settings/account.ts';
 import { requestConfiguration } from '#web/settings/api.ts';
+import { CliSection } from '#web/settings/cli.ts';
 import type { Configuration } from '#web/settings/schema.ts';
+import { LIMIT_LABELS, message } from '#web/text.ts';
 
-let current: SettingsDialog | undefined;
+const DIALOG_CLASS = 'dreamina-dialog';
 
-/** Show the CLI, the account, and the request limits, and cancel pending requests when the dialog closes. */
+/**
+Show the CLI, the account, and the request limits, and cancel pending requests when the dialog closes.
+*/
 class SettingsDialog {
-    readonly dialog = element('dialog');
+    private readonly dialog = element('dialog');
 
     private readonly previousFocus = document.activeElement;
 
@@ -48,12 +50,12 @@ class SettingsDialog {
     private pending: Promise<void> = Promise.resolve();
 
     /**
-     * Build the dialog's parts without contacting the server.
-     *
-     * @param fetcher - ComfyUI's local API client.
-     */
+    Build the dialog's parts without contacting the server.
+    
+    @param fetcher - ComfyUI's local API client.
+    */
     constructor(private readonly fetcher: Fetcher) {
-        this.dialog.className = 'dreamina-dialog';
+        this.dialog.className = DIALOG_CLASS;
         this.dialog.setAttribute('aria-labelledby', 'dreamina-settings-title');
         const heading = element('h2', message('settings.title'));
         heading.id = 'dreamina-settings-title';
@@ -81,10 +83,10 @@ class SettingsDialog {
     }
 
     /**
-     * Build duration, timeout, and media size inputs.
-     *
-     * @returns The form for execution limits.
-     */
+    Build duration, timeout, and media size inputs.
+    
+    @returns The form for execution limits.
+    */
     private limits(): HTMLFormElement {
         const form = element('form');
         this.limitFields.disabled = true;
@@ -99,10 +101,10 @@ class SettingsDialog {
     }
 
     /**
-     * Build fields from the backend's setting definitions.
-     *
-     * @param configuration - The validated limits.
-     */
+    Build fields from the backend's setting definitions.
+    
+    @param configuration - The validated limits.
+    */
     private populateLimits(configuration: Configuration): void {
         this.limitFields.replaceChildren(element('legend', message('settings.limits')));
         for (const [name, definition] of Object.entries(configuration.definitions)) {
@@ -121,10 +123,10 @@ class SettingsDialog {
     }
 
     /**
-     * Save only limits that changed after the last successful read.
-     *
-     * @param configuration - The settings and revision currently shown.
-     */
+    Save only limits that changed after the last successful read.
+    
+    @param configuration - The settings and revision currently shown.
+    */
     private saveLimits(configuration: Configuration): void {
         const changes = new Map<string, number>();
         const settings = new Map(Object.entries(configuration.settings));
@@ -142,10 +144,10 @@ class SettingsDialog {
     }
 
     /**
-     * Show the validated status and apply the server's editing policy.
-     *
-     * @param configuration - The last successful server response.
-     */
+    Show the validated status and apply the server's editing policy.
+    
+    @param configuration - The last successful server response.
+    */
     private display(configuration: Configuration): void {
         this.configuration = configuration;
         if (this.inputs.size === 0) this.populateLimits(configuration);
@@ -164,14 +166,14 @@ class SettingsDialog {
     }
 
     /**
-     * Disable the parts, show the working text, and queue a request after the last one.
-     *
-     * @param success - The success message.
-     * @param route - The local settings route.
-     * @param method - The HTTP method.
-     * @param body - The settings change, if any.
-     * @param working - The text shown while the request runs.
-     */
+    Disable the parts, show the working text, and queue a request after the last one.
+    
+    @param success - The success message.
+    @param route - The local settings route.
+    @param method - The HTTP method.
+    @param body - The settings change, if any.
+    @param working - The text shown while the request runs.
+    */
     private updateSettings(
         success: string,
         route?: string,
@@ -186,14 +188,14 @@ class SettingsDialog {
     }
 
     /**
-     * Apply the server response and restore editing after a settings request.
-     *
-     * @param success - The success message.
-     * @param route - The local settings route.
-     * @param method - The HTTP method.
-     * @param body - The settings change, if any.
-     * @returns When the dialog displays the response or error.
-     */
+    Apply the server response and restore editing after a settings request.
+    
+    @param success - The success message.
+    @param route - The local settings route.
+    @param method - The HTTP method.
+    @param body - The settings change, if any.
+    @returns When the dialog displays the response or error.
+    */
     private async requestSettings(success: string, route?: string, method?: string, body?: unknown): Promise<void> {
         try {
             const value = await requestConfiguration(this.fetcher, this.controller.signal, route, method, body);
@@ -216,10 +218,10 @@ class SettingsDialog {
     }
 
     /**
-     * While a sign-in waits, read the status quietly and change only the CLI and account parts.
-     *
-     * @returns The status, or undefined after an error, which the status line then shows.
-     */
+    While a sign-in waits, read the status quietly and change only the CLI and account parts.
+    
+    @returns The status, or undefined after an error, which the status line then shows.
+    */
     private pollStatus(): Promise<Configuration | undefined> {
         const reply = this.pending.then(async () => {
             try {
@@ -242,32 +244,35 @@ class SettingsDialog {
         return reply;
     }
 
-    /** Show the dialog and read the status. */
+    /**
+    Stop requests and the sign-in poll, and return focus to the caller.
+    */
+    private dispose(): void {
+        this.controller.abort();
+        this.dialog.remove();
+        if (this.previousFocus instanceof HTMLElement && this.previousFocus.isConnected) this.previousFocus.focus();
+    }
+
+    /**
+    Show the dialog and read the status.
+    */
     show(): void {
         document.body.append(this.dialog);
         this.dialog.showModal();
         this.updateSettings(message('settings.reread'));
     }
-
-    /** Stop requests and the sign-in poll, and return focus to the caller. */
-    private dispose(): void {
-        this.controller.abort();
-        this.dialog.remove();
-        if (current === this) current = undefined;
-        if (this.previousFocus instanceof HTMLElement && this.previousFocus.isConnected) this.previousFocus.focus();
-    }
 }
 
 /**
- * Open one settings dialog at a time.
- *
- * @param fetcher - ComfyUI's local API client.
- */
+Open one settings dialog at a time.
+
+@param fetcher - ComfyUI's local API client.
+*/
 export function openSettings(fetcher: Fetcher): void {
-    if (current?.dialog.open === true) {
-        current.dialog.focus();
+    const open = document.querySelector<HTMLDialogElement>(`dialog.${DIALOG_CLASS}[open]`);
+    if (open) {
+        open.focus();
         return;
     }
-    current = new SettingsDialog(fetcher);
-    current.show();
+    new SettingsDialog(fetcher).show();
 }

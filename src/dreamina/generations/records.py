@@ -37,7 +37,12 @@ class GenerationStore:
     _lock: threading.Lock = field(default_factory=threading.Lock, init=False, repr=False)
 
     def _read_all(self) -> list[GenerationRecord]:
-        """Read every record, skipping a damaged, oversized, or other-version file so it never blocks the rest."""
+        """Read every record, skipping a damaged, oversized, or other-version file so it never blocks the rest.
+
+        Returns:
+            The readable records, in file name order.
+
+        """
         if not self.directory.is_dir():
             return []
         records: list[GenerationRecord] = []
@@ -50,19 +55,34 @@ class GenerationStore:
         return records
 
     def save(self, record: GenerationRecord) -> None:
-        """Write one record atomically, named by its submit ID."""
+        """Write one record atomically, named by its submit ID.
+
+        Args:
+            record: The record to write.
+
+        """
         path = self.directory / f'{record.submit_id}{GENERATION_SUFFIX}'
         with self._lock:
             save_file(path, (record.model_dump_json(indent=2) + '\n').encode())
 
     def delete(self, submit_id: str) -> None:
-        """Delete one record; a record already gone needs no removal."""
+        """Delete one record; a record already gone needs no removal.
+
+        Args:
+            submit_id: The submit ID that names the record's file.
+
+        """
         path = self.directory / f'{submit_id}{GENERATION_SUFFIX}'
         with self._lock:
             path.unlink(missing_ok=True)
 
     def list_records(self) -> list[GenerationRecord]:
-        """List every recorded generation, of every kind, newest first: one node collects them all."""
+        """List every recorded generation, of every kind, newest first: one node collects them all.
+
+        Returns:
+            The records, sorted by submission time.
+
+        """
         with self._lock:
             records = self._read_all()
         return sorted(records, key=lambda record: record.submitted_at, reverse=True)
@@ -71,6 +91,10 @@ class GenerationStore:
         """List every record, newest first, with its label in Generation: Download.
 
         A label holds the start of the submit ID, the model, and the minute of the submission in UTC.
+
+        Returns:
+            Each label with its record.
+
         """
         labeled: list[tuple[str, GenerationRecord]] = []
         for record in self.list_records():
@@ -80,7 +104,18 @@ class GenerationStore:
         return labeled
 
     def find_record(self, label: str) -> GenerationRecord:
-        """Return the newest record with this label; it compares whole labels, so two alike IDs stay apart."""
+        """Return the newest record with this label; it compares whole labels, so two alike IDs stay apart.
+
+        Args:
+            label: The label the person chose in Generation: Download.
+
+        Returns:
+            The record with that label.
+
+        Raises:
+            DreaminaError: When no record has the label.
+
+        """
         record = next((record for name, record in self.list_labeled_records() if name == label), None)
         if record is None:
             raise DreaminaError(ErrorCode.INVALID_INPUT, GENERATION_UNKNOWN)

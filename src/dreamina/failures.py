@@ -71,7 +71,16 @@ _CODE_FAILURES: dict[str, tuple[ErrorCode, str]] = {
 
 
 def _choose_reason(validation: Validation | None, message: str) -> str:
-    """Name the refused field with the CLI's detail for it, or give the CLI's message when the CLI refused no value."""
+    """Name the refused field with the CLI's detail for it, or give the CLI's message when the CLI refused no value.
+
+    Args:
+        validation: The CLI's record of the refused field, or None.
+        message: The CLI's message for the failure.
+
+    Returns:
+        The reason, not yet cleaned.
+
+    """
     if validation is None:
         return message
     return f'{validation.field_path}: {validation.detail}' if validation.field_path else validation.detail
@@ -82,6 +91,15 @@ def _choose_failure(exit_code: int, failure: CliFailure, context: str) -> tuple[
 
     An upgrade comes before sign-in, because the extension retries neither and the upgrade is what the person can fix.
     The CLI's own records and the credential store come before sign-in too, because signing in again does not help.
+
+    Args:
+        exit_code: The exit code of the call.
+        failure: The error object of the reply.
+        context: The caller's message for a failure no earlier row names.
+
+    Returns:
+        The error code and the message template.
+
     """
     action, failure_class = failure.required_action, failure.failure_class
     is_sign_in = exit_code == EXIT_CODES['SIGN_IN'] or action == 'login' or failure_class == 'auth_required'
@@ -106,6 +124,13 @@ def sanitize_reason(text: str) -> str:
 
     Links go first, so the path pattern never meets one. The reason ends as a sentence, because a message adds its
     next step after it.
+
+    Args:
+        text: The reason as the CLI wrote it.
+
+    Returns:
+        The cleaned reason, or NO_REASON when nothing is left.
+
     """
     text = _PATH.sub('', _URL.sub('', text))
     text = ' '.join(_IDENTIFIER.sub('', text).split())
@@ -122,6 +147,15 @@ def build_failure(result: CliResult, context: str, *, credit_ceiling: int | None
     context is the caller's message for an invalid input or a failure no field names. A stop at the quote names the
     run's credit ceiling. A template without a placeholder drops that value. A failure reply without an error object
     reads as one whose fields are all empty.
+
+    Args:
+        result: The exit code and reply of the failed call.
+        context: The message template the caller gives for its own call.
+        credit_ceiling: The credit ceiling of the run, for a stop at the quote.
+
+    Returns:
+        The error for the caller to raise.
+
     """
     failure = result.reply.error or CliFailure()
     if result.exit_code == EXIT_CODES['CONFIRM'] or failure.required_action == 'confirm':
@@ -139,6 +173,13 @@ def build_generation_failure(reply: OperationReply) -> DreaminaError:
 
     An empty resource set is not a success, so a run that made nothing says so. A failure Dreamina gives only a code
     for is not traced to the inputs: the same settings have run on a later try.
+
+    Args:
+        reply: The reply of the wait that saw the generation end.
+
+    Returns:
+        The error for the caller to raise.
+
     """
     error = reply.submission_error
     if error is not None:

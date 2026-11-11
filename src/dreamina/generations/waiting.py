@@ -27,7 +27,18 @@ if TYPE_CHECKING:
 
 
 def _is_running(result: CliResult) -> bool:
-    """Whether a wait's answer says the generation still runs; a submission Dreamina keeps no record of raises."""
+    """Whether a wait's answer says the generation still runs; a submission Dreamina keeps no record of raises.
+
+    Args:
+        result: The result of one wait call.
+
+    Returns:
+        True when the exit code says the generation is incomplete.
+
+    Raises:
+        SubmissionAbsentError: When the reply carries the code of a submission Dreamina keeps no record of.
+
+    """
     failure = result.reply.error
     if failure is not None and failure.code == SUBMISSION_ABSENT:
         raise SubmissionAbsentError(ErrorCode.UNAVAILABLE, GENERATION_ABSENT.format(**DREAMINA_URLS))
@@ -35,7 +46,15 @@ def _is_running(result: CliResult) -> bool:
 
 
 def _parse_terminal(result: CliResult) -> OperationReply | None:
-    """Read a finished wait's reply; None when the reply is unreadable, so the wait reads again."""
+    """Read a finished wait's reply; None when the reply is unreadable, so the wait reads again.
+
+    Args:
+        result: The result of a wait call that ended with success.
+
+    Returns:
+        The operation reply, or None.
+
+    """
     try:
         return OperationReply.model_validate(result.reply.payload)
     except ValidationError:
@@ -50,6 +69,20 @@ async def wait_for_operation(
     Exit 20 is the normal answer while the generation runs, except with the code of a submission Dreamina keeps no
     record of, which raises SubmissionAbsentError. After an unreadable reply, the loop pauses before it reads again, so
     a broken CLI does not spin.
+
+    Args:
+        submit_id: The submission to wait for.
+        project_id: The canvas that holds the generation.
+        deadline: The monotonic time at which the loop stops.
+        progress: The callback that reports the running step after each wait, or None.
+
+    Returns:
+        The reply of the wait that saw the generation end, or None.
+
+    Raises:
+        DreaminaError: When a wait fails for a cause other than transport.
+        build_failure: When a wait ends with a failure reply.
+
     """
     arguments = ('operation', 'wait', submit_id, '--project-id', project_id, '--timeout', WAIT_SLICE)
     while (remaining := deadline - time.monotonic()) > 0:
@@ -78,6 +111,14 @@ async def validate_lost_run(submit_id: str, project_id: str) -> NoReturn:
 
     The node never sends the run call again. This function keeps no record either way, because the status names no
     canvas node.
+
+    Args:
+        submit_id: The submit ID of the run call whose reply was lost.
+        project_id: The canvas the run call named.
+
+    Raises:
+        DreaminaError: Always, to say whether Dreamina knows the run or the outcome is uncertain.
+
     """
     arguments = ('operation', 'status', submit_id, '--project-id', project_id)
     try:

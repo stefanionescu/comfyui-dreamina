@@ -1,4 +1,4 @@
-# Element: Add
+# Element: add
 
 Makes a Dreamina Element: one character, product, or place that later runs
 keep the same. Give it the clearest image of the subject, more angles, a

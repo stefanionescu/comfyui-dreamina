@@ -24,7 +24,18 @@ if TYPE_CHECKING:
 
 
 async def _is_listed(project_id: str) -> bool:
-    """Whether the account's canvas list holds this canvas, reading page after page until it finds the canvas."""
+    """Whether the account's canvas list holds this canvas, reading page after page until it finds the canvas.
+
+    Args:
+        project_id: The ID of the canvas to look for.
+
+    Returns:
+        True when a page of the list holds the canvas.
+
+    Raises:
+        build_failure: When the CLI refuses a list call.
+
+    """
     cursor: str | None = None
     while True:
         arguments = ('canvas', 'ls', '--limit', str(CANVAS_PAGE_SIZE), *(('--cursor', cursor) if cursor else ()))
@@ -43,6 +54,13 @@ async def find_canvas(store: CanvasStore) -> CanvasRecord | None:
     """Return the saved canvas while Dreamina still lists it; None when the store holds none or the person deleted it.
 
     The next create_canvas replaces the record of a deleted canvas, so this function keeps the record.
+
+    Args:
+        store: The store that holds the saved canvas record.
+
+    Returns:
+        The saved record, or None.
+
     """
     record = await asyncio.to_thread(store.read)
     if record is None or not await _is_listed(record.project_id):
@@ -55,6 +73,17 @@ async def create_canvas(store: CanvasStore) -> CanvasRecord:
 
     Only a lost or unreadable reply sends the same call again, once, with the same ID, so a lost reply never leaves a
     second canvas. The CLI's current canvas is never changed.
+
+    Args:
+        store: The store that saves the new record.
+
+    Returns:
+        The record of the new canvas.
+
+    Raises:
+        DreaminaError: When the create call fails for a cause other than a lost or unreadable reply.
+        build_failure: When the CLI refuses the create call.
+
     """
     project_id = str(uuid.uuid4())
     arguments = ('canvas', 'create', CANVAS_NAME, '--project-id', project_id)

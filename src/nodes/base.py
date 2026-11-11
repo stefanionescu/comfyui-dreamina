@@ -21,6 +21,17 @@ def _read_single(name: str, value: object) -> object:
     """Take the one value an input list holds, and each value of a dropdown's settings; a plain value passes as it is.
 
     A plain value comes from a call in Python.
+
+    Args:
+        name: The name of the input, for the error message.
+        value: What ComfyUI passed for the input.
+
+    Returns:
+        The one value, or the dropdown's settings with each value unwrapped.
+
+    Raises:
+        DreaminaError: When an input list holds no value or several.
+
     """
     if isinstance(value, dict):
         settings = cast('dict[str, object]', value)
@@ -61,6 +72,13 @@ class PaidNode(io.ComfyNode):
 
         The node reads the account once per process and after each sign-in or sign-out. A signed-out read raises the
         sign-in error, so the node runs and refuses with it.
+
+        Args:
+            **_inputs: The inputs of the node, which the cache key ignores.
+
+        Returns:
+            The account's cache token.
+
         """
         store = get_runtime().configuration
         configuration = await asyncio.to_thread(store.read_configuration)
@@ -75,6 +93,13 @@ class PaidNode(io.ComfyNode):
         """Drop the run number, which ComfyUI uses to invalidate its cache, and send.
 
         A node that takes input lists receives every input as a list; only its media inputs may hold several items.
+
+        Args:
+            **inputs: Every saved input of the node by name, the run number included.
+
+        Returns:
+            The outputs that send builds.
+
         """
         inputs.pop(INPUT_NAMES['RUN_NUMBER'], None)
         values = {

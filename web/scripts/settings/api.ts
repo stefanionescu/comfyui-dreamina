@@ -1,11 +1,13 @@
+import { browserLimits } from '#web/browser.ts';
 import type { Fetcher } from '#web/http.ts';
 import { browserRoutes } from '#web/routes.ts';
-import { browserLimits } from '#web/browser.ts';
 import { parsePublicError } from '#web/schema.ts';
+import { type Configuration, parseConfiguration } from '#web/settings/schema.ts';
 import { message, type MessageKey } from '#web/text.ts';
-import { parseConfiguration, type Configuration } from '#web/settings/schema.ts';
 
-/** The message for each method and route when a failed request has an unreadable error body. */
+/**
+The message for each method and route when a failed request has an unreadable error body.
+*/
 const FAILURES = new Map<string, MessageKey>([
     [`GET ${browserRoutes.settings.status}`, 'settings.readFailed'],
     [`POST ${browserRoutes.settings.session}`, 'account.signInFailed'],
@@ -14,13 +16,13 @@ const FAILURES = new Map<string, MessageKey>([
 ]);
 
 /**
- * Send one settings request and read its JSON body.
- *
- * @param fetcher - ComfyUI's local API client.
- * @param route - The local settings route.
- * @param options - The method, body, headers, and request lifetime.
- * @returns The response and its parsed body.
- */
+Send one settings request and read its JSON body.
+
+@param fetcher - ComfyUI's local API client.
+@param route - The local settings route.
+@param options - The method, body, headers, and request lifetime.
+@returns The response and its parsed body.
+*/
 async function sendRequest(
     fetcher: Fetcher,
     route: string,
@@ -40,15 +42,15 @@ async function sendRequest(
 }
 
 /**
- * Read or change settings through the local ComfyUI server.
- *
- * @param fetcher - ComfyUI's local API client.
- * @param signal - The settings dialog's request lifetime.
- * @param route - The local settings route.
- * @param method - The HTTP method.
- * @param body - The settings change, if any.
- * @returns The validated status after the request.
- */
+Read or change settings through the local ComfyUI server.
+
+@param fetcher - ComfyUI's local API client.
+@param signal - The settings dialog's request lifetime.
+@param route - The local settings route.
+@param method - The HTTP method.
+@param body - The settings change, if any.
+@returns The validated status after the request.
+*/
 export async function requestConfiguration(
     fetcher: Fetcher,
     signal: AbortSignal,

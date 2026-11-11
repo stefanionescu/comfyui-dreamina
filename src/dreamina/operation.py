@@ -15,6 +15,13 @@ async def wait_until_settled[T](task: asyncio.Task[T]) -> bool:
     """Wait until the asyncio task ends, however often a cancel arrives, and report whether one arrived.
 
     A cancel stops only the wait, never the asyncio task it waits for, so a second cancel cannot cut it off either.
+
+    Args:
+        task: The asyncio task that runs the paid call.
+
+    Returns:
+        True when a cancel arrived during the wait.
+
     """
     is_cancelled = False
     while not task.done():

@@ -1,4 +1,4 @@
-# Model: Info
+# Model: info
 
 Shows what a Dreamina model takes, as JSON. It lists the modes, the settings of
 each mode with their values and ranges, the references and files the model takes,

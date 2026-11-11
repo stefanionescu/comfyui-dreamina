@@ -111,7 +111,7 @@
   background: var(--primary-color, #2563eb);
   color: var(--primary-color-text, white);
 }
-.dreamina-dialog button:not(:disabled):hover {
+.dreamina-dialog :where(button):not(:disabled):hover {
   filter: brightness(1.15);
 }
 .dreamina-dialog [role=status]:empty {

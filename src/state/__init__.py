@@ -12,13 +12,23 @@ type MediaKind = Literal['image', 'video', 'audio', 'element']
 
 
 class Value(BaseModel):
-    """A frozen record that refuses unknown fields, for files this extension writes."""
+    """A frozen record that refuses unknown fields, for files this extension writes.
+
+    Attributes:
+        model_config: The pydantic options that refuse unknown fields and freeze the record.
+
+    """
 
     model_config = ConfigDict(extra='forbid', frozen=True)
 
 
 class Reply(BaseModel):
-    """A frozen record that ignores unknown fields, for the JSON the Dreamina CLI prints."""
+    """A frozen record that ignores unknown fields, for the JSON the Dreamina CLI prints.
+
+    Attributes:
+        model_config: The pydantic options that ignore unknown fields and freeze the record.
+
+    """
 
     # The CLI adds fields over time; a new field must not break a paid run that already succeeded.
     model_config = ConfigDict(extra='ignore', frozen=True)

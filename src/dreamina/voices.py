@@ -16,6 +16,17 @@ async def read_voices(model: str, deadline: float) -> tuple[str, ...]:
     """Return a speech model's voice names in Dreamina's order; empty when the model has no voices.
 
     The CLI refuses an unsupported route as an invalid input, which means no voices.
+
+    Args:
+        model: The canonical name of the speech model.
+        deadline: The monotonic time by which each page must arrive.
+
+    Returns:
+        The voice names.
+
+    Raises:
+        build_failure: When the CLI refuses a page for another reason.
+
     """
     names: list[str] = []
     offset = 0

@@ -1,4 +1,4 @@
-# Dreamina Advanced Guide
+# Dreamina advanced guide
 
 Use this guide for sign-in, model settings, references, and recovering generations.
 For installation and your first run, see the [README](README.md).

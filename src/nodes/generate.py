@@ -33,7 +33,15 @@ if TYPE_CHECKING:
 
 
 def _read_queued(value: object) -> object:
-    """Read a queued input: the item of a one-item list, or a plain value from a direct call; None when linked."""
+    """Read a queued input: the item of a one-item list, or a plain value from a direct call; None when linked.
+
+    Args:
+        value: What ComfyUI passed for the input when the person queued the workflow.
+
+    Returns:
+        The value, or None when the input is linked.
+
+    """
     if isinstance(value, (list, tuple)):
         items = cast('list[object]', value)
         return items[0] if len(items) == 1 else None
@@ -41,7 +49,16 @@ def _read_queued(value: object) -> object:
 
 
 def _build_flag(name: str, *, start: str | int) -> io.Input:
-    """Build one flag input: a whole number from the flag's least value, or a line of text."""
+    """Build one flag input: a whole number from the flag's least value, or a line of text.
+
+    Args:
+        name: The name of the flag input.
+        start: The default of the input; a whole number makes a number input, and text makes a text input.
+
+    Returns:
+        The input.
+
+    """
     if isinstance(start, int):
         return io.Int.Input(name, default=start, min=FLAG_MINIMUMS[name], tooltip=TOOLTIPS[name])
     return io.String.Input(name, default=start, tooltip=TOOLTIPS[name])
@@ -51,6 +68,14 @@ def _read_flags(kind: Kind, inputs: Mapping[str, object]) -> dict[str, Json]:
     """Read the flag inputs of a node by CLI flag name; a linked value, or a line left empty, sends nothing.
 
     An input names its flag with underscores for dashes, so voice_name sends --voice-name.
+
+    Args:
+        kind: The kind of the node, which decides its flag inputs.
+        inputs: The inputs of the node by name.
+
+    Returns:
+        The values to send, by flag name without the leading dashes.
+
     """
     flags: dict[str, Json] = {}
     for name in (*FLAGS[kind], *LINES[kind]):
@@ -83,7 +108,12 @@ class GenerateNode(PaidNode):
     @classmethod
     @override
     def define_schema(cls) -> io.Schema:
-        """Describe a kind node: media sockets, references, model, ceiling, flags, run number, then the text inputs."""
+        """Describe a kind node: media sockets, references, model, ceiling, flags, run number, then the text inputs.
+
+        Returns:
+            The schema of the kind node.
+
+        """
         media = (
             io.Image.Input(INPUT_NAMES['IMAGES'], optional=True, tooltip=TOOLTIPS['IMAGES']),
             io.Video.Input(INPUT_NAMES['VIDEOS'], optional=True, tooltip=TOOLTIPS['VIDEOS']),
@@ -127,6 +157,13 @@ class GenerateNode(PaidNode):
         A linked value is unknown until the workflow runs, and send makes its checks then. The flag inputs differ by
         kind, so this validator takes every input by name. ComfyUI then skips its own range checks, and the operation
         checks each value against the model before paying.
+
+        Args:
+            **inputs: Every input of the node by name, as queued.
+
+        Returns:
+            True, or the message of the check that failed.
+
         """
         name, text, typed = (_read_queued(inputs.get(INPUT_NAMES[key])) for key in ('MODEL', 'ARGUMENTS', 'PROMPT'))
         if not isinstance(name, str):
@@ -149,6 +186,13 @@ class GenerateNode(PaidNode):
 
         ComfyUI sets hidden on the class it runs; a direct call from another pack has no node ID and no progress bar.
         ComfyUI leaves out a socket with nothing connected.
+
+        Args:
+            **inputs: Every saved input of the node by name, without the run number.
+
+        Returns:
+            The outputs of the node.
+
         """
         node_id = cls.hidden.unique_id if cls.hidden is not None else None  # pyright: ignore[reportUnnecessaryComparison] # reason: ComfyUI types hidden as always set, but a direct call runs the class itself, whose hidden is None.
         plan = GenerationPlan(
@@ -173,7 +217,18 @@ class GenerateNode(PaidNode):
 
 
 class ImageGenerate(GenerateNode):
-    """Generate or edit images with any Dreamina image model."""
+    """Generate or edit images with any Dreamina image model.
+
+    Attributes:
+        kind: The node takes image models.
+        display_name: The name of the image node in menus.
+        list_inputs: Only the images socket takes a list.
+        menu: The image menu.
+        description: What the image node does, as ComfyUI shows it.
+        default_ceiling: The starting credit ceiling of an image run.
+        outputs: The images, their references, and the result document.
+
+    """
 
     kind = 'image'
     display_name = 'Image: Generate'
@@ -189,7 +244,18 @@ class ImageGenerate(GenerateNode):
 
 
 class VideoGenerate(GenerateNode):
-    """Generate a video from a prompt, frames, or references with any Dreamina video model."""
+    """Generate a video from a prompt, frames, or references with any Dreamina video model.
+
+    Attributes:
+        kind: The node takes video models.
+        display_name: The name of the video node in menus.
+        list_inputs: The images, videos, and audio sockets each take a list.
+        menu: The video menu.
+        description: What the video node does, as ComfyUI shows it.
+        default_ceiling: The starting credit ceiling of a video run.
+        outputs: The video, its references, and the result document.
+
+    """
 
     kind = 'video'
     display_name = 'Video: Generate'
@@ -205,7 +271,18 @@ class VideoGenerate(GenerateNode):
 
 
 class AudioGenerate(GenerateNode):
-    """Make speech, dubbing, or music with any Dreamina audio model."""
+    """Make speech, dubbing, or music with any Dreamina audio model.
+
+    Attributes:
+        kind: The node takes audio models.
+        display_name: The name of the audio node in menus.
+        list_inputs: The images and audio sockets each take a list.
+        menu: The audio menu.
+        description: What the audio node does, as ComfyUI shows it.
+        default_ceiling: The starting credit ceiling of an audio run.
+        outputs: The audio, its references, and the result document.
+
+    """
 
     kind = 'audio'
     display_name = 'Audio: Generate'

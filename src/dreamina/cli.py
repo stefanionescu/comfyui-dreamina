@@ -41,7 +41,19 @@ _SYSTEM = 'WINDOWS' if sys.platform == 'win32' else 'POSIX'
 
 
 async def _read_stream(stream: asyncio.StreamReader | None, max_bytes: int) -> bytes:
-    """Read one stream to its end in chunks, refusing a reply over its cap."""
+    """Read one stream to its end in chunks, refusing a reply over its cap.
+
+    Args:
+        stream: One output stream of the child, or None when the child has none.
+        max_bytes: The most bytes the stream may hold.
+
+    Returns:
+        Everything the stream held.
+
+    Raises:
+        DreaminaError: When the stream holds more than its cap.
+
+    """
     content = bytearray()
     while stream is not None and (chunk := await stream.read(REPLY_BYTES['CHUNK'])):
         content += chunk
@@ -51,7 +63,20 @@ async def _read_stream(stream: asyncio.StreamReader | None, max_bytes: int) -> b
 
 
 def _parse_result(exit_code: int, stdout: bytes, stderr: bytes) -> CliResult:
-    """Read the call's one reply: from stdout on success and from stderr otherwise."""
+    """Read the call's one reply: from stdout on success and from stderr otherwise.
+
+    Args:
+        exit_code: The exit code of the child.
+        stdout: What the child wrote to standard output.
+        stderr: What the child wrote to standard error.
+
+    Returns:
+        The exit code with the parsed reply.
+
+    Raises:
+        DreaminaError: When the reply is not readable JSON, or its ok field disagrees with the exit code.
+
+    """
     is_ok = exit_code == EXIT_CODES['OK']
     content = stdout if is_ok else stderr
     try:
@@ -68,6 +93,10 @@ def find_binary() -> Path | None:
     """Return the first CLI found in the installer's own folder, on `PATH`, or in the installer's default folder.
 
     It runs at every call, so it finds an install or a move at once.
+
+    Returns:
+        The path of the CLI, or None when no candidate is an executable file.
+
     """
     name = BINARY_NAMES[_SYSTEM]
     folder = os.environ.get(ENVIRONMENT_VARIABLES['INSTALL_DIRECTORY'])
@@ -81,7 +110,19 @@ def find_binary() -> Path | None:
 
 
 def parse_reply[R: Reply](payload: Json, record: type[R]) -> R:
-    """Read one success payload into its record, refusing a reply this extension cannot read."""
+    """Read one success payload into its record, refusing a reply this extension cannot read.
+
+    Args:
+        payload: The payload of a success reply.
+        record: The record class that describes the payload.
+
+    Returns:
+        The payload as an instance of the record.
+
+    Raises:
+        DreaminaError: When the payload does not fit the record.
+
+    """
     try:
         return record.model_validate(payload)
     except ValidationError:
@@ -94,6 +135,17 @@ async def send_command(arguments: Sequence[str], timeout_seconds: float) -> CliR
     The call runs without a shell, so each argument reaches the CLI as it is. The server's environment reaches the CLI
     unchanged, so it finds the person's sign-in. The call reads both streams at once, so a full pipe never stops the
     child.
+
+    Args:
+        arguments: The command and its flags, which follow the global arguments.
+        timeout_seconds: How long the call may run before the process is killed.
+
+    Returns:
+        The exit code and the parsed reply.
+
+    Raises:
+        DreaminaError: When the CLI is missing, cannot start, or runs past the timeout.
+
     """
     binary = find_binary()
     if binary is None:

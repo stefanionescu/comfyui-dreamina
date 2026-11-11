@@ -66,7 +66,15 @@ _MODE = io.DynamicCombo.Input(
 
 
 def _build_upscale_outputs(results: Sequence[GenerationResult]) -> io.NodeOutput:
-    """Fill the outputs in source order: one image, one canvas node, and one result document per source."""
+    """Fill the outputs in source order: one image, one canvas node, and one result document per source.
+
+    Args:
+        results: One finished upscale per source.
+
+    Returns:
+        The images, the references, and the result documents as one JSON list.
+
+    """
     contents = [file.content for result in results for file in result.files if file.kind == 'image']
     references = tuple(
         Reference(origin='node', value=result.record.node_id, media='image', title=result.title) for result in results
@@ -80,14 +88,24 @@ def _build_upscale_outputs(results: Sequence[GenerationResult]) -> io.NodeOutput
 
 
 class ImageUpscale(PaidNode):
-    """Make images larger and sharper with Dreamina's upscale."""
+    """Make images larger and sharper with Dreamina's upscale.
+
+    Attributes:
+        list_inputs: The inputs that reach send as whole lists: images and references.
+
+    """
 
     list_inputs: ClassVar[frozenset[str]] = frozenset({INPUT_NAMES['IMAGES'], INPUT_NAMES['REFERENCES']})
 
     @classmethod
     @override
     def define_schema(cls) -> io.Schema:
-        """Describe the node: images and references in, the ceiling and the mode, one image out per source."""
+        """Describe the node: images and references in, the ceiling and the mode, one image out per source.
+
+        Returns:
+            The schema of Image: Upscale.
+
+        """
         inputs: list[io.Input] = [
             io.Image.Input(
                 INPUT_NAMES['IMAGES'],
@@ -139,6 +157,16 @@ class ImageUpscale(PaidNode):
         """Upscale every source and fill the outputs; the operation checks everything again, because a link skips it.
 
         ComfyUI sets hidden on the class it runs; a direct call from another pack has no node ID and no progress bar.
+
+        Args:
+            credit_ceiling: The most credits the upscale may cost, for all its images together.
+            mode: The settings of the mode dropdown: the mode, and for pro its resolution and detail.
+            images: The connected ComfyUI image batches.
+            references: The connected reference groups; the node upscales them before the images.
+
+        Returns:
+            The outputs of the node.
+
         """
         node_id = cls.hidden.unique_id if cls.hidden is not None else None  # pyright: ignore[reportUnnecessaryComparison] # reason: ComfyUI types hidden as always set, but a direct call runs the class itself, whose hidden is None.
         request = UpscaleRequest(

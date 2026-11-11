@@ -16,7 +16,13 @@ EXTENSION_ROOT = Path(__file__).resolve().parents[2]
 
 
 def register_routes() -> None:
-    """Reject public state locations before enabling changes, then register every local route."""
+    """Reject public state locations before enabling changes, then register every local route.
+
+    Raises:
+        DreaminaError: When the private state directory sits inside ComfyUI's base, input, output, temp, or user
+            folder, or inside the extension.
+
+    """
     runtime = get_runtime()
     directory = runtime.configuration.directory.resolve()
     public_roots = (

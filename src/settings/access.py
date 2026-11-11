@@ -24,7 +24,17 @@ from ..config.messages.settings import STATE_UNREADABLE
 
 
 def _is_local_target(request: web.Request, target: SplitResult, port: int) -> bool:
-    """Match a loopback peer and a bare loopback URL, without user information or suffixes, to the server socket."""
+    """Match a loopback peer and a bare loopback URL, without user information or suffixes, to the server socket.
+
+    Args:
+        request: The request, whose peer address and server socket are read.
+        target: The URL built from the scheme and the Host header of the request.
+        port: The effective port of the target.
+
+    Returns:
+        True when the peer, the URL, and the port all match.
+
+    """
     peer = ipaddress.ip_address(request.remote or '')
     socket = request.transport.get_extra_info('sockname') if request.transport else None
     address = cast('tuple[object, ...]', socket) if isinstance(socket, tuple) else ()
@@ -43,7 +53,17 @@ def _is_local_target(request: web.Request, target: SplitResult, port: int) -> bo
 
 
 def _is_same_origin(origin: str, target: SplitResult, port: int) -> bool:
-    """Accept only an origin with the request's exact scheme, host, and effective port."""
+    """Accept only an origin with the request's exact scheme, host, and effective port.
+
+    Args:
+        origin: The value of the Origin header.
+        target: The URL the request addresses.
+        port: The effective port of that URL.
+
+    Returns:
+        True when the origin equals the target.
+
+    """
     source = urlsplit(origin)
     source_port = source.port or (DEFAULT_PORTS['HTTPS'] if source.scheme == 'https' else DEFAULT_PORTS['HTTP'])
     return all(
@@ -61,7 +81,17 @@ def _is_same_origin(origin: str, target: SplitResult, port: int) -> bool:
 
 
 def _validate_local_request(request: web.Request, *, is_mutation: bool, is_multi_user: bool) -> None:
-    """Reject remote peers, rebinding hosts, cross-origin requests, and unsafe writes."""
+    """Reject remote peers, rebinding hosts, cross-origin requests, and unsafe writes.
+
+    Args:
+        request: The request to check.
+        is_mutation: Whether the route changes state; a change needs the change header.
+        is_multi_user: Whether ComfyUI runs with several users, which refuses every change.
+
+    Raises:
+        forbidden: The HTTP 403 response, when a check fails.
+
+    """
     forbidden = web.HTTPForbidden(text=LOCAL_CONNECTION_REQUIRED)
     try:
         # Private routes require a direct local connection, so they refuse proxy metadata.
@@ -90,10 +120,28 @@ def build_local_route(
     is_mutation: bool,
     is_multi_user: bool,
 ) -> Callable[[web.Request], Awaitable[web.Response]]:
-    """Wrap a route with local-owner checks, safe errors, and private response headers."""
+    """Wrap a route with local-owner checks, safe errors, and private response headers.
+
+    Args:
+        callback: The route, which returns its JSON result.
+        is_mutation: Whether the route changes state.
+        is_multi_user: Whether ComfyUI runs with several users.
+
+    Returns:
+        The request handler to register with aiohttp.
+
+    """
 
     async def build_response(request: web.Request) -> web.Response:
-        """Authorize the request and return only the route's public result or safe error."""
+        """Authorize the request and return only the route's public result or safe error.
+
+        Args:
+            request: The incoming request.
+
+        Returns:
+            The JSON response: the result of the route, or an error message with its status.
+
+        """
         try:
             _validate_local_request(request, is_mutation=is_mutation, is_multi_user=is_multi_user)
             return web.json_response(await callback(request), headers=PRIVATE_HEADERS)

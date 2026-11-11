@@ -13,7 +13,15 @@ DEFAULT_SETTINGS = Settings(**{name: definition['default'] for name, definition 
 
 
 def _validate_settings(settings: Settings) -> None:
-    """Keep every limit in its range."""
+    """Keep every limit in its range.
+
+    Args:
+        settings: The settings to check.
+
+    Raises:
+        DreaminaError: When a limit is outside its range.
+
+    """
     for name, definition in SETTING_RANGES.items():
         value: int = getattr(settings, name)
         if not definition['minimum'] <= value <= definition['maximum']:
@@ -21,7 +29,18 @@ def _validate_settings(settings: Settings) -> None:
 
 
 def parse_settings(document: dict[str, Json]) -> Settings:
-    """Reject unknown settings instead of silently accepting misspelled limits."""
+    """Reject unknown settings instead of silently accepting misspelled limits.
+
+    Args:
+        document: The settings by name; a missing setting takes its default.
+
+    Returns:
+        The validated settings.
+
+    Raises:
+        DreaminaError: When a name is unknown or a value is not a whole number.
+
+    """
     expected = {item.name for item in fields(Settings)}
     if document.keys() - expected:
         raise DreaminaError(ErrorCode.CONFIGURATION, SETTING_UNKNOWN)

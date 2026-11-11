@@ -8,7 +8,19 @@ import argparse
 
 
 def build_requirements(root: Path) -> str:
-    """Validate runtime dependency strings and render the ComfyUI installation requirements."""
+    """Validate runtime dependency strings and render the ComfyUI installation requirements.
+
+    Args:
+        root: The repository folder that holds pyproject.toml.
+
+    Returns:
+        The text of requirements.txt: a header comment, then one dependency per line.
+
+    Raises:
+        TypeError: When the runtime dependencies in pyproject.toml are not a list.
+        ValueError: When a dependency is not a string, is empty, or holds a line break or a null character.
+
+    """
     document = tomllib.loads((root / 'pyproject.toml').read_text(encoding='utf-8'))
     raw_dependencies: object = document['project']['dependencies']
     if not isinstance(raw_dependencies, list):
@@ -30,7 +42,12 @@ def build_requirements(root: Path) -> str:
 
 
 def main() -> int:
-    """Export runtime requirements or report whether the generated file is current."""
+    """Export runtime requirements or report whether the generated file is current.
+
+    Returns:
+        1 when the check finds requirements.txt missing or out of date, else 0.
+
+    """
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--check', action='store_true')
     arguments = parser.parse_args()

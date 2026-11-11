@@ -22,7 +22,15 @@ if TYPE_CHECKING:
 
 
 async def _wait_shielded[T](task: asyncio.Task[T]) -> bool:
-    """Wait until the task settles despite cancellation, and report whether cancellation arrived."""
+    """Wait until the task settles despite cancellation, and report whether cancellation arrived.
+
+    Args:
+        task: The task to wait for; a cancel of the caller never cancels it.
+
+    Returns:
+        True when a cancel arrived during the wait.
+
+    """
     cancelled = False
     while not task.done():
         try:
@@ -35,7 +43,18 @@ async def _wait_shielded[T](task: asyncio.Task[T]) -> bool:
 
 
 async def _wait_for_thread[T](work: Callable[[], T]) -> T:
-    """Run blocking work in a thread, and finish it before letting a cancel through."""
+    """Run blocking work in a thread, and finish it before letting a cancel through.
+
+    Args:
+        work: The blocking call to run in a worker thread.
+
+    Returns:
+        What the work returns.
+
+    Raises:
+        asyncio.CancelledError: When a cancel arrived while the work ran; it is raised after the work ends.
+
+    """
     task = asyncio.create_task(asyncio.to_thread(work))
     if await _wait_shielded(task):
         task.exception()
@@ -48,6 +67,13 @@ async def wait_for_run[T](task: asyncio.Task[T]) -> T:
 
     ComfyUI's interrupt reaches ComfyUI, which then stops the prompt before its next node. A run that Dreamina accepted
     keeps running and Dreamina bills it; Generation: Download collects it.
+
+    Args:
+        task: The owned task that runs the operation; it is cancelled when ComfyUI interrupts the prompt.
+
+    Returns:
+        The result of the task.
+
     """
     try:
         while not task.done():
@@ -72,6 +98,15 @@ async def send_run[Result](
     The bar belongs to the node itself: a node that another node or pack calls has no ID, so it leaves the bar of the
     calling node alone. The operation reports each step it reaches. Building the outputs decodes media, which blocks, so
     it runs in a worker thread.
+
+    Args:
+        operation: Sends one Dreamina operation with the configuration and the progress callback.
+        build_outputs: Turns the result of the operation into the outputs of the node.
+        node_id: The ID of the node whose progress bar moves; None for a call from another node or pack.
+
+    Returns:
+        The outputs of the node.
+
     """
     progress: Progress | None = None
     if node_id is not None:

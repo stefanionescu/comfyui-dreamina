@@ -26,7 +26,16 @@ type SignInPhase = Literal['waiting', 'expired', 'failed']
 
 
 async def _create_sign_in() -> AuthChallenge | None:
-    """Start a device sign-in and return its challenge; None when the CLI is already signed in."""
+    """Start a device sign-in and return its challenge; None when the CLI is already signed in.
+
+    Returns:
+        The challenge the person approves, or None when the CLI is already signed in.
+
+    Raises:
+        DreaminaError: When the reply holds neither a challenge nor a sign-in.
+        build_failure: When the CLI refuses the login call.
+
+    """
     result = await send_command(('auth', 'login'), ACCOUNT_TIMEOUTS['NETWORK'])
     if not result.reply.ok:
         raise build_failure(result, CLI_FAILED)
@@ -37,7 +46,15 @@ async def _create_sign_in() -> AuthChallenge | None:
 
 
 def _read_expiry(challenge: AuthChallenge) -> datetime:
-    """Return when a challenge ends, in UTC; SIGN_IN_SECONDS from now when the CLI gives no readable time."""
+    """Return when a challenge ends, in UTC; SIGN_IN_SECONDS from now when the CLI gives no readable time.
+
+    Args:
+        challenge: The sign-in challenge, with the expiry time the CLI wrote.
+
+    Returns:
+        The time the challenge ends, in UTC.
+
+    """
     default_expiry = datetime.now(UTC) + timedelta(seconds=SIGN_IN_SECONDS)
     try:
         expires_at = datetime.fromisoformat(challenge.expires_at) if challenge.expires_at else default_expiry
@@ -51,6 +68,17 @@ async def _wait_for_sign_in(challenge: AuthChallenge, expires_at: datetime) -> b
 
     When a wait reaches its own timeout, the loop sends it again with the same device code. The timeout is a Go
     duration, because the CLI refuses a bare number. Only error codes decide, never the message text.
+
+    Args:
+        challenge: The challenge whose device code each wait sends.
+        expires_at: The time after which the loop stops waiting.
+
+    Returns:
+        True once the person approved the sign-in, False once the challenge expired.
+
+    Raises:
+        build_failure: When a wait fails with a code other than an expiry or its own timeout.
+
     """
     while (remaining := math.ceil((expires_at - datetime.now(UTC)).total_seconds())) > 0:
         arguments = ('auth', 'wait', '--device-code', challenge.device_code, '--timeout', f'{remaining}s')
@@ -64,7 +92,15 @@ async def _wait_for_sign_in(challenge: AuthChallenge, expires_at: datetime) -> b
 
 
 async def is_signed_in() -> bool:
-    """Whether the CLI holds a sign-in, read on this computer without calling Dreamina."""
+    """Whether the CLI holds a sign-in, read on this computer without calling Dreamina.
+
+    Returns:
+        True when the CLI reports a sign-in.
+
+    Raises:
+        build_failure: When the CLI refuses the status call.
+
+    """
     result = await send_command(('auth', 'status'), ACCOUNT_TIMEOUTS['LOCAL'])
     if not result.reply.ok:
         raise build_failure(result, CLI_FAILED)
@@ -72,7 +108,15 @@ async def is_signed_in() -> bool:
 
 
 async def read_account() -> AccountReply:
-    """Read the signed-in account from Dreamina; a signed-out CLI raises the sign-in error."""
+    """Read the signed-in account from Dreamina; a signed-out CLI raises the sign-in error.
+
+    Returns:
+        The account as the CLI replies it.
+
+    Raises:
+        build_failure: When the CLI refuses the account call, as a signed-out CLI does.
+
+    """
     result = await send_command(('auth', 'account'), ACCOUNT_TIMEOUTS['NETWORK'])
     if not result.reply.ok:
         raise build_failure(result, CLI_FAILED)
@@ -80,7 +124,12 @@ async def read_account() -> AccountReply:
 
 
 async def delete_sign_in() -> None:
-    """Sign the CLI out on this computer."""
+    """Sign the CLI out on this computer.
+
+    Raises:
+        build_failure: When the CLI refuses the logout call.
+
+    """
     result = await send_command(('auth', 'logout'), ACCOUNT_TIMEOUTS['LOCAL'])
     if not result.reply.ok:
         raise build_failure(result, CLI_FAILED)
@@ -94,7 +143,12 @@ class SignInState:
     """
 
     def __init__(self, reset_account: Callable[[], None]) -> None:
-        """Keep the account token's reset, which runs once the person approves a sign-in."""
+        """Keep the account token's reset, which runs once the person approves a sign-in.
+
+        Args:
+            reset_account: The function that resets the account token.
+
+        """
         self._reset_account = reset_account
         self._lock = asyncio.Lock()
         self._task: asyncio.Task[None] | None = None
@@ -118,7 +172,13 @@ class SignInState:
         self._message = None
 
     async def _wait_for_approval(self, challenge: AuthChallenge, expires_at: datetime) -> None:
-        """Follow a sign-in to its end, renewing the account token once the person approves it; a cancel propagates."""
+        """Follow a sign-in to its end, renewing the account token once the person approves it; a cancel propagates.
+
+        Args:
+            challenge: The pending challenge to follow.
+            expires_at: The time the challenge ends.
+
+        """
         try:
             is_approved = await _wait_for_sign_in(challenge, expires_at)
         except DreaminaError as error:
@@ -149,7 +209,12 @@ class SignInState:
             self._reset_challenge()
 
     def build_status(self) -> dict[str, Json] | None:
-        """Describe the pending sign-in for Dreamina Settings, never with its device code; None when there is none."""
+        """Describe the pending sign-in for Dreamina Settings, never with its device code; None when there is none.
+
+        Returns:
+            The state, user code, verification link, expiry, and failure message of the pending sign-in, or None.
+
+        """
         challenge, expires_at = self._challenge, self._expires_at
         if challenge is None or expires_at is None:
             return None

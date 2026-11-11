@@ -11,18 +11,41 @@ from ..config.messages.requests import JSON_SIZE, JSON_DEPTH, JSON_SYNTAX, JSON_
 
 
 def _build_fields(pairs: list[tuple[str, Json]]) -> dict[str, Json]:
-    """Build a JSON object while rejecting duplicate keys."""
+    """Build a JSON object while rejecting duplicate keys.
+
+    Args:
+        pairs: The keys and values of one JSON object, in document order.
+
+    Returns:
+        The object.
+
+    Raises:
+        ValueError: When a key appears twice.
+
+    """
     result: dict[str, Json] = {}
     for key, value in pairs:
         if key in result:
-            msg = JSON_DUPLICATE_KEY
-            raise ValueError(msg)
+            message = JSON_DUPLICATE_KEY
+            raise ValueError(message)
         result[key] = value
     return result
 
 
 def _validate_json(value: object, *, max_depth: int = JSON_LIMITS['MAX_DEPTH']) -> Json:
-    """Copy JSON values within the nesting limit; reject other Python objects."""
+    """Copy JSON values within the nesting limit; reject other Python objects.
+
+    Args:
+        value: The parsed value to check.
+        max_depth: How many levels of nesting the value may still have.
+
+    Returns:
+        The copied JSON value.
+
+    Raises:
+        DreaminaError: When the nesting passes the limit, or a value is not JSON, such as a number that is not finite.
+
+    """
     if max_depth < 0:
         raise DreaminaError(ErrorCode.INVALID_INPUT, JSON_DEPTH)
     if value is None or isinstance(value, (str, bool, int)):
@@ -42,7 +65,20 @@ def _validate_json(value: object, *, max_depth: int = JSON_LIMITS['MAX_DEPTH']) 
 def parse_json(
     text: str, *, max_bytes: int = JSON_LIMITS['MAX_BYTES'], max_depth: int = JSON_LIMITS['MAX_DEPTH']
 ) -> Json:
-    """Reject oversized, nested, duplicate-key, and non-finite JSON input."""
+    """Reject oversized, nested, duplicate-key, and non-finite JSON input.
+
+    Args:
+        text: The JSON text.
+        max_bytes: The most bytes the text may take as UTF-8.
+        max_depth: The most levels of nesting the value may have.
+
+    Returns:
+        The parsed value.
+
+    Raises:
+        DreaminaError: When the text is too large or is not valid JSON, a repeated key included.
+
+    """
     if len(text.encode('utf-8')) > max_bytes:
         raise DreaminaError(ErrorCode.INVALID_INPUT, JSON_SIZE)
     try:
@@ -53,7 +89,18 @@ def parse_json(
 
 
 def validate_fields(value: Json) -> dict[str, Json]:
-    """Require an object at a public JSON boundary."""
+    """Require an object at a public JSON boundary.
+
+    Args:
+        value: The parsed JSON value.
+
+    Returns:
+        The same value, known to be an object.
+
+    Raises:
+        DreaminaError: When the value is not an object.
+
+    """
     if not isinstance(value, dict):
         raise DreaminaError(ErrorCode.INVALID_INPUT, JSON_MAPPING)
     return value

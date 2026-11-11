@@ -28,8 +28,8 @@ from ..config.dreamina import ACCOUNT_TIMEOUTS
 from ..config.installer import (
     INSTALLER_URLS,
     INSTALLER_BYTES,
-    INSTALLER_SHELLS,
     INSTALLER_DOMAINS,
+    INSTALLER_PROGRAMS,
     INSTALLER_REDIRECTS,
     INSTALLER_REASON_LINES,
     INSTALL_TIMEOUT_SECONDS,
@@ -39,8 +39,8 @@ from ..config.messages.cli import (
     INSTALL_FAILED,
     INSTALL_TIMEOUT,
     INSTALL_NO_ANSWER,
-    INSTALL_SHELL_MISSING,
     INSTALL_DOWNLOAD_FAILED,
+    INSTALL_PROGRAM_MISSING,
 )
 
 # The installer key for the server's system.
@@ -53,6 +53,17 @@ async def _read_script(url: str) -> bytes:
     The download follows the redirects to ByteDance's content delivery network, and keeps the script only when it came
     over HTTPS from a CapCut domain. The session reads no proxy settings from the environment and verifies TLS, as
     aiohttp does by default.
+
+    Args:
+        url: The address of the installer script on ByteDance's host.
+
+    Returns:
+        The bytes of the script.
+
+    Raises:
+        DreaminaError: When the status is not 200, the last host is not a CapCut domain over HTTPS, or the body is too
+            large.
+
     """
     async with (
         aiohttp.ClientSession(trust_env=False) as session,
@@ -70,7 +81,19 @@ async def _read_script(url: str) -> bytes:
 
 
 def _save_script(script: bytes, suffix: str) -> Path:
-    """Write the script to a private temporary file, which only its owner can read, and delete it if the write fails."""
+    """Write the script to a private temporary file, which only its owner can read, and delete it if the write fails.
+
+    Args:
+        script: The bytes of the installer script.
+        suffix: The file extension the temporary file takes.
+
+    Returns:
+        The path of the temporary file.
+
+    Raises:
+        BaseException: Whatever the write raises, after the file is deleted.
+
+    """
     descriptor, name = tempfile.mkstemp(prefix=TEMPORARY_PREFIX, suffix=suffix)
     path = Path(name)
     try:
@@ -83,7 +106,15 @@ def _save_script(script: bytes, suffix: str) -> Path:
 
 
 async def _read_tail(stream: asyncio.StreamReader | None) -> bytes:
-    """Read one output stream to its end, keeping only its last `INSTALLER_BYTES["OUTPUT"]` bytes."""
+    """Read one output stream to its end, keeping only its last `INSTALLER_BYTES["OUTPUT"]` bytes.
+
+    Args:
+        stream: The installer's stdout or stderr; None reads nothing.
+
+    Returns:
+        The last bytes of the stream.
+
+    """
     tail = b''
     while stream is not None and (chunk := await stream.read(INSTALLER_BYTES['OUTPUT'])):
         tail = (tail + chunk)[-INSTALLER_BYTES['OUTPUT'] :]
@@ -91,7 +122,16 @@ async def _read_tail(stream: asyncio.StreamReader | None) -> bytes:
 
 
 def _describe_output(stdout: bytes, stderr: bytes) -> str:
-    """Quote the installer's last lines without paths and links, from stderr or from stdout when stderr is empty."""
+    """Quote the installer's last lines without paths and links, from stderr or from stdout when stderr is empty.
+
+    Args:
+        stdout: The tail of the installer's standard output.
+        stderr: The tail of the installer's standard error.
+
+    Returns:
+        The last lines, joined into one sanitized reason.
+
+    """
     text = (stderr if stderr.strip() else stdout).decode(errors='replace')
     lines = [line.strip() for line in text.splitlines() if line.strip()]
     return sanitize_reason(' '.join(lines[-INSTALLER_REASON_LINES:]))
@@ -102,14 +142,22 @@ async def _wait_for_installer(installer_path: Path) -> None:
 
     A cancel or the timeout kills the shell and waits for it, so no child outlives the route. The installer takes a
     lock folder and keeps a backup, so a run cut short leaves the earlier CLI working.
+
+    Args:
+        installer_path: The downloaded installer script to run.
+
+    Raises:
+        DreaminaError: When the shell is missing or does not start, the run passes the timeout, or the installer exits
+            with an error.
+
     """
-    program, *options = INSTALLER_SHELLS[_SYSTEM]
-    shell = shutil.which(program)
-    if shell is None:
-        raise DreaminaError(ErrorCode.CONFIGURATION, INSTALL_SHELL_MISSING.format(program=program))
+    program, *options = INSTALLER_PROGRAMS[_SYSTEM]
+    program_path = shutil.which(program)
+    if program_path is None:
+        raise DreaminaError(ErrorCode.CONFIGURATION, INSTALL_PROGRAM_MISSING.format(program=program))
     try:
         process = await asyncio.create_subprocess_exec(
-            shell,
+            program_path,
             *options,
             str(installer_path),
             stdin=asyncio.subprocess.DEVNULL,
@@ -117,7 +165,7 @@ async def _wait_for_installer(installer_path: Path) -> None:
             stderr=asyncio.subprocess.PIPE,
         )
     except OSError:
-        raise DreaminaError(ErrorCode.CONFIGURATION, INSTALL_SHELL_MISSING.format(program=program)) from None
+        raise DreaminaError(ErrorCode.CONFIGURATION, INSTALL_PROGRAM_MISSING.format(program=program)) from None
     try:
         async with asyncio.timeout(INSTALL_TIMEOUT_SECONDS):
             stdout, stderr, exit_code = await asyncio.gather(
@@ -136,7 +184,12 @@ async def _wait_for_installer(installer_path: Path) -> None:
 
 
 async def read_cli_version() -> str | None:
-    """Return the installed release; None when the CLI is missing or does not answer."""
+    """Return the installed release; None when the CLI is missing or does not answer.
+
+    Returns:
+        The release the CLI reports, or None.
+
+    """
     try:
         result = await send_command(('version',), ACCOUNT_TIMEOUTS['LOCAL'])
         reply = parse_reply(result.reply.payload, VersionReply) if result.reply.ok else None
@@ -149,6 +202,13 @@ async def download_installer() -> Path:
     """Fetch the official installer into a private temporary file and return its path.
 
     The file keeps the address's suffix, because PowerShell runs only a .ps1 file.
+
+    Returns:
+        The path of the temporary file that holds the installer.
+
+    Raises:
+        DreaminaError: When the download fails or passes its timeout.
+
     """
     url = INSTALLER_URLS[_SYSTEM]
     try:
@@ -164,6 +224,13 @@ async def save_cli(installer_path: Path) -> None:
 
     This function deletes the installer file whatever the outcome. The next run checks the new binary, whose
     modification time changed.
+
+    Args:
+        installer_path: The installer file that download_installer wrote.
+
+    Raises:
+        DreaminaError: When the installer fails, or the CLI gives no version after the install.
+
     """
     try:
         await _wait_for_installer(installer_path)

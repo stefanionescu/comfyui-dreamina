@@ -1,6 +1,8 @@
 import { app } from '../../scripts/app.js';
 
-/** The text the extension's dialogs show, addressed by dotted key. */
+/**
+The text the extension's dialogs show, addressed by dotted key.
+*/
 const TEXT = {
     close: 'Close',
     working: 'Working...',
@@ -63,7 +65,9 @@ const TEXT = {
     },
 } as const;
 
-/** Labels of the server's execution limits, keyed by setting name. */
+/**
+Labels of the server's execution limits, keyed by setting name.
+*/
 export const LIMIT_LABELS = new Map<string, string>([
     ['max_download_megabytes', 'Maximum download size (MB)'],
     ['max_upload_megabytes', 'Maximum upload size (MB)'],
@@ -77,11 +81,11 @@ type MessagePaths<Messages> = {
 export type MessageKey = MessagePaths<typeof TEXT>;
 
 /**
- * Read one message.
- *
- * @param key - A dotted path into the extension's text.
- * @returns The text at that path.
- */
+Read one message.
+
+@param key - A dotted path into the extension's text.
+@returns The text at that path.
+*/
 export function message(key: MessageKey): string {
     let value: unknown = TEXT;
     for (const part of key.split('.')) {
@@ -91,22 +95,22 @@ export function message(key: MessageKey): string {
 }
 
 /**
- * Read one message and fill its named placeholders.
- *
- * @param key - A dotted path into the extension's text.
- * @param values - The text for each placeholder name.
- * @returns The message with every known placeholder replaced.
- */
+Read one message and fill its named placeholders.
+
+@param key - A dotted path into the extension's text.
+@param values - The text for each placeholder name.
+@returns The message with every known placeholder replaced.
+*/
 export function formatMessage(key: MessageKey, values: Readonly<Record<string, string>>): string {
     const replacements = new Map(Object.entries(values));
     return message(key).replaceAll(/\{(\w+)\}/g, (placeholder, name: string) => replacements.get(name) ?? placeholder);
 }
 
 /**
- * Read the language ComfyUI shows, which the server's messages follow.
- *
- * @returns A valid language tag, or English when the setting is invalid.
- */
+Read the language ComfyUI shows, which the server's messages follow.
+
+@returns A valid language tag, or English when the setting is invalid.
+*/
 export function selectedLocale(): string {
     const value = app.extensionManager.setting.get('Comfy.Locale');
     try {

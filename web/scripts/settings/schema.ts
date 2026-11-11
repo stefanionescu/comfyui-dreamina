@@ -1,6 +1,7 @@
 import * as v from 'valibot';
-import { message } from '#web/text.ts';
+
 import { browserLimits, browserPatterns } from '#web/browser.ts';
+import { message } from '#web/text.ts';
 
 type SettingDefinition = { minimum: number; maximum: number };
 
@@ -40,14 +41,33 @@ const settingDefinitionSchema = v.object({
     maximum: v.pipe(v.number(), v.safeInteger()),
 });
 
-const labelSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(64));
+// The longest CLI version or plan name, and the longest device code, that the dialog shows.
+const MAX_LABEL_CHARACTERS = 64;
+const MAX_CODE_CHARACTERS = 32;
+
+const labelSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_LABEL_CHARACTERS));
+
+const errorTextSchema = v.pipe(v.string(), v.minLength(1), v.maxLength(browserLimits.maxErrorCharacters));
 
 const signInSchema = v.object({
     state: v.picklist(['waiting', 'expired', 'failed']),
-    user_code: v.pipe(v.string(), v.minLength(1), v.maxLength(32)),
+    user_code: v.pipe(v.string(), v.minLength(1), v.maxLength(MAX_CODE_CHARACTERS)),
     verification_url: v.pipe(v.string(), v.url(), v.startsWith('https://')),
     expires_at: v.pipe(v.string(), v.isoTimestamp()),
-    message: v.nullable(v.pipe(v.string(), v.minLength(1), v.maxLength(browserLimits.maxErrorCharacters))),
+    message: v.nullable(errorTextSchema),
+});
+
+const cliSchema = v.object({
+    found: v.boolean(),
+    version: v.nullable(labelSchema),
+    minimum_version: labelSchema,
+    is_current: v.boolean(),
+});
+
+const accountSchema = v.object({
+    signed_in: v.boolean(),
+    is_vip: v.nullable(v.boolean()),
+    vip_level: v.nullable(labelSchema),
 });
 
 const configurationDocumentSchema = v.object({
@@ -55,26 +75,17 @@ const configurationDocumentSchema = v.object({
     mutation_allowed: v.boolean(),
     setting_ranges: v.unknown(),
     settings: unknownRecordSchema,
-    cli: v.object({
-        found: v.boolean(),
-        version: v.nullable(labelSchema),
-        minimum_version: labelSchema,
-        is_current: v.boolean(),
-    }),
-    account: v.object({
-        signed_in: v.boolean(),
-        is_vip: v.nullable(v.boolean()),
-        vip_level: v.nullable(labelSchema),
-    }),
+    cli: cliSchema,
+    account: accountSchema,
     sign_in: v.nullable(signInSchema),
 });
 
 /**
- * Read the settings fields and ranges supplied by the backend.
- *
- * @param value - The untrusted settings definitions.
- * @returns The validated definitions indexed by setting name.
- */
+Read the settings fields and ranges supplied by the backend.
+
+@param value - The untrusted settings definitions.
+@returns The validated definitions indexed by setting name.
+*/
 function parseDefinitions(value: unknown): Configuration['definitions'] {
     const document = v.safeParse(unknownRecordSchema, value);
     if (!document.success) throw new Error(message('settings.invalidResponse'));
@@ -91,11 +102,11 @@ function parseDefinitions(value: unknown): Configuration['definitions'] {
 }
 
 /**
- * Read a pending sign-in, keeping its expiry as milliseconds.
- *
- * @param signIn - The validated sign-in, or null when none is pending.
- * @returns The sign-in the account part shows, or undefined.
- */
+Read a pending sign-in, keeping its expiry as milliseconds.
+
+@param signIn - The validated sign-in, or null when none is pending.
+@returns The sign-in the account part shows, or undefined.
+*/
 function parseSignIn(signIn: v.InferOutput<typeof signInSchema> | null): SignInStatus | undefined {
     if (signIn === null) return undefined;
     return {
@@ -108,11 +119,11 @@ function parseSignIn(signIn: v.InferOutput<typeof signInSchema> | null): SignInS
 }
 
 /**
- * Validate and transform the status the local server returns.
- *
- * @param value - The untrusted JSON response.
- * @returns The settings, the CLI, the account, and any pending sign-in.
- */
+Validate and transform the status the local server returns.
+
+@param value - The untrusted JSON response.
+@returns The settings, the CLI, the account, and any pending sign-in.
+*/
 export function parseConfiguration(value: unknown): Configuration {
     const result = v.safeParse(configurationDocumentSchema, value);
     if (!result.success) throw new Error(message('settings.invalidResponse'));
@@ -120,10 +131,9 @@ export function parseConfiguration(value: unknown): Configuration {
     const definitions = parseDefinitions(document.setting_ranges);
     const settings = new Map(Object.entries(document.settings));
     for (const [name, definition] of Object.entries(definitions)) {
-        const setting = v.safeParse(
-            v.pipe(v.number(), v.safeInteger(), v.minValue(definition.minimum), v.maxValue(definition.maximum)),
-            settings.get(name),
-        );
+        const { minimum, maximum } = definition;
+        const limitSchema = v.pipe(v.number(), v.safeInteger(), v.minValue(minimum), v.maxValue(maximum));
+        const setting = v.safeParse(limitSchema, settings.get(name));
         if (!setting.success) throw new Error(message('settings.invalidLimit'));
     }
     const { cli, account } = document;

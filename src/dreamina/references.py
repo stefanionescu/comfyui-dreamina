@@ -35,7 +35,18 @@ _PLACEHOLDER = re.compile(PLACEHOLDER_PATTERN)
 def _find_presence_refusal(
     mode: ModelMode, label: str, items: Sequence[Reference | LocalMedia], total: int
 ) -> str | None:
-    """Refuse an Element in a frame, and anything at all for an entry that takes no references."""
+    """Refuse an Element in a frame, and anything at all for an entry that takes no references.
+
+    Args:
+        mode: The chosen mode entry.
+        label: The name the refusal gives the entry.
+        items: Every reference and local item of the run.
+        total: The number of references counted, a voice included.
+
+    Returns:
+        The refusal message, or None when nothing is refused.
+
+    """
     if mode.name in FRAME_MODES and any(item.media == 'element' for item in items):
         return REFERENCES_ELEMENT_FRAME.format(mode=label)
     if (mode.references is None or mode.references.maximum == 0) and total:
@@ -44,7 +55,17 @@ def _find_presence_refusal(
 
 
 def _find_count_refusal(mode: ModelMode, label: str, counts: Counter[str]) -> str | None:
-    """Refuse a total, a media type, or a type's count the entry's limits do not allow."""
+    """Refuse a total, a media type, or a type's count the entry's limits do not allow.
+
+    Args:
+        mode: The entry whose limits apply.
+        label: The entry's name in the message.
+        counts: The number of references per media type.
+
+    Returns:
+        The message for the first limit that is broken, or None.
+
+    """
     references = mode.references
     if references is None:
         return None
@@ -72,7 +93,17 @@ def _find_count_refusal(mode: ModelMode, label: str, counts: Counter[str]) -> st
 
 
 def _find_rule_refusal(mode: ModelMode, label: str, counts: Counter[str]) -> str | None:
-    """Refuse a run that misses every required type, or holds media types the entry keeps apart."""
+    """Refuse a run that misses every required type, or holds media types the entry keeps apart.
+
+    Args:
+        mode: The entry whose required and exclusive types apply.
+        label: The entry's name in the message.
+        counts: The number of references per media type.
+
+    Returns:
+        The message for the broken rule, or None.
+
+    """
     references = mode.references
     if references is None:
         return None
@@ -89,6 +120,16 @@ def validate_references(
 
     Each item counts under its media type, an Element as an image. In speech, a voice set in arguments fills one audio
     slot, as the CLI counts it.
+
+    Args:
+        mode: The mode entry that choose_mode chose.
+        label: The name of the entry, as the refusal shows it.
+        items: The run's references and local media.
+        arguments: The run's arguments, read for a voice.
+
+    Raises:
+        DreaminaError: When the entry refuses the references.
+
     """
     counts = Counter(MEDIA_TYPES[item.media] for item in items)
     is_voiced = mode.name == VOICE_REFERENCE['MODE'] and VOICE_REFERENCE['FLAG'] in arguments
@@ -112,6 +153,15 @@ def plan_references(
     References come first, in socket order, then the uploads by kind and position, whatever order the caller listed
     them in. Two items
     with the same bytes share one resource and keep their own places.
+
+    Args:
+        references: The connected references, in socket order.
+        local: The local media of the run.
+        uploaded: The resource reference of each local item, in the same order as local.
+
+    Returns:
+        The --ref values in order, and the same values by placeholder name.
+
     """
     order = {word: index for index, word in enumerate(PLACEHOLDERS)}
     pairs = sorted(zip(local, uploaded, strict=True), key=lambda pair: (order[pair[0].media], pair[0].position))
@@ -127,11 +177,31 @@ def plan_references(
 
 
 def format_prompt(prompt: str, placed: Mapping[str, str]) -> str:
-    """Write each placeholder of this pack in the CLI's form, and leave every other part of the prompt as typed."""
+    """Write each placeholder of this pack in the CLI's form, and leave every other part of the prompt as typed.
+
+    Args:
+        prompt: The prompt as the person typed it.
+        placed: The --ref value of each placeholder name, from plan_references.
+
+    Returns:
+        The prompt with its placeholders in the CLI's form.
+
+    """
     counts = Counter(name.rstrip(string.digits) for name in placed)
 
     def format_placeholder(match: re.Match[str]) -> str:
-        """Write one placeholder as `{{node:...}}` or `{{res:...}}`, refusing one whose item is not connected."""
+        """Write one placeholder as `{{node:...}}` or `{{res:...}}`, refusing one whose item is not connected.
+
+        Args:
+            match: One placeholder found in the prompt: its word, then its number.
+
+        Returns:
+            The reference between double braces.
+
+        Raises:
+            DreaminaError: When no connected item has the placeholder's name.
+
+        """
         word = match.group(1)
         reference = placed.get(word + match.group(2))
         if reference is None:

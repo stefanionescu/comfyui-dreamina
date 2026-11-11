@@ -26,7 +26,15 @@ from src.config.storage import ENVIRONMENT_VARIABLES
 
 
 def _build_node_schema(schema: io.Schema) -> dict[str, object]:
-    """Describe the public metadata and outputs of one node, and each input with its type, widget flag, and limits."""
+    """Describe the public metadata and outputs of one node, and each input with its type, widget flag, and limits.
+
+    Args:
+        schema: The schema that a node class defines.
+
+    Returns:
+        The display name, description, category, inputs, and outputs of the node.
+
+    """
     inputs: list[dict[str, object]] = []
     for item in schema.inputs:
         fields = cast('dict[str, object]', item.as_dict())
@@ -46,7 +54,15 @@ def _build_node_schema(schema: io.Schema) -> dict[str, object]:
 
 
 def _build_host_schema(name: str) -> dict[str, object]:
-    """Describe a ComfyUI node by its schema or input table."""
+    """Describe a ComfyUI node by its schema or input table.
+
+    Args:
+        name: The name ComfyUI registers the node under.
+
+    Returns:
+        The inputs and outputs of the node, with its public metadata when the node defines a schema.
+
+    """
     node_class = cast('type[object]', host.NODE_CLASS_MAPPINGS[name])
     define_schema = getattr(node_class, 'define_schema', None)
     if callable(define_schema):
@@ -77,7 +93,15 @@ def _build_host_schema(name: str) -> dict[str, object]:
 
 
 def _read_parameters(function: object) -> tuple[set[str], set[str]] | None:
-    """Return the input names a node function accepts and those it requires; None when it takes every input by name."""
+    """Return the input names a node function accepts and those it requires; None when it takes every input by name.
+
+    Args:
+        function: The execute or send function of a node class.
+
+    Returns:
+        The accepted names, then the required names, or None when the function takes every input by name.
+
+    """
     parameters = inspect.signature(function).parameters  # pyright: ignore[reportArgumentType] # reason: The host leaves execute untyped.
     if any(parameter.kind is parameter.VAR_KEYWORD for parameter in parameters.values()):
         return None
@@ -91,6 +115,13 @@ def _build_registered_schemas() -> dict[str, dict[str, object]]:
     A paid node receives its inputs through send, and the run number through its base class. Every required parameter
     must be an input, and every input a parameter. The shared generation send reads its inputs by the names the config
     lists, so it has no parameters to compare.
+
+    Returns:
+        The description of each registered node, keyed by node ID.
+
+    Raises:
+        ValueError: When two nodes share an ID, or when the parameters of a node do not match its inputs.
+
     """
     schemas: dict[str, dict[str, object]] = {}
     for node_type in NODE_TYPES:

@@ -19,7 +19,15 @@ if TYPE_CHECKING:
 
 
 def _build_references(result: GenerationResult) -> tuple[Reference, ...]:
-    """Pass one output on as its canvas node, which keeps the canvas edge, and several as one resource each."""
+    """Pass one output on as its canvas node, which keeps the canvas edge, and several as one resource each.
+
+    Args:
+        result: The finished generation.
+
+    Returns:
+        One node reference for a single file, or one resource reference per file.
+
+    """
     files = result.files
     if len(files) == 1:
         return (Reference(origin='node', value=result.record.node_id, media=files[0].kind, title=result.title),)
@@ -33,6 +41,13 @@ def build_result_document(result: GenerationResult) -> dict[str, Json]:
 
     The document leaves out a key without a value: Generation: Download has no request ID, and a replaced canvas has
     no link.
+
+    Args:
+        result: The finished generation to describe.
+
+    Returns:
+        The document, with the keys canvas, requestId, and node.
+
     """
     document: dict[str, Json] = {}
     if result.canvas_url is not None:
@@ -44,7 +59,16 @@ def build_result_document(result: GenerationResult) -> dict[str, Json]:
 
 
 def build_node_outputs(result: GenerationResult, output_ids: Sequence[str]) -> io.NodeOutput:
-    """Fill the outputs of the node by ID, decoding only those it shows; an empty output blocks the nodes after it."""
+    """Fill the outputs of the node by ID, decoding only those it shows; an empty output blocks the nodes after it.
+
+    Args:
+        result: The finished generation and its downloaded files.
+        output_ids: The IDs of the outputs the node shows, in order.
+
+    Returns:
+        The outputs of the node, one per ID.
+
+    """
     contents = {
         kind: [file.content for file in result.files if file.kind == kind] for kind in ('image', 'video', 'audio')
     }

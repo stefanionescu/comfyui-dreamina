@@ -19,6 +19,18 @@ async def create_element(project_id: str, request: ElementRequest, deadline: flo
     """Make the Element with one free call, each source by its bare ID, and return it as a canvas node reference.
 
     The node never sends the call again: a second run makes a second Element, at no cost.
+
+    Args:
+        project_id: The canvas that holds the sources.
+        request: The main source, voice, auxiliary sources, title, and description of the Element.
+        deadline: The monotonic time by which the call must end.
+
+    Returns:
+        The reference of the new Element's node.
+
+    Raises:
+        build_failure: When the CLI refuses the call.
+
     """
     arguments = (
         "node", "create", "element", "--project-id", project_id, "--main", request.main.value,

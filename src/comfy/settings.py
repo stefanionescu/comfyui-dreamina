@@ -30,7 +30,14 @@ class SettingsRoutes:
     """
 
     def __init__(self, configuration: ConfigurationStore, sign_in: SignInState, *, is_multi_user: bool = False) -> None:
-        """Bind the settings store, the pending sign-in, and the host's multi-user access policy."""
+        """Bind the settings store, the pending sign-in, and the host's multi-user access policy.
+
+        Args:
+            configuration: The store of the private settings and the account token.
+            sign_in: The pending sign-in that the session routes start and stop.
+            is_multi_user: Whether ComfyUI runs with several users, which makes the routes refuse every change.
+
+        """
         self.configuration = configuration
         self.sign_in = sign_in
         self.is_multi_user = is_multi_user
@@ -40,6 +47,13 @@ class SettingsRoutes:
 
         A failed status read shows signed out. A failed account read shows signed out only when the sign-in is the
         cause; otherwise the account stays signed in with its plan unknown.
+
+        Args:
+            is_found: Whether the CLI is installed; without it the account shows signed out.
+
+        Returns:
+            The signed_in, is_vip, and vip_level fields of the status.
+
         """
         signed_out: dict[str, Json] = {'signed_in': False, 'is_vip': None, 'vip_level': None}
         try:
@@ -56,7 +70,15 @@ class SettingsRoutes:
         return {'signed_in': True, 'is_vip': account.is_vip, 'vip_level': account.vip_level}
 
     async def read_status(self, _request: web.Request) -> dict[str, Json]:
-        """Describe the settings, the CLI, the account, and any pending sign-in; every route returns it."""
+        """Describe the settings, the CLI, the account, and any pending sign-in; every route returns it.
+
+        Args:
+            _request: The request, which this route does not read.
+
+        Returns:
+            The status document.
+
+        """
         status = await asyncio.to_thread(self.configuration.read_status)
         version = await read_cli_version()
         cli: dict[str, Json] = {
@@ -74,7 +96,18 @@ class SettingsRoutes:
         return status | state
 
     async def save_settings(self, request: web.Request) -> dict[str, Json]:
-        """Validate a request limits patch, save it against the caller's current revision, and return the status."""
+        """Validate a request limits patch, save it against the caller's current revision, and return the status.
+
+        Args:
+            request: The request whose JSON body holds the revision and the settings to change.
+
+        Returns:
+            The status after the save.
+
+        Raises:
+            web.HTTPBadRequest: When the body holds other keys or no valid revision.
+
+        """
         document = await read_body(request)
         revision = document.get('revision')
         if document.keys() != {'revision', 'settings'} or not isinstance(revision, str) or not REVISION.match(revision):
@@ -83,14 +116,36 @@ class SettingsRoutes:
         return await self.read_status(request)
 
     async def create_session(self, request: web.Request) -> dict[str, Json]:
-        """Start a new sign-in, replacing any pending one, and return the status with its code and link."""
+        """Start a new sign-in, replacing any pending one, and return the status with its code and link.
+
+        Args:
+            request: The sign-in request, which carries no body.
+
+        Returns:
+            The status with the new sign-in.
+
+        Raises:
+            web.HTTPBadRequest: When the sign-in request has a body.
+
+        """
         if request.can_read_body:
             raise web.HTTPBadRequest(text=BODY_NOT_ALLOWED)
         await self.sign_in.create_challenge()
         return await self.read_status(request)
 
     async def delete_session(self, request: web.Request) -> dict[str, Json]:
-        """Stop any pending sign-in, sign the CLI out, and renew the account token."""
+        """Stop any pending sign-in, sign the CLI out, and renew the account token.
+
+        Args:
+            request: The sign-out request, which carries no body.
+
+        Returns:
+            The status after the sign-out.
+
+        Raises:
+            web.HTTPBadRequest: When the sign-out request has a body.
+
+        """
         if request.can_read_body:
             raise web.HTTPBadRequest(text=BODY_NOT_ALLOWED)
         await self.sign_in.reset()
@@ -99,14 +154,30 @@ class SettingsRoutes:
         return await self.read_status(request)
 
     async def save_release(self, request: web.Request) -> dict[str, Json]:
-        """Install or update the CLI with the official installer, then return the status with the new release."""
+        """Install or update the CLI with the official installer, then return the status with the new release.
+
+        Args:
+            request: The install request, which carries no body.
+
+        Returns:
+            The status with the installed CLI version.
+
+        Raises:
+            web.HTTPBadRequest: When the install request has a body.
+
+        """
         if request.can_read_body:
             raise web.HTTPBadRequest(text=BODY_NOT_ALLOWED)
         await save_cli(await download_installer())
         return await self.read_status(request)
 
     def register(self, routes: web.RouteTableDef) -> None:
-        """Register the guarded status, request limits, sign-in, sign-out, and install routes."""
+        """Register the guarded status, request limits, sign-in, sign-out, and install routes.
+
+        Args:
+            routes: ComfyUI's route table, which receives the five routes.
+
+        """
         policy = {'is_multi_user': self.is_multi_user}
         routes.get(ROUTES['STATUS'])(build_local_route(self.read_status, is_mutation=False, **policy))
         routes.patch(ROUTES['SETTINGS'])(build_local_route(self.save_settings, is_mutation=True, **policy))

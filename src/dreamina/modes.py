@@ -30,7 +30,15 @@ if TYPE_CHECKING:
 
 
 def _choose_video(connected: Sequence[MediaKind]) -> str:
-    """Choose a video mode: text alone, one or two images as frames, and anything else as references."""
+    """Choose a video mode: text alone, one or two images as frames, and anything else as references.
+
+    Args:
+        connected: The kind of every item the run sends.
+
+    Returns:
+        The name of the video mode.
+
+    """
     if not connected:
         return MODES['video']['TEXT']
     if len(connected) <= FRAME_IMAGES and all(media == 'image' for media in connected):
@@ -39,7 +47,16 @@ def _choose_video(connected: Sequence[MediaKind]) -> str:
 
 
 def _choose_by_inputs(kind: Kind, connected: Sequence[MediaKind]) -> str:
-    """Choose the mode name from the connected inputs; for an image node an Element counts as an image."""
+    """Choose the mode name from the connected inputs; for an image node an Element counts as an image.
+
+    Args:
+        kind: The kind of the node that runs.
+        connected: The kind of every connected item.
+
+    Returns:
+        The mode name that fits the inputs.
+
+    """
     if kind == 'video':
         return _choose_video(connected)
     if kind == 'image':
@@ -48,7 +65,21 @@ def _choose_by_inputs(kind: Kind, connected: Sequence[MediaKind]) -> str:
 
 
 def _choose_name(model: ListedModel, kind: Kind, connected: Sequence[MediaKind], arguments: Mapping[str, Json]) -> str:
-    """Choose the mode name from arguments, from the model's only mode, or from the connected inputs."""
+    """Choose the mode name from arguments, from the model's only mode, or from the connected inputs.
+
+    Args:
+        model: The listed model, whose modes are the allowed names.
+        kind: The kind of the node, used when the inputs decide.
+        connected: The kind of every item the run sends.
+        arguments: The run's arguments, which may name the mode.
+
+    Returns:
+        The chosen mode name.
+
+    Raises:
+        DreaminaError: When the model does not offer the named mode, or the mode that the inputs call for.
+
+    """
     names = list(dict.fromkeys(mode.name for mode in model.modes))
     modes = ', '.join(names)
     selected = arguments.get(SELECTION_KEYS['MODE'])
@@ -68,7 +99,21 @@ def _choose_name(model: ListedModel, kind: Kind, connected: Sequence[MediaKind],
 def _choose_scenario(
     model: ListedModel, name: str, connected: Sequence[MediaKind], arguments: Mapping[str, Json]
 ) -> str | None:
-    """Choose the speech scenario of the chosen mode, from arguments or from the connected inputs; None without one."""
+    """Choose the speech scenario of the chosen mode, from arguments or from the connected inputs; None without one.
+
+    Args:
+        model: The listed model, whose entries carry the scenarios.
+        name: The mode name already chosen.
+        connected: The connected items; any item means dubbing, none means reading.
+        arguments: The run's arguments, which may name the scenario.
+
+    Returns:
+        The chosen scenario, or None when the mode has none.
+
+    Raises:
+        DreaminaError: When the mode does not offer the scenario.
+
+    """
     scenarios = list(dict.fromkeys(mode.scenario for mode in model.modes if mode.name == name and mode.scenario))
     if not scenarios:
         return None
@@ -82,7 +127,16 @@ def _choose_scenario(
 
 
 def _is_fitting(mode: ModelMode, counts: Counter[str]) -> bool:
-    """Whether an entry takes the connected inputs: the total, and each connected type within its listed limits."""
+    """Whether an entry takes the connected inputs: the total, and each connected type within its listed limits.
+
+    Args:
+        mode: The mode entry to test.
+        counts: The number of connected items per media type.
+
+    Returns:
+        True when the entry accepts these counts.
+
+    """
     references = mode.references
     if references is None:
         return not counts.total()
@@ -93,7 +147,15 @@ def _is_fitting(mode: ModelMode, counts: Counter[str]) -> bool:
 
 
 def _describe_limits(mode: ModelMode) -> str:
-    """Write one entry's reference limits as REFERENCES_NO_ENTRY lists them."""
+    """Write one entry's reference limits as REFERENCES_NO_ENTRY lists them.
+
+    Args:
+        mode: The entry whose limits to write.
+
+    Returns:
+        The limits as one phrase of the refusal.
+
+    """
     references = mode.references
     if references is None:
         return REFERENCE_LIMITS.format(minimum=0, maximum=0, types=NO_MEDIA)
@@ -114,6 +176,19 @@ def choose_mode(
 
     connected is the kind of every item the run sends, references first. 07 checks every reference rule against the
     entry chosen here.
+
+    Args:
+        model: The listed model the run uses.
+        kind: The kind of the node that runs.
+        connected: The kind of every item the run sends, references first.
+        arguments: The run's arguments, which may name a mode and a scenario.
+
+    Returns:
+        The chosen entry and its label.
+
+    Raises:
+        DreaminaError: When several entries share the mode and none takes the connected inputs.
+
     """
     name = _choose_name(model, kind, connected, arguments)
     scenario = _choose_scenario(model, name, connected, arguments)

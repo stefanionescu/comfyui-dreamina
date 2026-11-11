@@ -1,4 +1,4 @@
-# Audio: Generate
+# Audio: generate
 
 Runs any Dreamina model that makes audio: text read in a chosen voice, or
 speech for a connected picture or audio clip, called omni dubbing.

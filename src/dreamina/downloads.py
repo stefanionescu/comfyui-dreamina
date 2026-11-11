@@ -37,7 +37,17 @@ if TYPE_CHECKING:
 
 
 def _read_download(path: Path, size: int, sha256: str) -> bytes | None:
-    """Read the pack's own copy of a download and delete it; None when it is missing or does not match the reply."""
+    """Read the pack's own copy of a download and delete it; None when it is missing or does not match the reply.
+
+    Args:
+        path: The file the CLI wrote.
+        size: The byte count the reply states.
+        sha256: The SHA-256 the reply states, in hexadecimal.
+
+    Returns:
+        The bytes of the file, or None.
+
+    """
     try:
         with path.open('rb') as file:
             content = file.read(size + 1)
@@ -49,7 +59,21 @@ def _read_download(path: Path, size: int, sha256: str) -> bytes | None:
 
 
 async def _read_checked(result: CliResult, resource_id: str, path: Path, settings: Settings) -> bytes | None:
-    """Read a successful download's reply and file; None when the outcome is unknown and the caller downloads again."""
+    """Read a successful download's reply and file; None when the outcome is unknown and the caller downloads again.
+
+    Args:
+        result: The result of the successful download call.
+        resource_id: The ID of the resource the call asked for.
+        path: The file the CLI wrote the download to.
+        settings: The settings, which hold the download size limit.
+
+    Returns:
+        The checked bytes, or None when the reply or the file does not match.
+
+    Raises:
+        DreaminaError: When the download is empty or over the size limit.
+
+    """
     try:
         reply = DownloadReply.model_validate(result.reply.payload)
     except ValidationError:
@@ -66,7 +90,23 @@ async def _read_checked(result: CliResult, resource_id: str, path: Path, setting
 
 
 async def _download_file(project_id: str, resource_id: str, path: Path, settings: Settings, deadline: float) -> bytes:
-    """Download one resource, a second time only when the first outcome is unknown, and return its checked bytes."""
+    """Download one resource, a second time only when the first outcome is unknown, and return its checked bytes.
+
+    Args:
+        project_id: The canvas that holds the resource.
+        resource_id: The resource to download.
+        path: Where the CLI writes the file.
+        settings: The settings that the size check reads.
+        deadline: The monotonic time by which the run must end.
+
+    Returns:
+        The checked bytes of the resource.
+
+    Raises:
+        DreaminaError: When the last attempt fails in transport, or no attempt gives a matching file.
+        build_failure: When the CLI refuses the download and no attempt is left for that refusal.
+
+    """
     arguments = ('resource', 'download', resource_id, '--project-id', project_id, '--output', str(path))
     for attempt in range(1, FREE_ATTEMPTS + 1):
         try:
@@ -90,6 +130,20 @@ async def download_resources(
     """Download the finished resources of one submit ID, in the order of the node, and return their bytes.
 
     At most one output file is on disk at a time, in a private temporary folder, under a name the pack makes.
+
+    Args:
+        project_id: The canvas of the node.
+        node: The canvas node, with its resources.
+        submit_id: The submission whose resources to download.
+        settings: The settings, with the download size limit.
+        deadline: The monotonic time by which every download must end.
+
+    Returns:
+        One output file per resource, with its ID, kind, and bytes.
+
+    Raises:
+        DreaminaError: When the submission has no finished resource, or a resource has an unknown type.
+
     """
     resources = [
         resource

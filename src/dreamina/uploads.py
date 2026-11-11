@@ -34,7 +34,17 @@ if TYPE_CHECKING:
 def _encode_files(
     items: Sequence[LocalMedia], encode: Callable[[LocalMedia, Path], Path], folder: Path
 ) -> list[tuple[Path, int, str]]:
-    """Encode every item into the folder, and read each file's size and SHA-256; this blocks."""
+    """Encode every item into the folder, and read each file's size and SHA-256; this blocks.
+
+    Args:
+        items: The local media to encode.
+        encode: ComfyUI's encoder, which writes one item into a folder and returns the file.
+        folder: The temporary folder that receives the files.
+
+    Returns:
+        The path, size in bytes, and SHA-256 of each file, in item order.
+
+    """
     encoded: list[tuple[Path, int, str]] = []
     for item in items:
         path = encode(item, folder)
@@ -45,7 +55,17 @@ def _encode_files(
 
 
 def _validate_upload_size(items: Sequence[LocalMedia], sizes: Sequence[int], settings: Settings) -> None:
-    """Refuse the first file larger than the maximum upload size, before any upload."""
+    """Refuse the first file larger than the maximum upload size, before any upload.
+
+    Args:
+        items: The local media, named in the refusal by kind.
+        sizes: The size in bytes of each encoded file, in item order.
+        settings: The settings that hold the maximum upload size.
+
+    Raises:
+        DreaminaError: When a file is larger than the maximum.
+
+    """
     maximum = settings.max_upload_megabytes
     for item, size in zip(items, sizes, strict=True):
         if size > maximum * BYTES_PER_MEGABYTE:
@@ -60,6 +80,18 @@ async def _send_upload(project_id: str, path: Path, media_type: str, resource_id
 
     The unknown outcomes are a reply the CLI runner cannot read, a retryable failure, and the CLI's own unknown upload
     state. Every other failure has a definite answer, and this function raises it at once.
+
+    Args:
+        project_id: The canvas that receives the file.
+        path: The encoded file.
+        media_type: The type name the CLI takes for the file.
+        resource_id: The new resource ID, the same for both attempts.
+        deadline: The monotonic time by which each attempt must end.
+
+    Raises:
+        DreaminaError: When the CLI answers with another resource ID, or the last attempt cannot be read.
+        build_failure: When the CLI refuses the upload, or the outcome stays unknown after the last attempt.
+
     """
     arguments = (
         "resource", "upload", "--project-id", project_id, "--file", str(path), "--type", media_type,
@@ -96,6 +128,17 @@ async def send_media(
 
     This function encodes every item and checks it against the maximum upload size before the first upload. It
     uploads items with the same bytes once, and they share one reference.
+
+    Args:
+        project_id: The canvas that receives the uploads.
+        items: The local media of the run.
+        encode: ComfyUI's encoder, which writes one item into a folder.
+        settings: The settings that hold the maximum upload size.
+        deadline: The monotonic time by which the uploads must end.
+
+    Returns:
+        One resource reference per item.
+
     """
     if not items:
         return ()

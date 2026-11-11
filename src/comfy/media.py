@@ -40,7 +40,18 @@ if TYPE_CHECKING:
 
 
 def _encode_image(image: torch.Tensor) -> bytes:
-    """Encode one image frame [1, H, W, C] as a PNG at its own size, keeping a fourth channel; never shrink it."""
+    """Encode one image frame [1, H, W, C] as a PNG at its own size, keeping a fourth channel; never shrink it.
+
+    Args:
+        image: One image frame with three or four channels.
+
+    Returns:
+        The content of the PNG file.
+
+    Raises:
+        DreaminaError: When the frame has another shape, holds a pixel that is not finite, or cannot be encoded.
+
+    """
     if image.ndim != IMAGE_TENSOR['DIMENSIONS'] or image.shape[-1] not in {
         IMAGE_TENSOR['RGB_CHANNELS'],
         IMAGE_TENSOR['RGBA_CHANNELS'],
@@ -55,7 +66,18 @@ def _encode_image(image: torch.Tensor) -> bytes:
 
 
 def _encode_audio(audio: Input.Audio) -> bytes:
-    """Encode one audio clip, whose waveform is [1, C, T], as a 16-bit WAV, which keeps every sample."""
+    """Encode one audio clip, whose waveform is [1, C, T], as a 16-bit WAV, which keeps every sample.
+
+    Args:
+        audio: One clip: its waveform and its sample rate.
+
+    Returns:
+        The content of the WAV file.
+
+    Raises:
+        DreaminaError: When the clip holds no sample or cannot be encoded.
+
+    """
     waveform = audio['waveform']
     if waveform.shape[-1] == 0:
         raise DreaminaError(ErrorCode.INVALID_INPUT, AUDIO_EMPTY)
@@ -71,7 +93,16 @@ def _encode_audio(audio: Input.Audio) -> bytes:
 
 
 def _encode_video(video: Input.Video, path: Path) -> None:
-    """Write a ComfyUI video to an MP4 file, keeping an MP4 source's streams as they are."""
+    """Write a ComfyUI video to an MP4 file, keeping an MP4 source's streams as they are.
+
+    Args:
+        video: The ComfyUI video to write.
+        path: The MP4 file that receives the video.
+
+    Raises:
+        DreaminaError: When ComfyUI cannot write the video.
+
+    """
     try:
         video.save_to(str(path), format=Types.VideoContainer.MP4, codec=Types.VideoCodec.AUTO)  # pyright: ignore[reportUnknownMemberType] # reason: ComfyUI types its metadata parameter as a bare dict.
     except Exception:  # noqa: BLE001 # reason: ComfyUI's helper raises unrelated exception types; one reviewed message replaces them.
@@ -84,6 +115,15 @@ def list_local_media(
     """Split the connected media into one item per image frame, video, and audio clip, each kind numbered from 1.
 
     Items keep socket order, then batch order, which is the order their placeholders count in.
+
+    Args:
+        images: The connected image batches, in socket order.
+        videos: The connected videos, in socket order.
+        audio: The connected audio batches, in socket order.
+
+    Returns:
+        The image frames, then the videos, then the audio clips.
+
     """
     frames = [frame.unsqueeze(0) for batch in images for frame in batch]
     clips: list[Input.Audio] = [
@@ -99,7 +139,16 @@ def list_local_media(
 
 
 def encode_local_file(media: LocalMedia, folder: Path) -> Path:
-    """Write one item into the folder, named by its kind and position, and return the file's path."""
+    """Write one item into the folder, named by its kind and position, and return the file's path.
+
+    Args:
+        media: The item to write.
+        folder: The folder that receives the file.
+
+    Returns:
+        The path of the written file.
+
+    """
     path = folder / f'{media.media}-{media.position}.{UPLOAD_FORMATS[media.media]["EXTENSION"]}'
     if media.media == 'video':
         _encode_video(cast('Input.Video', media.value), path)
@@ -113,7 +162,18 @@ def encode_local_file(media: LocalMedia, folder: Path) -> Path:
 
 
 def decode_images(contents: Sequence[bytes]) -> tuple[torch.Tensor, ...]:
-    """Read each image as pixels [1, H, W, 3], in the order given, dropping an alpha channel instead of blending it."""
+    """Read each image as pixels [1, H, W, 3], in the order given, dropping an alpha channel instead of blending it.
+
+    Args:
+        contents: The content of each downloaded image file.
+
+    Returns:
+        One image per file.
+
+    Raises:
+        DreaminaError: When ComfyUI cannot read a file as an image.
+
+    """
     images: list[torch.Tensor] = []
     for content in contents:
         try:
@@ -124,7 +184,18 @@ def decode_images(contents: Sequence[bytes]) -> tuple[torch.Tensor, ...]:
 
 
 def decode_video(content: bytes) -> Input.Video:
-    """Read a video from memory, and its size once, so an unreadable file fails here and not in Save Video."""
+    """Read a video from memory, and its size once, so an unreadable file fails here and not in Save Video.
+
+    Args:
+        content: The content of a downloaded video file.
+
+    Returns:
+        The ComfyUI video.
+
+    Raises:
+        DreaminaError: When ComfyUI cannot read the file as a video.
+
+    """
     try:
         video = InputImpl.VideoFromFile(io.BytesIO(content))
         video.get_dimensions()
@@ -134,7 +205,18 @@ def decode_video(content: bytes) -> Input.Video:
 
 
 def decode_audio(content: bytes) -> Input.Audio:
-    """Read any common audio container as ComfyUI audio: a waveform [1, C, T] and its sample rate."""
+    """Read any common audio container as ComfyUI audio: a waveform [1, C, T] and its sample rate.
+
+    Args:
+        content: The content of a downloaded audio file.
+
+    Returns:
+        The ComfyUI audio.
+
+    Raises:
+        DreaminaError: When ComfyUI cannot read the file as audio.
+
+    """
     try:
         audio = cast('Input.Audio', cast('object', audio_bytes_to_audio_input(content)))
     except Exception:  # noqa: BLE001 # reason: ComfyUI's helper raises unrelated exception types; one reviewed message replaces them.
